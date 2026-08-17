@@ -55,7 +55,7 @@ public function participants(Request $request, $programId)
     $program = Program::findOrFail($programId);
 
     // Query peserta yang sudah lolos (final_id_number tidak null)
-    $query = Registration::with(['user.profile', 'user.address'])
+    $query = Registration::with(['user.profile', 'user.address', 'user.verification'])
         ->where('program_id', $programId)
         ->whereNotNull('final_id_number')
         ->whereHas('user.address', function($q) use ($request) {

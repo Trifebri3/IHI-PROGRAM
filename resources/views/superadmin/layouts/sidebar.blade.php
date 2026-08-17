@@ -45,6 +45,24 @@
                         <span>Form Biodata Pusat</span>
                     </a>
                 </li>
+
+                <li>
+                    <a href="{{ route('superadmin.public-highlights.index') }}"
+                       class="flex items-center px-3.5 py-2.5 text-sm font-semibold rounded-xl transition-all group {{ request()->routeIs('superadmin.public-highlights.*') ? 'bg-gradient-to-r from-emerald-50 to-emerald-100/30 text-emerald-900 border-l-4 border-emerald-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-800' }}">
+                        <svg class="w-5 h-5 mr-3 transition-colors {{ request()->routeIs('superadmin.public-highlights.*') ? 'text-emerald-700' : 'text-slate-400 group-hover:text-emerald-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v4M19 20a2 2 0 002-2v-5a2 2 0 00-2-2h-3m3 9v-9m0 0l-3-3m3 3l3-3"/>
+                        </svg>
+                        <span>Sorotan & Kegiatan</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('superadmin.power-panel.index') }}"
+                       class="flex items-center px-3.5 py-2.5 text-sm font-semibold rounded-xl transition-all group {{ request()->routeIs('superadmin.power-panel.*') ? 'bg-gradient-to-r from-emerald-50 to-emerald-100/30 text-emerald-900 border-l-4 border-emerald-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-800' }}">
+                        <span class="text-sm mr-3 flex-shrink-0">⚡</span>
+                        <span>Super Power Panel</span>
+                    </a>
+                </li>
             </ul>
         </div>
 

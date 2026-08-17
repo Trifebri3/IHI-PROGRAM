@@ -21,7 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var list<string>
      */
 protected $fillable = [
-    'name', 'email', 'password', 'avatar', 'google_id', 'sso_token', 'sso_token_expires_at'
+    'name', 'email', 'is_dummy', 'password', 'avatar', 'google_id', 'sso_token', 'sso_token_expires_at'
 ];
 
     /**
@@ -93,6 +93,11 @@ public function address() {
 public function userProfile()
 {
     return $this->profile();
+}
+
+public function biodataValues()
+{
+    return $this->hasMany(UserBiodataValue::class, 'user_id');
 }
 
 public function alumniProfile()

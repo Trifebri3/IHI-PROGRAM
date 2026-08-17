@@ -30,7 +30,11 @@ class AccountVerification extends Model
         try {
             // If the value is already encrypted, decrypt it. If it is plain, return it.
             return decrypt($value);
-        } catch (DecryptException $e) {
+        } catch (\Throwable $e) {
+            // If it's a plain text NIK (16 digits), return it. Otherwise, indicate decryption failure.
+            if (strlen($value) === 16 && is_numeric($value)) {
+                return $value;
+            }
             return '[Gagal Dekripsi - Key Berubah]';
         }
     }

@@ -7,6 +7,9 @@ use App\Http\Controllers\SuperAdmin\BiodataController;
 use App\Http\Controllers\SuperAdmin\SuperAnnouncementController;
 use App\Http\Controllers\SuperAdmin\SuperEventController;
 use App\Http\Controllers\AdminProgram\ProgramWorkspaceController;
+use App\Http\Controllers\AdminProgram\WorkspaceMonitorController;
+use App\Http\Controllers\AdminProgram\ParticipantProfileController;
+use App\Http\Controllers\AdminProgram\CertificateManagementController;
 use App\Http\Controllers\Peserta\ProgramApplyController;
 use App\Http\Controllers\Peserta\ProgramDashboardController;
 use App\Http\Controllers\Peserta\PesertaEventController;
@@ -21,8 +24,74 @@ use App\Http\Controllers\Public\PublicStatisticController;
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
-    return view('welcome');
+    $activeIklan = \App\Models\Announcement::where('is_active', true)->latest()->first();
+    $pinnedProgram = \App\Models\Program::where('is_open', true)->where('is_pinned', true)->first();
+    if ($pinnedProgram) {
+        $openPrograms = \App\Models\Program::where('is_open', true)->where('id', '!=', $pinnedProgram->id)->get();
+    } else {
+        $openPrograms = \App\Models\Program::where('is_open', true)->get();
+    }
+    $closedPrograms = \App\Models\Program::where('is_open', false)->get();
+    $highlights = \App\Models\PublicHighlight::where('is_active', true)->latest()->get();
+    
+    // Weighted random selection: 80% chance for verified participant registration, 20% chance for any registration
+    $featuredRegistration = null;
+    if (rand(1, 100) <= 80) {
+        $featuredRegistration = \App\Models\Registration::whereHas('user.verification', function($q) {
+            $q->where('status', 'verified');
+        })->whereNotNull('motivation')
+          ->where('motivation', '!=', '')
+          ->with(['user.profile', 'program'])
+          ->inRandomOrder()
+          ->first();
+    }
+
+    if (!$featuredRegistration) {
+        $featuredRegistration = \App\Models\Registration::whereNotNull('motivation')
+          ->where('motivation', '!=', '')
+          ->with(['user.profile', 'program'])
+          ->inRandomOrder()
+          ->first();
+    }
+
+    // Fetch upcoming events for landing page slider
+    $events = \App\Models\Event::where('event_date', '>=', now()->toDateString())->orderBy('event_date', 'asc')->get();
+
+    // Fetch 10 random registrations to populate the interactive capsules ("nozzles")
+    $randomRegistrations = \App\Models\Registration::whereNotNull('motivation')
+      ->where('motivation', '!=', '')
+      ->with(['user.profile', 'user.verification', 'program'])
+      ->inRandomOrder()
+      ->limit(10)
+      ->get();
+
+    // Increment views count for all loaded highlights
+    if ($highlights->isNotEmpty()) {
+        \App\Models\PublicHighlight::whereIn('id', $highlights->pluck('id'))->increment('views_count');
+    }
+
+    return view('welcome', compact('activeIklan', 'pinnedProgram', 'openPrograms', 'closedPrograms', 'highlights', 'featuredRegistration', 'randomRegistrations', 'events'));
 });
+
+Route::get('/testimonial/{id}', function ($id) {
+    $registration = \App\Models\Registration::with(['user.profile', 'program'])->findOrFail($id);
+    return view('public.testimonial-share', compact('registration'));
+})->name('public.testimonial.share');
+
+Route::get('/highlights/{id}/click', function ($id) {
+    $highlight = \App\Models\PublicHighlight::findOrFail($id);
+    $highlight->increment('clicks_count');
+    return redirect()->away($highlight->link_url);
+})->name('public.highlights.click');
+
+Route::get('/events/{id}', [\App\Http\Controllers\Public\PublicEventController::class, 'show'])->name('public.events.show');
+Route::post('/events/{id}/register', [\App\Http\Controllers\Public\PublicEventController::class, 'register'])->name('public.events.register');
+Route::get('/events/ticket/{ticket_number}', [\App\Http\Controllers\Public\PublicEventController::class, 'showTicket'])->name('public.events.ticket');
+Route::post('/events/{id}/register-fast', [\App\Http\Controllers\Public\PublicEventController::class, 'registerFast'])->name('public.events.register_fast');
+Route::post('/events/autofill-account', [\App\Http\Controllers\Public\PublicEventController::class, 'autofillAccount'])->name('public.events.autofill_account');
+Route::get('/events/{id}/attendance', [\App\Http\Controllers\Public\PublicEventController::class, 'showAttendance'])->name('public.events.attendance');
+Route::post('/events/{id}/attendance/verify-ticket', [\App\Http\Controllers\Public\PublicEventController::class, 'verifyTicketForAttendance'])->name('public.events.attendance.verify');
+Route::post('/events/{id}/attendance/submit', [\App\Http\Controllers\Public\PublicEventController::class, 'submitAttendance'])->name('public.events.attendance.submit');
 
 
 
@@ -116,11 +185,7 @@ Route::middleware(['auth', 'verified', 'profile.completed'])->group(function () 
 | 6. ADMIN PROGRAM DESK (Operational Otoritas & Workspace)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified'])->group(function() {
-    Route::get('/admin/verifications', function() {
-        return view('adminprogram.verification.index');
-    })->name('admin.verifications.index');
-});
+
 
 Route::prefix('adminprogram')
     ->name('adminprogram.')
@@ -129,6 +194,8 @@ Route::prefix('adminprogram')
         Route::get('/my-programs', function() {
             return view('adminprogram.program.index');
         })->name('programs.index');
+
+        Route::get('/workspace-monitor', [WorkspaceMonitorController::class, 'index'])->name('workspace_monitor');
 
         // CRUD Alur Tahapan Kompetisi Workspace (Native Controller)
         Route::get('/programs/{id}/workspace', [ProgramWorkspaceController::class, 'show'])->name('programs.workspace');
@@ -143,6 +210,9 @@ Route::prefix('adminprogram')
     
         // Form Builder - Perakitan Field Kustom Pendaftaran
         Route::post('/programs/{id}/workspace/stage/{stageId}/field/store', [ProgramWorkspaceController::class, 'storeFormField'])->name('workspace.field.store');
+        Route::post('/programs/{id}/workspace/stage/{stageId}/field/{index}/update', [ProgramWorkspaceController::class, 'updateFormField'])->name('workspace.field.update');
+        Route::post('/programs/{id}/workspace/stage/{stageId}/field/{index}/move-up', [ProgramWorkspaceController::class, 'moveFormFieldUp'])->name('workspace.field.move_up');
+        Route::post('/programs/{id}/workspace/stage/{stageId}/field/{index}/move-down', [ProgramWorkspaceController::class, 'moveFormFieldDown'])->name('workspace.field.move_down');
         Route::delete('/programs/{id}/workspace/stage/{stageId}/field/{index}/delete', [ProgramWorkspaceController::class, 'deleteFormField'])->name('workspace.field.delete');
 
         // Form Builder - Perakitan Google Form Biodata Wajib Tambahan Program
@@ -184,7 +254,24 @@ Route::prefix('adminprogram')
         Route::get('/programs/{id}/export/user/{registrationId}/pdf', [ProgramWorkspaceController::class, 'exportUserPdf'])->name('workspace.export.user.pdf');
         Route::post('/programs/{id}/workspace/submissions/{submissionId}/reset', [ProgramWorkspaceController::class, 'resetSubmission'])->name('workspace.submission.reset');
         Route::post('/programs/{id}/workspace/reset-all-applicants', [ProgramWorkspaceController::class, 'resetAllApplicants'])->name('workspace.reset_all_applicants');
+        Route::post('/programs/{id}/workspace/reset-applicant', [ProgramWorkspaceController::class, 'resetSpecificApplicant'])->name('workspace.reset_applicant');
         Route::post('/programs/{id}/workspace/update-checking', [ProgramWorkspaceController::class, 'updateCheckingMetadata'])->name('workspace.update_checking');
+
+        // Database Peserta & Profil
+        Route::get('/participants', [ParticipantProfileController::class, 'index'])->name('participants.index');
+        Route::post('/participants/bulk-action', [ParticipantProfileController::class, 'bulkAction'])->name('participants.bulk-action');
+        Route::get('/participants/{id}', [ParticipantProfileController::class, 'show'])->name('participants.show');
+        Route::post('/participants/{id}/update-profile', [ParticipantProfileController::class, 'updateProfile'])->name('participants.update-profile');
+        Route::post('/participants/{id}/ni', [ParticipantProfileController::class, 'updateNi'])->name('participants.ni.update');
+        Route::post('/participants/{id}/toggle-block', [ParticipantProfileController::class, 'toggleBlock'])->name('participants.toggle-block');
+        Route::post('/participants/bulk-ni', [ParticipantProfileController::class, 'bulkGenerateNi'])->name('participants.bulk-ni');
+
+        // Sertifikat & Piagam
+        Route::get('/certificates', [CertificateManagementController::class, 'index'])->name('certificates.index');
+        Route::post('/certificates/bulk-generate', [CertificateManagementController::class, 'bulkGenerate'])->name('certificates.bulk-generate');
+        Route::post('/certificates/bulk-upload', [CertificateManagementController::class, 'bulkUpload'])->name('certificates.bulk-upload');
+        Route::post('/participants/{id}/upload-certificate', [CertificateManagementController::class, 'singleUpload'])->name('certificates.single-upload');
+        Route::delete('/certificates/{id}', [CertificateManagementController::class, 'destroy'])->name('certificates.destroy');
     });
 
 /*
@@ -200,6 +287,9 @@ Route::prefix('superadmin')
     ->group(function () {
         // Manajemen Pembuat Form Biodata Pusat (EAV Engine)
         Route::get('/biodata', [BiodataController::class, 'index'])->name('biodata.index');
+        Route::get('/form-builder', [FormBuilderController::class, 'index'])->name('form-builder.index');
+        Route::post('/form-builder/store', [FormBuilderController::class, 'store'])->name('form-builder.store');
+        Route::delete('/form-builder/{id}/delete', [FormBuilderController::class, 'destroy'])->name('form-builder.delete');
 
         // Manajemen Master Pembuatan Program & Distribusi Delegasi Otoritas
         Route::get('/programs', function() {
@@ -211,6 +301,13 @@ Route::prefix('superadmin')
         Route::post('/announcements/store', [SuperAnnouncementController::class, 'store'])->name('announcements.store');
         Route::delete('/announcements/{id}/delete', [SuperAnnouncementController::class, 'destroy'])->name('announcements.delete');
 
+        // Manajemen Sorotan & Kegiatan Publik (Beranda Utama)
+        Route::get('/public-highlights', [\App\Http\Controllers\SuperAdmin\PublicHighlightController::class, 'index'])->name('public-highlights.index');
+        Route::post('/public-highlights/store', [\App\Http\Controllers\SuperAdmin\PublicHighlightController::class, 'store'])->name('public-highlights.store');
+        Route::post('/public-highlights/{id}/toggle', [\App\Http\Controllers\SuperAdmin\PublicHighlightController::class, 'toggle'])->name('public-highlights.toggle');
+        Route::delete('/public-highlights/{id}/delete', [\App\Http\Controllers\SuperAdmin\PublicHighlightController::class, 'destroy'])->name('public-highlights.delete');
+        Route::put('/public-highlights/{id}/update', [\App\Http\Controllers\SuperAdmin\PublicHighlightController::class, 'update'])->name('public-highlights.update');
+
         // Event Management
         Route::get('/events', [SuperEventController::class, 'index'])->name('events.index');
         Route::post('/events/store', [SuperEventController::class, 'store'])->name('events.store');
@@ -218,8 +315,13 @@ Route::prefix('superadmin')
         Route::get('/events/{id}/dashboard', [SuperEventController::class, 'showDashboard'])->name('events.dashboard');
         Route::post('/events/{id}/form-builder/store', [SuperEventController::class, 'storeFormSchema'])->name('events.form.store');
         Route::delete('/events/{id}/form-builder/{index}/delete', [SuperEventController::class, 'deleteFormSchema'])->name('events.form.delete');
+        Route::post('/events/{id}/attendance-form/store', [SuperEventController::class, 'storeAttendanceFormSchema'])->name('events.attendance_form.store');
+        Route::delete('/events/{id}/attendance-form/{index}/delete', [SuperEventController::class, 'deleteAttendanceFormSchema'])->name('events.attendance_form.delete');
         Route::post('/events/{id}/attendance/toggle', [SuperEventController::class, 'toggleAttendance'])->name('events.attendance.toggle');
+        Route::post('/events/{id}/attendance/settings', [SuperEventController::class, 'updateAttendanceSettings'])->name('events.attendance.settings');
+        Route::get('/events/{id}/scanner', [SuperEventController::class, 'showScanner'])->name('events.scanner');
         Route::get('/events/{id}/recap/print', [SuperEventController::class, 'printRecap'])->name('events.recap.print');
+        Route::get('/events/scan-checkin/{ticket_number}', [SuperEventController::class, 'scanCheckin'])->name('events.scan-checkin');
         Route::post('/events/{id}/certificate/upload', [SuperEventController::class, 'uploadCertificateTemplate'])->name('events.certificate.upload');
 
 
@@ -251,6 +353,7 @@ Route::middleware(['auth', 'verified'])->prefix('superadmin')->group(function ()
     Route::post('/programs', [AdminProgramController::class, 'store'])->name('superadmin.programs.store');
     Route::put('/programs/{id}', [AdminProgramController::class, 'update'])->name('superadmin.programs.update');
     Route::delete('/programs/{id}', [AdminProgramController::class, 'destroy'])->name('superadmin.programs.destroy');
+    Route::post('/programs/{id}/pin', [AdminProgramController::class, 'togglePin'])->name('superadmin.programs.pin');
     
 
 });
@@ -334,19 +437,35 @@ Route::middleware(['auth'])->group(function () {
 
 
 use App\Http\Controllers\Peserta\UserBiodataController;
+use App\Http\Controllers\Auth\EmailMitigationController;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/biodata', [UserBiodataController::class, 'create'])->name('biodata.create');
     Route::post('/biodata', [UserBiodataController::class, 'store'])->name('biodata.store');
+    Route::post('/verify-email/mitigation-ticket', [EmailMitigationController::class, 'submitTicket'])->name('verification.mitigation.store');
+    Route::post('/iklan/track-view/{id}', [\App\Http\Controllers\SuperAdmin\AnnouncementController::class, 'trackView'])->name('iklan.track-view');
 });
 
 use App\Http\Controllers\SuperAdmin\UserController;
+use App\Http\Controllers\SuperAdmin\SuperPowerController;
 
 Route::middleware(['auth'])->prefix('superadmin')->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('superadmin.users.index');
     Route::post('/users', [UserController::class, 'store'])->name('superadmin.users.store');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('superadmin.users.update');
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('superadmin.users.delete');
     Route::match(['get', 'post'], '/users/{id}/impersonate', [UserController::class, 'impersonate'])->name('superadmin.users.impersonate');
+    Route::post('/users/{id}/toggle-block', [UserController::class, 'toggleBlock'])->name('superadmin.users.toggle-block');
+
+    // Super Power Panel Tools
+    Route::get('/power-panel', [SuperPowerController::class, 'index'])->name('superadmin.power-panel.index');
+    Route::post('/power-panel/generate-dummy', [SuperPowerController::class, 'generateDummyUsers'])->name('superadmin.power-panel.generate-dummy');
+    Route::post('/power-panel/delete-dummy', [SuperPowerController::class, 'deleteAllDummyUsers'])->name('superadmin.power-panel.delete-dummy');
+    Route::post('/power-panel/import-users', [SuperPowerController::class, 'importUsers'])->name('superadmin.power-panel.import-users');
+    Route::get('/power-panel/download-template', [SuperPowerController::class, 'downloadCsvTemplate'])->name('superadmin.power-panel.download-template');
+    Route::post('/power-panel/force-register', [SuperPowerController::class, 'forceRegisterUsers'])->name('superadmin.power-panel.force-register');
+    Route::post('/power-panel/toggle-mitigation', [SuperPowerController::class, 'toggleMitigation'])->name('superadmin.power-panel.toggle-mitigation');
+    Route::post('/power-panel/resolve-ticket/{id}', [SuperPowerController::class, 'resolveTicket'])->name('superadmin.power-panel.resolve-ticket');
 });
 
 Route::post('/impersonate/stop', [\App\Http\Controllers\Public\ImpersonationController::class, 'stop'])->name('impersonate.stop');
@@ -379,6 +498,7 @@ Route::middleware(['auth'])->prefix('superadmin')->group(function () {
     Route::get('/iklan', [AnnouncementController::class, 'index'])->name('iklan.index');
     Route::post('/iklan', [AnnouncementController::class, 'store'])->name('iklan.store');
     Route::post('/iklan/{id}/toggle', [AnnouncementController::class, 'toggle'])->name('iklan.toggle');
+    Route::delete('/iklan/{id}', [AnnouncementController::class, 'destroy'])->name('iklan.destroy');
 });
 
 

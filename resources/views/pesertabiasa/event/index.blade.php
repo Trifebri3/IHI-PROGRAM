@@ -59,7 +59,7 @@
                         @endif
                     </div>
 
-                    <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">{{ $event->description ?? 'Tidak ada deskripsi detail agenda acara.' }}</p>
+                    <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">{{ strip_tags($event->description ?? 'Tidak ada deskripsi detail agenda acara.') }}</p>
 
                     <div class="grid grid-cols-2 gap-2 pt-1 font-mono text-[10px] font-bold text-slate-600">
                         <div class="p-2 bg-slate-50 rounded-lg border border-slate-100">

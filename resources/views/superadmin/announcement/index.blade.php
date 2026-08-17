@@ -1,6 +1,10 @@
 @extends('superadmin.layouts.app') {{-- Sesuaikan dengan nama layout master superadmin Anda --}}
 @section('title', 'Pusat Penyiaran Maklumat')
 @section('content')
+<!-- Load Quill editor styling and JS -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+
 <div class="py-6 max-w-7xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
 
     <div class="mb-4">
@@ -17,13 +21,11 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit space-y-4">
-            <span class="block text-xs font-bold uppercase tracking-wider text-slate-700 border-b pb-2">Rakit Siaran Maklumat</span>
-
-            <form action="{{ route('superadmin.announcements.store') }}" method="POST" class="space-y-4">
+            <span class="block text-xs font-bold uppercase tracking-wider text-slate-700 border-b pb-2">Rakit Siaran Maklumat</span>            <form id="broadcast-form" action="{{ route('superadmin.announcements.store') }}" method="POST" class="space-y-4">
                 @csrf
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500">Cakupan Ruang Target</label>
-                    <select name="target" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-white text-slate-700 font-bold" Republic>
+                    <select name="target" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-white text-slate-700 font-bold">
                         <option value="global" class="text-emerald-700 font-bold">🌍 GLOBAL BROADCAST (Semua User Aplikasi)</option>
                         @foreach($programs as $prog)
                             <option value="{{ $prog->id }}">📦 PROGRAM: {{ $prog->name }}</option>
@@ -48,11 +50,12 @@
 
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500">Isi Maklumat Instruksi</label>
-                    <textarea name="content" placeholder="Tulis instruksi mendalam disini..." class="w-full p-2.5 border border-slate-200 rounded-xl text-xs" rows="4" required></textarea>
+                    <div id="broadcast-content-editor" class="h-36 bg-slate-50/50 rounded-xl text-xs" style="font-size: 11px;"></div>
+                    <input type="hidden" name="content" id="hidden-broadcast-content">
                 </div>
 
                 <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-green-700 text-white font-bold text-xs rounded-xl hover:from-emerald-700 transition uppercase tracking-wider shadow-md shadow-emerald-50">
-                    📣 Siarkan & Eksekusi Email
+                    📣 Siarkan &amp; Eksekusi Email
                 </button>
             </form>
         </div>
@@ -73,7 +76,7 @@
                                 @endif
                                 <span class="text-[8px] bg-white text-slate-400 border px-1.5 py-0.5 rounded font-bold uppercase">{{ $ann->type }}</span>
                             </div>
-                            <p class="text-slate-500 font-medium whitespace-pre-wrap leading-relaxed">{{ $ann->content }}</p>
+                            <div class="text-slate-500 font-medium leading-relaxed">{!! $ann->content !!}</div>
                         </div>
                         <form action="{{ route('superadmin.announcements.delete', $ann->id) }}" method="POST" onsubmit="return confirm('Hapus arsip siaran ini?')">
                             @csrf @method('DELETE')
@@ -88,4 +91,22 @@
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Quill
+        const quill = new Quill('#broadcast-content-editor', {
+            theme: 'snow',
+            placeholder: 'Tulis instruksi mendalam disini...'
+        });
+
+        // Sync Quill editor text on submit
+        const form = document.getElementById('broadcast-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                document.getElementById('hidden-broadcast-content').value = quill.root.innerHTML;
+            });
+        }
+    });
+</script>
 @endsection

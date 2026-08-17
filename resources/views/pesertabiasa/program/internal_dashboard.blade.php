@@ -21,17 +21,38 @@
             <!-- Status Kelulusan -->
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-3">
                 <h3 class="text-sm font-bold text-slate-800">Informasi Pengumuman & Kelulusan</h3>
-                <div class="p-4 rounded-xl border border-emerald-100 bg-emerald-50/30 space-y-2">
+                @php
+                    $activeStageData = $stageLogs->where('program_stage_id', $registration->current_stage_id)->first();
+                    $isRevision = $activeStageData && $activeStageData->status === 'revision';
+                @endphp
+                <div class="p-4 rounded-xl border {{ $isRevision ? 'border-amber-200 bg-amber-50/20' : 'border-emerald-100 bg-emerald-50/30' }} space-y-2">
                     <h5 class="text-sm font-bold text-slate-800">Status Tahap Aktif: {{ $registration->currentStage?->name ?? 'Siklus Kompetisi Selesai' }}</h5>
                     <p class="text-xs text-slate-600 leading-relaxed italic bg-white p-3 rounded-xl border border-slate-100">
                         @if($registration->status === 'passed')
-                            {{ $registration->currentStage?->pass_announcement ?? 'Selamat! Anda resmi dinobatkan lulus final seleksi seluruh rangkaian program kerja.' }}
+                            {!! $registration->currentStage?->pass_announcement ?? 'Selamat! Anda resmi dinobatkan lulus final seleksi seluruh rangkaian program kerja.' !!}
                         @elseif($registration->status === 'failed')
-                            {{ $registration->currentStage?->fail_announcement ?? 'Mohon maaf, langkah Anda terhenti dalam rangkaian seleksi program ini.' }}
+                            {!! $registration->currentStage?->fail_announcement ?? 'Mohon maaf, langkah Anda terhenti dalam rangkaian seleksi program ini.' !!}
                         @else
-                            Berkas pengisian Anda sedang ditinjau intensif oleh panitia penilai. Mohon pantau halaman ini secara berkala.
+                            @if($isRevision)
+                                ⚠️ Berkas Anda memerlukan revisi. Silakan periksa kolom yang ditandai oleh panitia dan perbaiki berkas Anda.
+                            @else
+                                Berkas pengisian Anda sedang ditinjau intensif oleh panitia penilai. Mohon pantau halaman ini secara berkala.
+                            @endif
                         @endif
                     </p>
+                    <div class="flex flex-wrap gap-2 mt-3 pt-1">
+                        @if($registration->currentStage && $registration->currentStage->instruction)
+                            <button type="button" onclick="document.getElementById('instructionModal').classList.remove('hidden')" class="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 text-white text-xs font-bold rounded-xl transition shadow-md uppercase tracking-wider">
+                                📢 Informasi Center &amp; Panduan Seleksi
+                            </button>
+                        @endif
+
+                        @if($registration->status === 'process' && $isRevision)
+                            <a href="{{ route('program.apply', $program->id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold rounded-xl transition shadow-md uppercase tracking-wider">
+                                ✍️ Perbaiki Berkas / Revisi
+                            </a>
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -54,7 +75,8 @@
                                     <td class="p-3">
                                         @if($log->status === 'passed') <span class="px-2 py-0.5 font-bold rounded bg-emerald-50 text-emerald-700 border">LOLOS</span>
                                         @elseif($log->status === 'failed') <span class="px-2 py-0.5 font-bold rounded bg-rose-50 text-rose-700 border">GUGUR</span>
-                                        @else <span class="px-2 py-0.5 font-bold rounded bg-amber-50 text-amber-700 border">REVIEWING</span> @endif
+                                        @elseif($log->status === 'revision') <span class="px-2 py-0.5 font-bold rounded bg-amber-50 text-amber-700 border">BUTUH REVISI</span>
+                                        @else <span class="px-2 py-0.5 font-bold rounded bg-blue-50 text-blue-700 border">REVIEWING</span> @endif
                                     </td>
                                     <td class="p-3 italic">{{ $log->reviewer_notes ?? '-' }}</td>
                                 </tr>
@@ -114,7 +136,7 @@
                         <span>{{ $ann->title }}</span>
                         <span class="text-[8px] bg-white px-2 py-0.5 rounded border uppercase">{{ $ann->type }}</span>
                     </summary>
-                    <div class="text-slate-600 pt-3 border-t mt-2 whitespace-pre-wrap">{!! nl2br(e($ann->content)) !!}</div>
+                    <div class="text-slate-600 pt-3 border-t mt-2">{!! $ann->content !!}</div>
                 </details>
             @empty
                 <p class="text-xs text-slate-400 italic text-center py-4">Belum ada pengumuman.</p>
@@ -398,5 +420,49 @@
         width: 14px;
         height: 14px;
     }
+
+    #instructionModal img, .prose img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 12px 0;
+    }
 </style>
+
+@if($registration->currentStage && $registration->currentStage->instruction)
+    <!-- Modal Instruksi Tahapan -->
+    <div id="instructionModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Backdrop -->
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" onclick="document.getElementById('instructionModal').classList.add('hidden')"></div>
+
+            <!-- Modal Content -->
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-slate-100">
+                <div class="bg-gradient-to-r from-blue-900 to-indigo-900 px-6 py-4 flex justify-between items-center text-white">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">📢</span>
+                        <div>
+                            <h3 class="font-extrabold text-sm uppercase tracking-wide">Informasi Center &amp; Panduan</h3>
+                            <p class="text-[10px] text-blue-200 mt-0.5">Tahapan: {{ $registration->currentStage->name }}</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="document.getElementById('instructionModal').classList.add('hidden')" class="text-blue-100 hover:text-white font-extrabold text-lg leading-none">&times;</button>
+                </div>
+                
+                <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto prose prose-slate max-w-none text-xs">
+                    <div class="text-slate-700 leading-relaxed font-normal bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                        {!! $registration->currentStage->instruction !!}
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 px-6 py-3.5 flex justify-end border-t border-slate-100">
+                    <button type="button" onclick="document.getElementById('instructionModal').classList.add('hidden')" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl transition">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
 @endsection

@@ -80,8 +80,8 @@ if ($request->sort === 'soonest') {
             ->where('program_stage_id', $currentStage->id)
             ->first();
 
-        // Kunci jika sudah kirim DAN statusnya bukan 'failed' (artinya 'pending' atau 'passed')
-        if ($stageData && !empty($stageData->form_values) && $stageData->status !== 'failed') {
+        // Kunci jika sudah kirim DAN statusnya bukan 'failed' atau 'revision' (artinya 'pending' atau 'passed')
+        if ($stageData && !empty($stageData->form_values) && !in_array($stageData->status, ['failed', 'revision'])) {
             return redirect()->route('programs.catalog')->with('error', 'Anda sudah mengirimkan berkas untuk ' . $currentStage->name . '. Mohon tunggu penilaian panitia!');
         }
 
@@ -144,11 +144,16 @@ if ($request->sort === 'soonest') {
                     $rules[$fieldName] .= '|file|mimes:pdf,doc,docx,xls,xlsx,zip,rar,jpg,jpeg,png|max:10240';
                 } elseif ($field['type'] === 'datetime') {
                     $rules[$fieldName] .= '|date';
+                } elseif ($field['type'] === 'url') {
+                    $rules[$fieldName] .= '|url|max:3000';
                 } else {
                     $rules[$fieldName] .= '|string|max:3000';
                 }
             }
             $messages[$fieldName . '.required'] = "Isian '" . $field['name'] . "' wajib dipenuhi!";
+            if ($field['type'] === 'url') {
+                $messages[$fieldName . '.url'] = "Isian '" . $field['name'] . "' wajib diisi dengan link URL yang valid (diawali dengan http:// atau https://)!";
+            }
         }
         $request->validate($rules, $messages);
 

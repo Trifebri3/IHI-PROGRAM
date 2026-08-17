@@ -16,8 +16,16 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $user = $request->user();
+
+        if ($user->hasRole('Super Admin')) {
+            return view('profile.edit_superadmin', compact('user'));
+        } elseif ($user->hasRole('Admin Program')) {
+            return view('profile.edit_adminprogram', compact('user'));
+        }
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
         ]);
     }
 

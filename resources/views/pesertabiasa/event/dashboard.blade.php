@@ -102,7 +102,7 @@
             <!-- Deskripsi Info Acara -->
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-2xs space-y-2">
                 <h3 class="text-sm font-bold text-slate-800 border-b pb-2">Deskripsi Silabus Kegiatan</h3>
-                <p class="text-xs text-slate-600 leading-relaxed font-medium pt-1">{{ $event->description ?? 'Tidak ada ringkasan deskripsi detail.' }}</p>
+                <div class="text-xs text-slate-650 leading-relaxed font-medium pt-1">{!! $event->description ?? 'Tidak ada ringkasan deskripsi detail.' !!}</div>
             </div>
 
             <!-- Resume Jawaban Registrasi -->

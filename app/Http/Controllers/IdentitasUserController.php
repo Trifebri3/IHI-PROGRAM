@@ -72,7 +72,20 @@ class IdentitasUserController extends Controller
         // 2. Validasi Dinamis Menyesuaikan Aturan 'is_required' dari Tabel biodata_fields
         $biodataFields = BiodataField::all();
         foreach ($biodataFields as $field) {
-            $rules['biodata.' . $field->id] = $field->is_required ? 'required' : 'nullable';
+            $rule = $field->is_required ? 'required' : 'nullable';
+            if ($field->type === 'file') {
+                $hasFileUploaded = UserBiodataValue::where('user_id', $user->id)
+                    ->where('biodata_field_id', $field->id)
+                    ->whereNotNull('value')
+                    ->exists();
+                
+                if ($hasFileUploaded) {
+                    $rule = 'nullable';
+                } else {
+                    $rule = $field->is_required ? 'required|file|max:2048' : 'nullable|file|max:2048';
+                }
+            }
+            $rules['biodata.' . $field->id] = $rule;
         }
 
         // Jalankan proses validasi masukan formulir
@@ -122,18 +135,40 @@ class IdentitasUserController extends Controller
             );
 
             // D. Update / Create Tabel Nilai Dinamis: user_biodata_values
-            if ($request->has('biodata')) {
-                foreach ($request->biodata as $fieldId => $value) {
-                    UserBiodataValue::updateOrCreate(
-                        [
-                            'user_id' => $user->id,
-                            'biodata_field_id' => $fieldId
-                        ],
-                        [
-                            'value' => $value
-                        ]
-                    );
+            foreach ($biodataFields as $field) {
+                $value = null;
+                if ($field->type === 'file') {
+                    if ($request->hasFile("biodata.{$field->id}")) {
+                        // Delete old file if exists
+                        $existingVal = UserBiodataValue::where('user_id', $user->id)
+                            ->where('biodata_field_id', $field->id)
+                            ->first();
+                        if ($existingVal && $existingVal->value) {
+                            Storage::disk('public')->delete($existingVal->value);
+                        }
+                        
+                        $path = $request->file("biodata.{$field->id}")->store('biodata_files', 'public');
+                        $value = $path;
+                    } else {
+                        // Retain existing file if not re-uploaded
+                        $existingVal = UserBiodataValue::where('user_id', $user->id)
+                            ->where('biodata_field_id', $field->id)
+                            ->first();
+                        $value = $existingVal ? $existingVal->value : null;
+                    }
+                } else {
+                    $value = $request->input("biodata.{$field->id}");
                 }
+
+                UserBiodataValue::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'biodata_field_id' => $field->id
+                    ],
+                    [
+                        'value' => $value
+                    ]
+                );
             }
 
             // Jika semua operasi sukses, simpan permanen ke database

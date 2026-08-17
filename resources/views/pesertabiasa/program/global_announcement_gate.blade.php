@@ -15,8 +15,8 @@
                 <h4 class="text-sm font-black text-slate-800">📢 {{ $announcement->title }}</h4>
                 <span class="text-[9px] font-mono text-slate-400 mt-0.5 block">Disiarkan resmi pada: {{ $announcement->created_at->format('d M Y - H:i') }} WIB</span>
 
-                <div class="text-xs text-slate-600 leading-relaxed mt-4 whitespace-pre-wrap bg-white p-4 rounded-xl border border-slate-100 shadow-3xs font-medium">
-                    {!! nl2br(e($announcement->content)) !!}
+                <div class="text-xs text-slate-650 leading-relaxed mt-4 bg-white p-4 rounded-xl border border-slate-100 shadow-3xs font-medium">
+                    {!! $announcement->content !!}
                 </div>
             </div>
 

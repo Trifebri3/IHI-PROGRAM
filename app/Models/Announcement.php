@@ -25,4 +25,9 @@ class Announcement extends Model
 
         return asset('storage/' . $this->banner_path);
     }
+
+    public function views()
+    {
+        return $this->hasMany(AnnouncementView::class);
+    }
 }

@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Config;
 class Registration extends Model
 {
     protected $fillable = [
-        'user_id', 'program_id', 'current_stage_id', 'status', 'final_id_number', 'final_scores', 'motivation'
+        'user_id', 'program_id', 'current_stage_id', 'status', 'final_id_number', 'final_scores', 'motivation',
+        'batch', 'location', 'region', 'participant_status'
     ];
 
     protected $casts = [
@@ -99,7 +100,8 @@ public function currentStage(): BelongsTo
                 $syncToLms($registration);
             }
 
-            // Jika status berubah menjadi passed (Lulus), daftarkan ke Alumni
+            // PENTING: Aktivasi alumni sekarang dikelola secara operasional melalui Admin Program (Bukan otomatis)
+            /*
             if ($registration->wasChanged('status') && $registration->status === 'passed') {
                 try {
                     resolve(\App\Services\AlumniService::class)->registerAutoAlumni($registration);
@@ -107,6 +109,7 @@ public function currentStage(): BelongsTo
                     \Illuminate\Support\Facades\Log::error('Alumni registration failed: ' . $e->getMessage());
                 }
             }
+            */
         });
     }
 }

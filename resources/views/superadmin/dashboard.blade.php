@@ -21,7 +21,7 @@
 
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 
-        <a href="{{ route('superadmin.biodata.index') }}" class="relative flex flex-col p-6 transition-all duration-300 bg-white border border-emerald-50 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300 group">
+        <a href="{{ route('superadmin.form-builder.index') }}" class="relative flex flex-col p-6 transition-all duration-300 bg-white border border-emerald-50 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300 group">
             <div class="flex items-center justify-center w-14 h-14 mb-4 rounded-xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
@@ -32,27 +32,19 @@
         </a>
 
 
-        <li>
-    <a href="{{ route('superadmin.events.index') }}"
-       class="flex items-center px-3.5 py-2.5 text-sm font-semibold rounded-xl transition-all group justify-between
-       {{ request()->routeIs('superadmin.events.index') ? 'bg-gradient-to-r from-emerald-800 to-green-700 text-white shadow-md shadow-emerald-100/50' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-800' }}">
-
-        <div class="flex items-center truncate">
-            <span class="mr-3 text-lg flex-shrink-0 {{ request()->routeIs('superadmin.events.index') ? 'text-white' : 'text-slate-400 group-hover:text-emerald-600' }}">
-                🚀
-            </span>
-            <span class="font-bold">Manajemen Event</span>
-        </div>
-
-        {{-- Mini Badge Total Event sebagai pemanis --}}
-        @if(!request()->routeIs('superadmin.events.index'))
-            @php $eventCount = \App\Models\Event::count(); @endphp
-            <span class="text-[9px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md group-hover:bg-emerald-50 group-hover:text-emerald-700 border transition-colors">
-                {{ $eventCount }}
-            </span>
-        @endif
-    </a>
-</li>
+        <a href="{{ route('superadmin.events.index') }}" class="relative flex flex-col p-6 transition-all duration-300 bg-white border border-emerald-50 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300 group">
+            <div class="flex items-center justify-center w-14 h-14 mb-4 rounded-xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                <span class="text-xl shrink-0">🚀</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-gray-900 group-hover:text-emerald-700 font-sans">Manajemen Event</h3>
+                @php $eventCount = \App\Models\Event::count(); @endphp
+                <span class="text-[9px] font-bold bg-slate-50 text-slate-600 px-2 py-0.5 rounded-md border border-slate-250">
+                    {{ $eventCount }} Event
+                </span>
+            </div>
+            <p class="mt-2 text-sm text-gray-500 flex-1">Publikasikan agenda kegiatan, kelola registrasi peserta, dan pencatatan absensi.</p>
+        </a>
 
 
         <a href="{{ route('superadmin.programs.index') }}" class="relative flex flex-col p-6 transition-all duration-300 bg-white border border-emerald-50 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300 group">
@@ -110,6 +102,14 @@
             <h3 class="text-lg font-bold text-gray-900 group-hover:text-emerald-700">SSO & API Gateway</h3>
             <p class="mt-2 text-sm text-gray-500 flex-1">Kelola OAuth2 Clients untuk integrasi sistem kampus (LMS, Moodle, Portal).</p>
             <span class="absolute top-4 right-4 px-2 py-1 text-[10px] font-bold text-emerald-800 bg-emerald-100 rounded-full">Segera</span>
+        </a>
+
+        <a href="{{ route('superadmin.power-panel.index') }}" class="relative flex flex-col p-6 transition-all duration-300 bg-white border border-emerald-50 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300 group">
+            <div class="flex items-center justify-center w-14 h-14 mb-4 rounded-xl bg-amber-100 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                <span class="text-xl">⚡</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 group-hover:text-emerald-700">Super Power Panel</h3>
+            <p class="mt-2 text-sm text-gray-500 flex-1">Generator Akun Dummy massal, Import Akun Excel/CSV, dan Pendaftaran Paksa pendaftar ke program kerja.</p>
         </a>
 
     </div>

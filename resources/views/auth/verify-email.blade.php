@@ -230,18 +230,83 @@
             </form>
         </div>
 
-        <!-- Informasi Tambahan -->
-        <div class="info-box">
-            <p>
-                <strong>Belum menerima email?</strong>
-            </p>
-            <p>
-                • Periksa folder <strong>Spam</strong> atau <strong>Junk</strong> di email Anda.<br>
-                • Pastikan alamat email yang Anda daftarkan benar.<br>
-                • Tambahkan <strong>instituthijau.id@gmail.com</strong> ke kontak Anda agar email tidak masuk spam.<br>
-                • Klik tombol "Kirim Ulang" jika perlu mengirim ulang tautan verifikasi.
-            </p>
         </div>
+
+        <!-- Help/Mitigation Desk -->
+        @if(\App\Models\SystemSetting::getVal('mitigation_mode', '0') === '1')
+            <div style="margin-top: 1.5rem; border-top: 1px dashed #e2e8f0; padding-top: 1.5rem; text-align: left;">
+                <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 1rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <h3 style="font-size: 0.85rem; font-weight: 700; color: #b45309; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; margin-top: 0;">
+                        <span>🆘</span> Layanan Mitigasi &amp; Bantuan
+                    </h3>
+
+                    @php
+                        $pendingTicket = \App\Models\MitigationTicket::where('user_id', auth()->id())
+                            ->where('status', 'pending')
+                            ->first();
+                    @endphp
+
+                    @if($pendingTicket)
+                        <div style="background: #f0fdf4; border: 1px solid #dcfce7; border-radius: 0.75rem; padding: 0.75rem; font-size: 0.75rem; color: #166534; margin-top: 0.5rem; line-height: 1.5;">
+                            <strong>Aduan Terkirim:</strong>
+                            <p style="margin-top: 0.25rem;">Kendala: 
+                                <span style="font-weight: 700;">
+                                    @if($pendingTicket->issue_type === 'no_email')
+                                        Tidak menerima email verifikasi
+                                    @elseif($pendingTicket->issue_type === 'password')
+                                        Masalah password
+                                    @else
+                                        Lainnya
+                                    @endif
+                                </span>
+                            </p>
+                            <p style="margin-top: 0.25rem; font-style: italic;">"{{ $pendingTicket->description }}"</p>
+                            <p style="margin-top: 0.5rem; font-size: 0.7rem; font-weight: 700; color: #15803d; display: flex; align-items: center; gap: 0.25rem; margin-bottom: 0;">
+                                <span>⏳</span> Laporan sedang diproses oleh Admin. Mohon periksa berkala halaman ini.
+                            </p>
+                        </div>
+                    @else
+                        <!-- Form to submit a new ticket -->
+                        <p style="font-size: 0.75rem; color: #6b7280; line-height: 1.5; margin-bottom: 0.75rem; margin-top: 0;">
+                            Jika Anda tidak mendapatkan email verifikasi setelah beberapa kali kirim ulang, atau mengalami kendala lain, silakan laporkan di bawah untuk verifikasi manual oleh Admin.
+                        </p>
+
+                        <!-- Alerts for success/error inside the card -->
+                        @if(session('success'))
+                            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; border-radius: 0.75rem; padding: 0.75rem; font-size: 0.75rem; margin-bottom: 0.75rem;">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+                        @if(session('error'))
+                            <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 0.75rem; padding: 0.75rem; font-size: 0.75rem; margin-bottom: 0.75rem;">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+
+                        <form action="{{ route('verification.mitigation.store') }}" method="POST">
+                            @csrf
+                            <div>
+                                <label style="display: block; font-size: 10px; font-weight: 700; color: #4b5563; text-transform: uppercase; margin-bottom: 0.25rem;">Pilih Jenis Kendala</label>
+                                <select name="issue_type" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.75rem; color: #374151; background-color: #fff; outline: none; margin-bottom: 0.75rem;">
+                                    <option value="no_email">Tidak menerima email verifikasi</option>
+                                    <option value="password">Masalah password</option>
+                                    <option value="other">Masalah lainnya / kendala teknis</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style="display: block; font-size: 10px; font-weight: 700; color: #4b5563; text-transform: uppercase; margin-bottom: 0.25rem;">Rincian Keluhan / Kontak WA Aktif</label>
+                                <textarea name="description" required placeholder="Tulis rincian kendala Anda di sini..." style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.75rem; color: #374151; outline: none; min-height: 60px; margin-bottom: 0.75rem; box-sizing: border-box;"></textarea>
+                            </div>
+
+                            <button type="submit" style="width: 100%; background: #d97706; color: white; border: none; padding: 0.6rem; border-radius: 2rem; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: background 0.2s;">
+                                Kirim Laporan Bantuan &rarr;
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            </div>
+        @endif
     </div>
 
 <script>

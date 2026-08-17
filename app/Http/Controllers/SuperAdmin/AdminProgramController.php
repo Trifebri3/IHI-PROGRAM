@@ -27,6 +27,12 @@ class AdminProgramController extends Controller
             if ($request->hasFile('logo')) $data['logo_path'] = $request->file('logo')->store('programs/logos', 'public');
             if ($request->hasFile('banner')) $data['banner_path'] = $request->file('banner')->store('programs/banners', 'public');
 
+            // Handle Pinned Program (Only 1 allowed)
+            $data['is_pinned'] = $request->input('is_pinned', '0') === '1';
+            if ($data['is_pinned']) {
+                Program::query()->update(['is_pinned' => false]);
+            }
+
             $program = Program::create($data);
             $program->managers()->attach($request->selected_admin_id);
         });
@@ -48,6 +54,7 @@ class AdminProgramController extends Controller
         'logo' => 'nullable|image|max:2048',
         'banner' => 'nullable|image|max:2048',
         'selected_admin_id' => 'required|exists:users,id',
+        'is_pinned' => 'nullable|in:0,1',
     ]);
 
     DB::transaction(function () use ($request, $program, $validated) {
@@ -62,6 +69,12 @@ class AdminProgramController extends Controller
         if ($request->hasFile('banner')) {
             if ($program->banner_path) Storage::disk('public')->delete($program->banner_path);
             $data['banner_path'] = $request->file('banner')->store('programs/banners', 'public');
+        }
+
+        // Handle Pinned Program (Only 1 allowed)
+        $data['is_pinned'] = $request->input('is_pinned', '0') === '1';
+        if ($data['is_pinned']) {
+            Program::where('id', '!=', $program->id)->update(['is_pinned' => false]);
         }
 
         $program->update($data);
@@ -81,6 +94,20 @@ class AdminProgramController extends Controller
         return redirect()->back()->with('success', 'Program berhasil dihapus.');
     }
 
+    public function togglePin($id)
+    {
+        $program = Program::findOrFail($id);
+        $newStatus = !$program->is_pinned;
+
+        if ($newStatus) {
+            Program::where('id', '!=', $id)->update(['is_pinned' => false]);
+        }
+
+        $program->update(['is_pinned' => $newStatus]);
+
+        return redirect()->back()->with('success', 'Status pin beranda berhasil diperbarui.');
+    }
+
     private function validateRequest(Request $request, $id = null)
     {
         return $request->validate([
@@ -93,6 +120,7 @@ class AdminProgramController extends Controller
             'logo' => 'nullable|image|max:2048',
             'banner' => 'nullable|image|max:2048',
             'selected_admin_id' => 'required|exists:users,id',
+            'is_pinned' => 'nullable|in:0,1',
         ]);
     }
 }

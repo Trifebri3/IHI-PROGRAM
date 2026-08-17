@@ -12,6 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
 ->withMiddleware(function (Middleware $middleware) {
+    $middleware->web(append: [
+        \App\Http\Middleware\CheckBlockedUser::class,
+    ]);
+
     $middleware->alias([
         'profile.completed' => \App\Http\Middleware\EnsureProfileCompleted::class,
         'program.biodata.completed' => \App\Http\Middleware\EnsureProgramBiodataFilled::class, // <-- PASANG INI

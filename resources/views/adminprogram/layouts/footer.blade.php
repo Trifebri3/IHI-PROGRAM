@@ -47,12 +47,7 @@
             <span class="text-[11px] tracking-wide">Program</span>
         </a>
 
-        <a href="{{ route('admin.verifications.index') }}" class="inline-flex flex-col items-center justify-center px-5 group {{ request()->routeIs('admin.verifications.*') ? 'text-emerald-600' : 'text-slate-500 hover:text-emerald-600' }}">
-            <svg class="w-5 h-5 mb-1 transition-transform group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <span class="text-[11px] tracking-wide">Verifikasi</span>
-        </a>
+
 
         <a href="{{ route('profile.edit') }}" class="inline-flex flex-col items-center justify-center px-5 group {{ request()->routeIs('profile.edit') ? 'text-emerald-600' : 'text-slate-500 hover:text-emerald-600' }}">
             <svg class="w-5 h-5 mb-1 transition-transform group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">

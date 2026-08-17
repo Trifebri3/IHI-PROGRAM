@@ -20,6 +20,8 @@ class FormBuilderController extends Controller
             'name' => 'required|string|max:255',
             'type' => 'required|string|in:text,number,date,file,select',
             'is_required' => 'nullable',
+            'description' => 'nullable|string',
+            'example' => 'nullable|string',
             'options' => 'nullable|string'
         ]);
 
@@ -27,6 +29,8 @@ class FormBuilderController extends Controller
             'name' => $validated['name'],
             'type' => $validated['type'],
             'is_required' => $request->has('is_required'),
+            'description' => $validated['description'] ?? null,
+            'example' => $validated['example'] ?? null,
             'options' => $validated['type'] === 'select'
                 ? array_map('trim', explode(',', $validated['options']))
                 : null,

@@ -22,6 +22,7 @@ class Program extends Model
         'end_date',
         'status',
         'is_open', // Ditambahkan agar kolom baru bisa di-update lewat Eloquent Laravel
+        'is_pinned',
         'score_schema',
         'total_hours',
         'program_certificate_template',
@@ -32,7 +33,8 @@ class Program extends Model
         'score_schema' => 'array',
         'start_date' => 'date',
         'end_date' => 'date',
-        'is_open' => 'boolean' // Ditambahkan agar otomatis dikonversi jadi true/false di Laravel
+        'is_open' => 'boolean', // Ditambahkan agar otomatis dikonversi jadi true/false di Laravel
+        'is_pinned' => 'boolean'
     ];
 
     // Otomatis buat slug saat nama program diisi

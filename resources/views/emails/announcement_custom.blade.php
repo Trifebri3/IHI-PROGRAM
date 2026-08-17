@@ -13,7 +13,7 @@
                     <tr>
                         <td style="background-gradient: to right; background-color: #065f46; padding: 30px 40px; text-align: left;">
                             <span style="font-size: 10px; font-weight: bold; color: #34d399; letter-spacing: 2px; text-transform: uppercase;">Official Broadcast Notification</span>
-                            <h1 style="font-size: 20px; font-weight: 800; color: #ffffff; margin: 10px 0 0 0; tracking: -0.5px;">{{ $announcement->program->name }}</h1>
+                            <h1 style="font-size: 20px; font-weight: 800; color: #ffffff; margin: 10px 0 0 0; tracking: -0.5px;">{{ $announcement->program->name ?? 'Pusat Institut Hijau Indonesia' }}</h1>
                         </td>
                     </tr>
 
@@ -26,15 +26,15 @@
                                 <tr>
                                     <td style="padding: 20px;">
                                         <h3 style="font-size: 15px; font-weight: bold; color: #0f172a; margin: 0 0 10px 0;">📢 {{ $announcement->title }}</h3>
-                                        <div style="font-size: 13px; color: #334155; line-height: 1.6; whitespace: pre-wrap;">
-                                            {!! nl2br(e($announcement->content)) !!}
+                                        <div style="font-size: 13px; color: #334155; line-height: 1.6;">
+                                            {!! $announcement->content !!}
                                         </div>
                                     </td>
                                 </tr>
                             </table>
 
                             <p style="text-align: center; margin: 30px 0 0 0;">
-                                <a href="{{ route('programs.internal.dashboard', $announcement->program_id) }}" style="background-color: #059669; color: #ffffff; padding: 12px 30px; font-size: 12px; font-weight: bold; text-decoration: none; border-radius: 10px; display: inline-block; box-shadow: 0 4px 6px rgba(5,150,105,0.15); text-transform: uppercase; letter-spacing: 1px;">
+                                <a href="{{ $announcement->program_id ? route('programs.internal.dashboard', $announcement->program_id) : route('dashboard') }}" style="background-color: #059669; color: #ffffff; padding: 12px 30px; font-size: 12px; font-weight: bold; text-decoration: none; border-radius: 10px; display: inline-block; box-shadow: 0 4px 6px rgba(5,150,105,0.15); text-transform: uppercase; letter-spacing: 1px;">
                                     Buka Portal & Konfirmasi Baca &rarr;
                                 </a>
                             </p>

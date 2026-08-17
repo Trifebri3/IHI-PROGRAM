@@ -22,15 +22,23 @@ class UserVerificationController extends Controller
         $user = Auth::user();
         $existing = $user->verification;
 
-        // Validasi Dinamis:
-        // Jika belum diverifikasi, input file WAJIB. Jika sudah ada (update), file OPSIONAL.
         $rules = [
             'nik' => 'required|numeric|digits:16',
             'ktp' => ($existing && $existing->ktp_path) ? 'nullable|image|max:2048' : 'required|image|max:2048',
             'photo' => ($existing && $existing->photo_path) ? 'nullable|image|max:2048' : 'required|image|max:2048',
         ];
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate($rules, [
+            'nik.required' => 'NIK wajib diisi.',
+            'nik.numeric' => 'NIK harus berupa angka.',
+            'nik.digits' => 'NIK harus berupa 16 digit angka.',
+            'ktp.required' => 'File Salinan KTP wajib diunggah.',
+            'ktp.image' => 'File Salinan KTP harus berupa gambar (jpg, png).',
+            'ktp.max' => 'Ukuran file Salinan KTP maksimal 2MB.',
+            'photo.required' => 'File Pas Foto wajib diunggah.',
+            'photo.image' => 'File Pas Foto harus berupa gambar (jpg, png).',
+            'photo.max' => 'Ukuran file Pas Foto maksimal 2MB.',
+        ]);
 
         $data = [
             'nik' => $validated['nik'],

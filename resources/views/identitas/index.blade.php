@@ -74,11 +74,67 @@
         <!-- Bagian 3: Biodata Dinamis -->
         <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
             <h2 class="text-sm font-black text-slate-800 mb-6 uppercase tracking-wider">Informasi Tambahan</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 @foreach($biodataFields as $field)
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase">{{ $field->name }}</label>
-                        <input type="text" name="biodata[{{ $field->id }}]" value="{{ $field->user_value }}" class="w-full p-2 border rounded-xl text-sm">
+                    <div class="space-y-1">
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                            {{ $field->name }}
+                            @if($field->is_required)
+                                <span class="text-rose-500 font-extrabold">*</span>
+                            @endif
+                        </label>
+
+                        @if($field->description)
+                            <span class="block text-[10px] text-slate-400 font-semibold mb-1.5">{{ $field->description }}</span>
+                        @endif
+
+                        {{-- Render text, number, date inputs --}}
+                        @if(in_array($field->type, ['text', 'number', 'date']))
+                            <input type="{{ $field->type }}"
+                                   name="biodata[{{ $field->id }}]"
+                                   value="{{ old('biodata.'.$field->id, $field->user_value) }}"
+                                   placeholder="{{ $field->example ? 'Contoh: ' . $field->example : '' }}"
+                                   class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50/30 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none"
+                                   {{ $field->is_required && !$field->user_value ? 'required' : '' }}>
+
+                        {{-- Render dropdown --}}
+                        @elseif($field->type === 'select')
+                            <select name="biodata[{{ $field->id }}]"
+                                    class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50/30 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none font-semibold text-slate-700"
+                                    {{ $field->is_required && !$field->user_value ? 'required' : '' }}>
+                                <option value="">-- Pilih --</option>
+                                @if($field->options)
+                                    @foreach($field->options as $opt)
+                                        <option value="{{ trim($opt) }}" {{ old('biodata.'.$field->id, $field->user_value) == trim($opt) ? 'selected' : '' }}>
+                                            {{ trim($opt) }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+
+                        {{-- Render file upload --}}
+                        @elseif($field->type === 'file')
+                            <div class="space-y-1.5">
+                                <input type="file"
+                                       name="biodata[{{ $field->id }}]"
+                                       class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50/30 focus:bg-white outline-none"
+                                       {{ $field->is_required && !$field->user_value ? 'required' : '' }}>
+                                @if($field->user_value)
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 flex items-center gap-1">
+                                            📄 File Sudah Ada
+                                        </span>
+                                        <a href="{{ asset('storage/' . $field->user_value) }}" target="_blank" class="text-[10px] font-bold text-slate-600 hover:text-slate-900 underline">
+                                            Unduh / Lihat File &rarr;
+                                        </a>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+                        
+                        @error('biodata.'.$field->id)
+                            <span class="text-[10px] text-rose-500 font-bold block mt-1">{{ $message }}</span>
+                        @enderror
                     </div>
                 @endforeach
             </div>

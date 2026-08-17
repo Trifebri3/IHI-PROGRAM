@@ -34,11 +34,48 @@ class ProgramWorkspaceController extends Controller
             : null;
 
         // 2. SOLUSI PERFORMA: Gunakan paginate alih-alih me-load ribuan user sekaligus ke memori
-        // Menggunakan Eager Loading (with) untuk menghindari N+1 query problem pada relasi 'user' dan 'currentStage'
-        $applicants = Registration::with(['user', 'currentStage'])
-            ->where('program_id', $program->id)
-            ->latest()
-            ->paginate(10); // Menampilkan 10 data per halaman (bisa diubah sesuai preferensi)
+        $tab = $request->query('tab', 'pending');
+
+        $query = Registration::with(['user.profile', 'user.address', 'currentStage', 'stageData'])
+            ->where('program_id', $program->id);
+
+        if ($tab === 'reviewed') {
+            $query->whereIn('status', ['passed', 'failed']);
+        } else {
+            $query->where('status', 'process');
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+
+        if ($request->filled('province')) {
+            $province = $request->province;
+            $query->whereHas('user.address', function ($q) use ($province) {
+                $q->where('provinsi', $province);
+            });
+        }
+
+        $applicants = $query->latest()->paginate(10)->withQueryString();
+
+        $provinces = \DB::table('addresses')
+            ->join('users', 'addresses.user_id', '=', 'users.id')
+            ->join('registrations', 'users.id', '=', 'registrations.user_id')
+            ->where('registrations.program_id', $program->id)
+            ->whereNotNull('addresses.provinsi')
+            ->distinct()
+            ->pluck('addresses.provinsi');
 
         $allApplicants = Registration::with('user')
             ->where('program_id', $program->id)
@@ -89,6 +126,68 @@ class ProgramWorkspaceController extends Controller
             $checkingData = json_decode(file_get_contents($checkingFile), true) ?? [];
         }
 
+        // --- UPGRADE MONITORING & REKAPAN DASHBOARD DATA ---
+        // 1. Total Pendaftar
+        $totalPendaftar = $allApplicants->count();
+
+        // 2. Sudah Diperiksa vs Belum Diperiksa
+        $checkedCount = 0;
+        $uncheckedCount = 0;
+        foreach ($allApplicants as $app) {
+            $meta = $checkingData[$app->id] ?? null;
+            if ($meta && !empty($meta['is_checked'])) {
+                $checkedCount++;
+            } else {
+                $uncheckedCount++;
+            }
+        }
+
+        // 3. Status Seleksi
+        $passedCount = $allApplicants->where('status', 'passed')->count();
+        $failedCount = $allApplicants->where('status', 'failed')->count();
+        $processCount = $allApplicants->where('status', 'process')->count();
+
+        // 4. Rekapan Alumni
+        $alumniProgram = \App\Models\AlumniProgram::where('program_id', $program->id)->first();
+        $alumniCount = 0;
+        if ($alumniProgram) {
+            $alumniCount = \App\Models\UserAlumni::where('alumni_program_id', $alumniProgram->id)->count();
+        }
+
+        // 5. Rekapan Piagam/Sertifikat
+        $certificateCount = 0;
+        if ($alumniProgram) {
+            $certificateCount = \App\Models\AlumniCertificate::where('alumni_program_id', $alumniProgram->id)->count();
+        }
+
+        // 6. Rekapan Pengumuman
+        $announcementIds = $announcements->pluck('id');
+        $announcementViewsCount = \App\Models\ProgramAnnouncementView::whereIn('program_announcement_id', $announcementIds)->count();
+
+        // 7. Pengisian Form per Tahap
+        $stageFormRecaps = [];
+        foreach ($stages as $stg) {
+            $submissionsCount = RegistrationStageData::where('program_stage_id', $stg->id)
+                ->whereNotNull('form_values')
+                ->count();
+            $stageFormRecaps[] = [
+                'name' => $stg->name,
+                'sequence' => $stg->sequence,
+                'count' => $submissionsCount
+            ];
+        }
+
+        // 8. Rekapan Aktivitas / Audit Log
+        $registeredUserIds = $allApplicants->pluck('user_id')->toArray();
+        $recentLogs = \App\Models\AuditLog::with(['user', 'targetUser'])
+            ->where(function($q) use ($registeredUserIds) {
+                $q->whereIn('user_id', $registeredUserIds)
+                  ->orWhereIn('target_user_id', $registeredUserIds);
+            })
+            ->latest()
+            ->take(30)
+            ->get();
+
         return view('adminprogram.program.workspace', compact(
             'program',
             'stages',
@@ -102,7 +201,19 @@ class ProgramWorkspaceController extends Controller
             'viewStage',
             'stageSubmissions',
             'viewSubmission',
-            'checkingData'
+            'checkingData',
+            'totalPendaftar',
+            'checkedCount',
+            'uncheckedCount',
+            'passedCount',
+            'failedCount',
+            'processCount',
+            'alumniCount',
+            'certificateCount',
+            'announcementViewsCount',
+            'stageFormRecaps',
+            'recentLogs',
+            'provinces'
         ));
     }
 
@@ -111,7 +222,8 @@ class ProgramWorkspaceController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date'
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'instruction' => 'nullable|string'
         ]);
 
         $nextSequence = ProgramStage::where('program_id', $id)->count() + 1;
@@ -125,6 +237,7 @@ class ProgramWorkspaceController extends Controller
             'form_schema' => [], // Array kosong aman untuk JSON cast
             'pass_announcement' => $request->pass_announcement,
             'fail_announcement' => $request->fail_announcement,
+            'instruction' => $request->instruction,
         ]);
 
         return redirect()->route('adminprogram.programs.workspace', $id)
@@ -136,7 +249,8 @@ class ProgramWorkspaceController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date'
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'instruction' => 'nullable|string'
         ]);
 
         $stage = ProgramStage::where('program_id', $id)->findOrFail($stageId);
@@ -146,6 +260,7 @@ class ProgramWorkspaceController extends Controller
             'end_date' => $request->end_date,
             'pass_announcement' => $request->pass_announcement,
             'fail_announcement' => $request->fail_announcement,
+            'instruction' => $request->instruction,
         ]);
 
         return redirect()->route('adminprogram.programs.workspace', $id)
@@ -171,7 +286,7 @@ class ProgramWorkspaceController extends Controller
     {
         $request->validate([
             'new_field_name' => 'required|string|max:100',
-            'new_field_type' => 'required|string|in:text,textarea,file,image,dropdown,datetime,options,checkbox',
+            'new_field_type' => 'required|string|in:text,textarea,file,image,dropdown,datetime,options,checkbox,url',
             'new_field_instruction' => 'nullable|string|max:500',
             'new_field_placeholder' => 'nullable|string|max:255',
             'new_field_options' => 'nullable|string|max:1000'
@@ -201,7 +316,7 @@ class ProgramWorkspaceController extends Controller
         $stage->form_schema = $formItems;
         $stage->save();
 
-        return redirect()->route('adminprogram.programs.workspace', [$id, 'manage_stage_id' => $stageId])
+        return redirect()->to(route('adminprogram.programs.workspace', [$id, 'manage_stage_id' => $stageId]) . '#form-builder-workspace')
             ->with('success', 'Komponen kuesioner baru berhasil dipasang!');
     }
 
@@ -218,8 +333,87 @@ class ProgramWorkspaceController extends Controller
         $stage->form_schema = array_values($formItems);
         $stage->save();
 
-        return redirect()->route('adminprogram.programs.workspace', [$id, 'manage_stage_id' => $stageId])
+        return redirect()->to(route('adminprogram.programs.workspace', [$id, 'manage_stage_id' => $stageId]) . '#form-builder-workspace')
             ->with('success', 'Atribut formulir berhasil dicabut.');
+    }
+
+    public function updateFormField(Request $request, $id, $stageId, $index)
+    {
+        $request->validate([
+            'field_name' => 'required|string|max:100',
+            'field_type' => 'required|string|in:text,textarea,file,image,dropdown,datetime,options,checkbox,url',
+            'field_instruction' => 'nullable|string|max:500',
+            'field_placeholder' => 'nullable|string|max:255',
+            'field_options' => 'nullable|string|max:1000'
+        ]);
+
+        $stage = ProgramStage::where('program_id', $id)->findOrFail($stageId);
+        $formItems = $stage->form_schema ?? [];
+
+        if (!isset($formItems[$index])) {
+            return redirect()->back()->with('error', 'Bidang kuesioner tidak ditemukan.');
+        }
+
+        $optionsArray = [];
+        if ($request->filled('field_options')) {
+            $optionsArray = array_map('trim', explode(',', $request->field_options));
+            $optionsArray = array_filter($optionsArray);
+        }
+
+        $formItems[$index] = [
+            'name' => trim($request->field_name),
+            'type' => $request->field_type,
+            'required' => $request->has('field_required'),
+            'instruction' => trim($request->field_instruction),
+            'placeholder' => trim($request->field_placeholder),
+            'options' => array_values($optionsArray)
+        ];
+
+        $stage->form_schema = $formItems;
+        $stage->save();
+
+        return redirect()->to(route('adminprogram.programs.workspace', [$id, 'manage_stage_id' => $stageId]) . '#form-builder-workspace')
+            ->with('success', 'Komponen kuesioner berhasil diperbarui!');
+    }
+
+    public function moveFormFieldUp($id, $stageId, $index)
+    {
+        $stage = ProgramStage::where('program_id', $id)->findOrFail($stageId);
+        $formItems = $stage->form_schema ?? [];
+
+        if (isset($formItems[$index]) && isset($formItems[$index - 1])) {
+            $temp = $formItems[$index];
+            $formItems[$index] = $formItems[$index - 1];
+            $formItems[$index - 1] = $temp;
+
+            $stage->form_schema = array_values($formItems);
+            $stage->save();
+
+            return redirect()->to(route('adminprogram.programs.workspace', [$id, 'manage_stage_id' => $stageId]) . '#form-builder-workspace')
+                ->with('success', 'Posisi komponen berhasil dipindahkan ke atas!');
+        }
+
+        return redirect()->back()->with('error', 'Gagal memindahkan posisi komponen.');
+    }
+
+    public function moveFormFieldDown($id, $stageId, $index)
+    {
+        $stage = ProgramStage::where('program_id', $id)->findOrFail($stageId);
+        $formItems = $stage->form_schema ?? [];
+
+        if (isset($formItems[$index]) && isset($formItems[$index + 1])) {
+            $temp = $formItems[$index];
+            $formItems[$index] = $formItems[$index + 1];
+            $formItems[$index + 1] = $temp;
+
+            $stage->form_schema = array_values($formItems);
+            $stage->save();
+
+            return redirect()->to(route('adminprogram.programs.workspace', [$id, 'manage_stage_id' => $stageId]) . '#form-builder-workspace')
+                ->with('success', 'Posisi komponen berhasil dipindahkan ke bawah!');
+        }
+
+        return redirect()->back()->with('error', 'Gagal memindahkan posisi komponen.');
     }
 
 
@@ -229,23 +423,35 @@ class ProgramWorkspaceController extends Controller
     $program = auth()->user()->managedPrograms()->findOrFail($id);
 
     // 2. Ambil data pendaftaran peserta beserta relasi user dan tahapan saat ini
-    $registration = Registration::with(['user', 'currentStage'])->where('program_id', $id)->findOrFail($registrationId);
+    $registration = Registration::with([
+        'user.profile',
+        'user.address',
+        'user.verification',
+        'user.biodataValues.biodataField',
+        'currentStage'
+    ])->where('program_id', $id)->findOrFail($registrationId);
 
     // 3. Taruh data pengisian formulir spesifik khusus di tahap aktif tersebut
     $stageData = RegistrationStageData::where('registration_id', $registrationId)
         ->where('program_stage_id', $registration->current_stage_id)
         ->firstOrFail();
 
-    return view('adminprogram.program.applicant_detail', compact('program', 'registration', 'stageData'));
+    // 4. Load data isian wajib program (jika ada)
+    $biodataSubmission = \App\Models\ProgramBiodataSubmission::where('user_id', $registration->user_id)
+        ->where('program_id', $id)
+        ->first();
+
+    return view('adminprogram.program.applicant_detail', compact('program', 'registration', 'stageData', 'biodataSubmission'));
 }
 
 public function evaluateApplicant(Request $request, $id, $registrationId)
 {
     $request->validate([
-        'action' => 'required|in:pass,fail',
+        'action' => 'required|in:pass,fail,revision',
         'reviewer_notes' => 'nullable|string|max:500',
         'generation_mode' => 'nullable|in:auto,manual',
-        'manual_id_input' => 'nullable|string|max:50|unique:registrations,final_id_number'
+        'manual_id_input' => 'nullable|string|max:50|unique:registrations,final_id_number',
+        'revision_fields' => 'nullable|array'
     ]);
 
     // Menggunakan DB Transaction agar eksekusi SQL concurrent-safe (anti tabrakan data)
@@ -254,19 +460,48 @@ public function evaluateApplicant(Request $request, $id, $registrationId)
         $currentStageId = $reg->current_stage_id;
         $currentStage = \App\Models\ProgramStage::findOrFail($currentStageId);
 
-        // 1. Update data internal stage data aktif saat ini
-        $statusStage = ($request->action === 'pass') ? 'passed' : 'failed';
-        RegistrationStageData::where('registration_id', $reg->id)
-            ->where('program_stage_id', $currentStageId)
-            ->update([
-                'status' => $statusStage,
-                'reviewer_notes' => $request->reviewer_notes
-            ]);
+        if ($request->action === 'revision') {
+            $stageData = RegistrationStageData::where('registration_id', $reg->id)
+                ->where('program_stage_id', $currentStageId)
+                ->first();
 
-        // 2. Jika Dinyatakan Gagal
-        if ($request->action === 'fail') {
-            $reg->update(['status' => 'failed']);
+            if ($stageData) {
+                $formValues = $stageData->form_values ?? [];
+                $requestedFields = $request->input('revision_fields', []);
+                $fieldNotes = $request->input('revision_notes', []);
+
+                foreach ($formValues as &$val) {
+                    if (in_array($val['field_name'], $requestedFields)) {
+                        $val['needs_revision'] = true;
+                        $val['revision_note'] = $fieldNotes[$val['field_name']] ?? '';
+                    } else {
+                        $val['needs_revision'] = false;
+                        $val['revision_note'] = '';
+                    }
+                }
+
+                $stageData->update([
+                    'status' => 'revision',
+                    'form_values' => $formValues,
+                    'reviewer_notes' => $request->reviewer_notes
+                ]);
+            }
+
+            $reg->update(['status' => 'process']);
         } else {
+            // Update data internal stage data aktif saat ini
+            $statusStage = ($request->action === 'pass') ? 'passed' : 'failed';
+            RegistrationStageData::where('registration_id', $reg->id)
+                ->where('program_stage_id', $currentStageId)
+                ->update([
+                    'status' => $statusStage,
+                    'reviewer_notes' => $request->reviewer_notes
+                ]);
+
+            // Jika Dinyatakan Gagal
+            if ($request->action === 'fail') {
+                $reg->update(['status' => 'failed']);
+            } else {
             // 3. Jika Lolos, periksa apakah ada tahapan urutan (sequence) berikutnya?
             $nextStage = \App\Models\ProgramStage::where('program_id', $id)
                 ->where('sequence', $currentStage->sequence + 1)
@@ -300,7 +535,8 @@ public function evaluateApplicant(Request $request, $id, $registrationId)
                 $reg->save();
             }
         }
-    });
+    }
+});
 
     return redirect()->route('adminprogram.programs.workspace', $id)
         ->with('success', 'Keputusan evaluasi berkas kelulusan berhasil diterbitkan!');
@@ -772,6 +1008,46 @@ public function saveApplicantScores(Request $request, $id, $registrationId)
         
         return redirect()->route('adminprogram.programs.workspace', [$id, 'active_panel' => 'recap'])
             ->with('success', 'Seluruh pendaftar program beserta semua file jawaban berkasnya telah berhasil dihapus permanen dari database!');
+    }
+
+    public function resetSpecificApplicant(Request $request, $id)
+    {
+        $request->validate([
+            'registration_id' => 'required|integer|exists:registrations,id'
+        ]);
+
+        $program = Program::findOrFail($id);
+        $reg = Registration::where('program_id', $id)->findOrFail($request->registration_id);
+        
+        // 1. Cari seluruh data jawaban kuesioner dinamis peserta di setiap tahap
+        $stageSubmissions = RegistrationStageData::where('registration_id', $reg->id)->get();
+        
+        foreach ($stageSubmissions as $sub) {
+            // Hapus berkas fisik yang pernah diunggah
+            if (!empty($sub->form_values)) {
+                foreach ($sub->form_values as $val) {
+                    if (($val['type'] === 'file' || $val['type'] === 'image') && !empty($val['value'])) {
+                        \Illuminate\Support\Facades\Storage::disk('public')->delete($val['value']);
+                    }
+                }
+            }
+            $sub->delete();
+        }
+        
+        // 2. Hapus berkas/file data biodata wajib gatekeeper jika ada
+        if (!empty($reg->biodata_values)) {
+            foreach ($reg->biodata_values as $val) {
+                if (is_string($val) && (str_starts_with($val, 'gatekeeper_docs/') || str_starts_with($val, 'program_submissions/'))) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($val);
+                }
+            }
+        }
+        
+        // 3. Hapus data pendaftaran utama
+        $reg->delete();
+        
+        return redirect()->route('adminprogram.programs.workspace', [$id, 'active_panel' => 'recap'])
+            ->with('success', 'Data pendaftaran peserta tersebut beserta seluruh berkas file jawabannya telah berhasil dihapus secara permanen!');
     }
 
     public function updateCheckingMetadata(Request $request, $id)

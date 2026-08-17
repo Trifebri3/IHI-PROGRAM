@@ -39,16 +39,28 @@
                         </div>
                     @endif
                     
-                    <span class="absolute bottom-0 right-0 bg-emerald-600 text-white p-1 rounded-full border-2 border-white shadow-xs">
-                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                        </svg>
-                    </span>
+                    @if($p->user->isVerifiedAccount())
+                        <span class="absolute bottom-0 right-0 bg-blue-600 text-white p-1 rounded-full border-2 border-white shadow-xs" title="Akun Terverifikasi">
+                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </span>
+                    @endif
                 </div>
                 
                 <div class="space-y-1 w-full">
-                    <h4 class="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors line-clamp-1 uppercase tracking-tight px-1">
-                        {{ $p->user->name }}
+                    <h4 class="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors line-clamp-1 uppercase tracking-tight px-1 flex items-center justify-center gap-1">
+                        <span>{{ $p->user->name }}</span>
+                        @if($p->user->isVerifiedAccount())
+                            <button type="button" 
+                                    onclick="showVerificationNotification('{{ addslashes($p->user->name) }}', '{{ $p->final_id_number ?? 'ID-PENDING' }}')"
+                                    class="text-blue-500 hover:text-blue-600 focus:outline-none transition-all transform hover:scale-115 active:scale-95 cursor-pointer flex items-center shrink-0" 
+                                    title="Klik untuk detail verifikasi">
+                                <svg class="w-4 h-4 text-blue-500 fill-current" viewBox="0 0 24 24">
+                                    <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.99-3.818-3.99-.48 0-.936.09-1.354.254C14.775 2.5 13.51 1.5 12 1.5s-2.775 1-3.418 2.264a4.135 4.135 0 00-1.354-.254C5.128 3.51 3.418 5.29 3.418 7.5c0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.71 3.99 3.818 3.99.48 0 .936-.09 1.354-.254.643 1.264 1.908 2.264 3.418 2.264s2.775-1 3.418-2.264c.418.164.874.254 1.354.254 2.108 0 3.818-1.78 3.818-3.99 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.5 4l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z" />
+                                </svg>
+                            </button>
+                        @endif
                     </h4>
                     <p class="text-[10px] text-slate-400 font-mono tracking-wider bg-slate-50 py-0.5 px-2 rounded-sm inline-block">
                         {{ $p->final_id_number ?? 'ID-PENDING' }}
@@ -130,6 +142,37 @@
     </div>
 </div>
 
+<!-- Modal Detail Verifikasi Akun (Centang Biru) -->
+<div id="verification-detail-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-300">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-in fade-in zoom-in duration-200 border border-slate-100 text-center space-y-4">
+        
+        <!-- Premium Checked Icon -->
+        <div class="relative w-20 h-20 mx-auto flex items-center justify-center">
+            <!-- Pulsing blue glow -->
+            <div class="absolute inset-0 bg-blue-500/20 rounded-full animate-ping"></div>
+            <!-- Rosette SVG -->
+            <svg class="w-16 h-16 text-blue-500 fill-current relative z-10 filter drop-shadow-md" viewBox="0 0 24 24">
+                <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.99-3.818-3.99-.48 0-.936.09-1.354.254C14.775 2.5 13.51 1.5 12 1.5s-2.775 1-3.418 2.264a4.135 4.135 0 00-1.354-.254C5.128 3.51 3.418 5.29 3.418 7.5c0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.71 3.99 3.818 3.99.48 0 .936-.09 1.354-.254.643 1.264 1.908 2.264 3.418 2.264s2.775-1 3.418-2.264c.418.164.874.254 1.354.254 2.108 0 3.818-1.78 3.818-3.99 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.5 4l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z" />
+            </svg>
+        </div>
+
+        <div class="space-y-1">
+            <h3 class="text-base font-black text-slate-800 uppercase tracking-tight">Akun Terverifikasi Resmi</h3>
+            <span class="inline-block px-2.5 py-0.5 text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100 rounded-full uppercase tracking-wider">KYC Verified</span>
+        </div>
+
+        <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs text-slate-600 leading-relaxed font-normal">
+            <p>
+                Akun milik peserta <strong id="verified-modal-name" class="text-slate-800 font-extrabold">Nama</strong> dengan ID Induk <strong id="verified-modal-id" class="text-emerald-700 font-mono">ID</strong> telah melewati validasi identitas resmi secara absah oleh penilai Institut Hijau Indonesia.
+            </p>
+        </div>
+
+        <button onclick="closeVerificationModal()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm">
+            Selesai
+        </button>
+    </div>
+</div>
+
 <script>
     function openMotivation(element) {
         const name = element.getAttribute('data-name');
@@ -151,11 +194,30 @@
         modal.classList.remove('flex');
     }
 
+    function showVerificationNotification(name, id) {
+        document.getElementById('verified-modal-name').innerText = name;
+        document.getElementById('verified-modal-id').innerText = id;
+        
+        const modal = document.getElementById('verification-detail-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeVerificationModal() {
+        const modal = document.getElementById('verification-detail-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
     // Close modal if user clicks outside of the modal dialog
     window.addEventListener('click', function(event) {
-        const modal = document.getElementById('public-motivation-modal');
-        if (event.target === modal) {
+        const motivationModal = document.getElementById('public-motivation-modal');
+        const verificationModal = document.getElementById('verification-detail-modal');
+        if (event.target === motivationModal) {
             closeMotivationModal();
+        }
+        if (event.target === verificationModal) {
+            closeVerificationModal();
         }
     });
 </script>

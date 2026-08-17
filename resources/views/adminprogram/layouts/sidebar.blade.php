@@ -37,9 +37,9 @@
                 </li>
 
                 <li>
-                    <a href="#"
-                       class="flex items-center px-3.5 py-2.5 text-sm font-semibold rounded-xl transition-all group {{ request()->routeIs('adminprogram.programs.workspace') ? 'bg-gradient-to-r from-emerald-50 to-emerald-100/30 text-emerald-900 border-l-4 border-emerald-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-800' }}">
-                        <svg class="w-5 h-5 mr-3 transition-colors {{ request()->routeIs('adminprogram.programs.workspace') ? 'text-emerald-700' : 'text-slate-400 group-hover:text-emerald-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{{ route('adminprogram.workspace_monitor') }}"
+                       class="flex items-center px-3.5 py-2.5 text-sm font-semibold rounded-xl transition-all group {{ request()->routeIs('adminprogram.workspace_monitor') ? 'bg-gradient-to-r from-emerald-50 to-emerald-100/30 text-emerald-900 border-l-4 border-emerald-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-800' }}">
+                        <svg class="w-5 h-5 mr-3 transition-colors {{ request()->routeIs('adminprogram.workspace_monitor') ? 'text-emerald-700' : 'text-slate-400 group-hover:text-emerald-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2m3.25-7a3 3 0 11-6 0 3 3 0 016 0zm9.75 7v-2a4 4 0 00-3-3.87m-1.12-1.13a3 3 0 116 0M12 11a4 4 0 100-8 4 4 0 000 8z"/>
                         </svg>
                         <span>Workspace Monitor</span>
@@ -50,16 +50,25 @@
 
         <div>
             <span class="px-3 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-2.5">
-                Validasi Peserta
+                Database Program
             </span>
             <ul class="space-y-1">
                 <li>
-                    <a href="{{ route('admin.verifications.index') }}"
-                       class="flex items-center px-3.5 py-2.5 text-sm font-semibold rounded-xl transition-all group {{ request()->routeIs('admin.verifications.index') ? 'bg-gradient-to-r from-emerald-50 to-emerald-100/30 text-emerald-900 border-l-4 border-emerald-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-800' }}">
-                        <svg class="w-5 h-5 mr-3 transition-colors {{ request()->routeIs('admin.verifications.index') ? 'text-emerald-700' : 'text-slate-400 group-hover:text-emerald-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{{ route('adminprogram.participants.index') }}"
+                       class="flex items-center px-3.5 py-2.5 text-sm font-semibold rounded-xl transition-all group {{ request()->routeIs('adminprogram.participants.*') ? 'bg-gradient-to-r from-emerald-50 to-emerald-100/30 text-emerald-900 border-l-4 border-emerald-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-800' }}">
+                        <svg class="w-5 h-5 mr-3 transition-colors {{ request()->routeIs('adminprogram.participants.*') ? 'text-emerald-700' : 'text-slate-400 group-hover:text-emerald-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>Database Peserta</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('adminprogram.certificates.index') }}"
+                       class="flex items-center px-3.5 py-2.5 text-sm font-semibold rounded-xl transition-all group {{ request()->routeIs('adminprogram.certificates.*') ? 'bg-gradient-to-r from-emerald-50 to-emerald-100/30 text-emerald-900 border-l-4 border-emerald-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-800' }}">
+                        <svg class="w-5 h-5 mr-3 transition-colors {{ request()->routeIs('adminprogram.certificates.*') ? 'text-emerald-700' : 'text-slate-400 group-hover:text-emerald-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        <span>Verifikasi Berkas Masuk</span>
+                        <span>Sertifikat &amp; Piagam</span>
                     </a>
                 </li>
             </ul>

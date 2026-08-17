@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 class AnnouncementController extends Controller
 {
     public function index() {
-        $announcements = Announcement::latest()->paginate(10);
+        $announcements = Announcement::with('views.user')->latest()->paginate(10);
         return view('superadmin.announcements.index', compact('announcements'));
     }
 
@@ -32,5 +32,31 @@ class AnnouncementController extends Controller
         $announcement = Announcement::findOrFail($id);
         $announcement->update(['is_active' => !$announcement->is_active]);
         return back()->with('success', 'Status diubah!');
+    }
+
+    public function destroy($id) {
+        $announcement = Announcement::findOrFail($id);
+        if ($announcement->banner_path) {
+            Storage::disk('public')->delete($announcement->banner_path);
+        }
+        $announcement->delete();
+        return back()->with('success', 'Banner berhasil dihapus!');
+    }
+
+    public function trackView($id) {
+        $announcement = Announcement::findOrFail($id);
+        $userId = auth()->id();
+
+        if ($userId) {
+            $view = \App\Models\AnnouncementView::firstOrNew([
+                'announcement_id' => $announcement->id,
+                'user_id' => $userId,
+            ]);
+            $view->views_count = $view->exists ? ($view->views_count + 1) : 1;
+            $view->last_viewed_at = now();
+            $view->save();
+        }
+
+        return response()->json(['success' => true]);
     }
 }

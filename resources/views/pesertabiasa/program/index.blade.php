@@ -81,7 +81,15 @@
                                 @elseif($reg->status === 'failed')
                                     <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-rose-600 text-white uppercase">Gugur</span>
                                 @else
-                                    <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-amber-500 text-white uppercase">Active Seleksi</span>
+                                    @php
+                                        $activeStageLog = $reg->stageData->where('program_stage_id', $reg->current_stage_id)->first();
+                                        $isRevision = $activeStageLog && $activeStageLog->status === 'revision';
+                                    @endphp
+                                    @if($isRevision)
+                                        <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-amber-500 text-white uppercase animate-pulse">Butuh Revisi</span>
+                                    @else
+                                        <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-amber-550 text-white uppercase">Active Seleksi</span>
+                                    @endif
                                 @endif
                             @else
                                 <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">Buka</span>
@@ -113,7 +121,9 @@
 
                                         <div class="flex items-center flex-1 last:flex-none">
                                             <div class="flex flex-col items-center relative">
-                                                <div class="w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-3xs {{ $circleColor }}" title="{{ $stage->name }}">
+                                                <div class="w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-3xs {{ $circleColor }} {{ $log ? 'cursor-pointer hover:scale-110 transition' : '' }}" 
+                                                     title="{{ $stage->name }} {{ $log ? '(Klik untuk lihat jawaban)' : '' }}"
+                                                     @if($log) onclick="openAnswersModal('{{ $program->id }}', '{{ $stage->id }}', '{{ $stage->name }}', {{ json_encode($log->form_values) }})" @endif>
                                                     {{ $stage->sequence }}
                                                 </div>
                                                 <span class="text-[8px] text-slate-500 font-medium truncate max-w-[60px] mt-1 block">{{ $stage->name }}</span>
@@ -157,11 +167,20 @@
                                         $hasSubmittedActiveStage = ($activeStageLog && !empty($activeStageLog->form_values));
                                     @endphp
 
-                                    @if($hasSubmittedActiveStage)
-                                        <button type="button" class="w-full py-2 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold rounded-xl cursor-not-allowed tracking-wider uppercase font-mono" disabled>
-                                            ⏳ MENUNGGU REVIEW: {{ $reg->currentStage->name }}
-                                        </button>
-                                    @else
+                                     @if($hasSubmittedActiveStage)
+                                         @if($activeStageLog->status === 'revision')
+                                             <a href="{{ route('program.apply', $program->id) }}"
+                                                class="w-full py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 text-xs font-bold rounded-xl tracking-wider uppercase font-mono transition flex items-center justify-center gap-1.5 shadow-3xs cursor-pointer animate-pulse">
+                                                 ⚠️ REVISI DIBUTUHKAN: {{ $reg->currentStage->name }} <span class="text-[9px] text-amber-600 font-extrabold">(PERBAIKI JAWABAN)</span>
+                                             </a>
+                                         @else
+                                             <button type="button" 
+                                                     onclick="openAnswersModal('{{ $program->id }}', '{{ $reg->current_stage_id }}', '{{ $reg->currentStage->name }}', {{ json_encode($activeStageLog->form_values) }})"
+                                                     class="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold rounded-xl tracking-wider uppercase font-mono transition flex items-center justify-center gap-1.5 shadow-3xs cursor-pointer">
+                                                 ⏳ MENUNGGU REVIEW: {{ $reg->currentStage->name }} <span class="text-[9px] text-amber-500 font-extrabold">(Lihat Jawaban)</span>
+                                             </button>
+                                         @endif
+                                     @else
                                         <a href="{{ route('program.apply', $program->id) }}"
                                            class="block w-full py-2.5 text-center bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold rounded-xl shadow-md shadow-amber-100 transition-all text-xs uppercase tracking-wider animate-pulse">
                                             📝 ISI FORMULIR: {{ $reg->currentStage->name }} &rarr;
@@ -194,4 +213,104 @@
     </div>
 
 </div>
+
+<!-- Modal Jawaban Terkirim -->
+<div id="answers-modal" class="fixed inset-0 bg-slate-950/40 hidden items-center justify-center z-50 backdrop-blur-xs p-4 animate-fade-in">
+    <div class="bg-white w-full max-w-lg p-6 rounded-3xl shadow-2xl transition-all border border-slate-100 flex flex-col max-h-[90vh] sm:max-h-[85vh]">
+        <!-- Modal Header -->
+        <div class="border-b border-slate-100 pb-3 mb-4 flex justify-between items-center">
+            <div>
+                <h3 class="text-base font-black text-slate-800 tracking-tight" id="modal-stage-title">Berkas Terkirim</h3>
+                <p class="text-[10px] text-slate-400 mt-0.5">Daftar dokumen dan formulir jawaban yang telah Anda kumpulkan pada tahapan ini.</p>
+            </div>
+            <button onclick="closeAnswersModal()" class="text-slate-400 hover:text-slate-650 text-xl font-bold p-1">&times;</button>
+        </div>
+
+        <!-- Modal Body (Scrollable) -->
+        <div class="overflow-y-auto pr-1 space-y-4 max-h-[55vh] custom-scrollbar" id="modal-answers-content">
+            <!-- Dynamic Content Injected Here -->
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2 text-xs font-bold mt-4">
+            <button type="button" onclick="closeAnswersModal()" class="px-5 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl transition-colors shadow-sm">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openAnswersModal(programId, stageId, stageName, formValues) {
+        document.getElementById('modal-stage-title').innerText = "Berkas Tahapan: " + stageName;
+        
+        const contentDiv = document.getElementById('modal-answers-content');
+        contentDiv.innerHTML = ''; // clear
+
+        if (!formValues || formValues.length === 0) {
+            contentDiv.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-8">Tidak ada berkas kustom pada tahapan ini.</p>`;
+        } else {
+            const listGrid = document.createElement('div');
+            listGrid.className = 'space-y-3.5';
+
+            formValues.forEach(item => {
+                const itemWrapper = document.createElement('div');
+                itemWrapper.className = 'p-3 bg-slate-50 border border-slate-100 rounded-2xl';
+
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'block text-[10px] font-extrabold uppercase text-slate-400 mb-1';
+                labelSpan.innerText = item.field_name || item.label || 'Input';
+
+                const valDiv = document.createElement('div');
+                valDiv.className = 'text-xs font-semibold text-slate-850 leading-relaxed';
+
+                if (item.type === 'file' || item.type === 'image') {
+                    if (item.value) {
+                        valDiv.innerHTML = `
+                            <a href="/storage/${item.value}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 text-emerald-700 font-bold rounded-lg transition text-[10px] uppercase tracking-wider">
+                                📄 Lihat Dokumen Terunggah
+                            </a>
+                        `;
+                    } else {
+                        valDiv.innerHTML = `<span class="text-rose-500 italic font-bold">Tidak diunggah</span>`;
+                    }
+                } else {
+                    valDiv.innerText = item.value || '—';
+                }
+
+                itemWrapper.appendChild(labelSpan);
+                itemWrapper.appendChild(valDiv);
+                listGrid.appendChild(itemWrapper);
+            });
+
+            contentDiv.appendChild(listGrid);
+        }
+
+        const modal = document.getElementById('answers-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeAnswersModal() {
+        const modal = document.getElementById('answers-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+</script>
+<style>
+    /* Styling scrollbar kustom agar elegan */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+</style>
 @endsection

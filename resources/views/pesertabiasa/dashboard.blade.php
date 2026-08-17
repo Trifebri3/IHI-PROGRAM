@@ -31,9 +31,9 @@
                     <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Program Kerja Intern</h3>
                 </div>
                 @forelse($myPrograms as $reg)
-                    <div class="group bg-white p-4 rounded-2xl border border-slate-100 shadow-3xs flex items-center justify-between gap-4 hover:border-emerald-500/30 transition-all">
+                    <div class="group bg-white p-4 rounded-2xl border border-slate-100 shadow-3xs flex items-center justify-between gap-4 {{ $reg->status !== 'passed' ? 'bg-slate-50/55 opacity-65' : 'hover:border-emerald-500/30' }} transition-all">
                         <div class="flex items-center gap-4 min-w-0">
-                            <div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-50 border border-slate-100">
+                            <div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-50 border border-slate-100 {{ $reg->status !== 'passed' ? 'grayscale' : '' }}">
                                 @if($reg->program->banner_path)
                                     <img src="{{ asset('storage/' . $reg->program->banner_path) }}" class="w-full h-full object-cover">
                                 @else
@@ -43,16 +43,25 @@
                             <div class="min-w-0">
                                 <h4 class="text-sm font-bold text-slate-800 truncate">{{ $reg->program->name }}</h4>
                                 <div class="mt-1.5">
-                                    <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wide
-                                        {{ $reg->status == 'passed' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' }}">
-                                        {{ $reg->status == 'passed' ? 'Lulus Seleksi' : 'Proses Seleksi' }}
-                                    </span>
+                                    @if($reg->status === 'passed')
+                                        <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wide bg-emerald-50 text-emerald-700">Lulus Seleksi</span>
+                                    @elseif($reg->status === 'failed')
+                                        <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wide bg-rose-50 text-rose-700">Langkah Terhenti / Gugur</span>
+                                    @else
+                                        <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wide bg-amber-50 text-amber-700">Proses Seleksi</span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
-                        <a href="{{ route('programs.internal.dashboard', $reg->program_id) }}" class="p-2 rounded-xl bg-slate-50 text-slate-400 hover:bg-emerald-600 hover:text-white transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                        </a>
+                        @if($reg->status === 'passed')
+                            <a href="{{ route('programs.internal.dashboard', $reg->program_id) }}" class="p-2 rounded-xl bg-slate-50 text-slate-400 hover:bg-emerald-600 hover:text-white transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        @else
+                            <button type="button" class="p-2 rounded-xl bg-slate-100 text-slate-300 cursor-not-allowed border" title="Akses Dashboard Terkunci" disabled>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            </button>
+                        @endif
                     </div>
                 @empty
                     <div class="p-8 text-center text-slate-400 bg-slate-50/50 rounded-2xl border border-dashed text-xs italic">Tidak ada program.</div>

@@ -54,7 +54,71 @@ class DashboardController extends Controller
 
         // 2. Cek jika dia Admin Program
         if ($user->hasRole('Admin Program')) {
-            return view('adminprogram.dashboard');
+            $managedProgramIds = $user->managedPrograms()->pluck('programs.id')->toArray();
+
+            // METRICS CALCULATIONS
+            $totalPeserta = \App\Models\Registration::whereIn('program_id', $managedProgramIds)->count();
+
+            $pesertaSelesai = \App\Models\Registration::whereIn('program_id', $managedProgramIds)
+                ->where('status', '!=', 'process')
+                ->count();
+
+            $lulusCount = \App\Models\Registration::whereIn('program_id', $managedProgramIds)
+                ->where('status', 'passed')
+                ->count();
+
+            $alumniAktif = \App\Models\UserAlumni::whereHas('alumniProgram', function($q) use ($managedProgramIds) {
+                $q->whereIn('program_id', $managedProgramIds);
+            })->where('verification_status', 'approved')->count();
+
+            // Menunggu Aktivasi (Lulus, ada NIP, data KYC lengkap, alamat lengkap, tapi belum terdaftar di user_alumni)
+            $menungguAktivasi = \App\Models\Registration::whereIn('program_id', $managedProgramIds)
+                ->where('status', 'passed')
+                ->whereNotNull('final_id_number')
+                ->where('final_id_number', '!=', '')
+                ->whereHas('user.address')
+                ->whereHas('user.verification', function($q) {
+                    $q->where('status', 'verified');
+                })
+                ->whereDoesntHave('user.alumniPrograms', function($q) use ($managedProgramIds) {
+                    $q->whereIn('program_id', $managedProgramIds);
+                })
+                ->count();
+
+            // Sertifikat Belum Terbit (Passed but no certificate record)
+            $sertifikatBelumTerbit = \App\Models\Registration::whereIn('program_id', $managedProgramIds)
+                ->where('status', 'passed')
+                ->whereDoesntHave('user.alumniCertificates', function($q) use ($managedProgramIds) {
+                    $q->whereHas('alumniProgram', function($qp) use ($managedProgramIds) {
+                        $qp->whereIn('program_id', $managedProgramIds);
+                    });
+                })
+                ->count();
+
+            // Pengajuan Verifikasi mandiri alumni
+            $pengajuanVerifikasi = \App\Models\AlumniVerificationRequest::whereHas('alumniProgram', function($q) use ($managedProgramIds) {
+                $q->whereIn('program_id', $managedProgramIds);
+            })->where('status', 'pending')->count();
+
+            // Data Peserta Belum Lengkap (Missing address, kyc verification, or photo path)
+            $dataBelumLengkap = \App\Models\Registration::whereIn('program_id', $managedProgramIds)
+                ->where(function($q) {
+                    $q->whereDoesntHave('user.address')
+                      ->orWhereDoesntHave('user.verification')
+                      ->orWhereDoesntHave('user.profile');
+                })
+                ->count();
+
+            return view('adminprogram.dashboard', compact(
+                'totalPeserta',
+                'pesertaSelesai',
+                'lulusCount',
+                'alumniAktif',
+                'menungguAktivasi',
+                'sertifikatBelumTerbit',
+                'pengajuanVerifikasi',
+                'dataBelumLengkap'
+            ));
         }
 
         // 3. Cek jika dia Reviewer (opsional, jika Anda ingin view khusus reviewer nanti)

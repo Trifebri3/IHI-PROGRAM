@@ -21,6 +21,55 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-semibold shadow-3xs">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <!-- Search and Filter Bar -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-3xs mb-6">
+        <form method="GET" action="{{ route('superadmin.users.index') }}" class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
+                <!-- Search input -->
+                <div>
+                    <label class="block text-[9px] font-extrabold uppercase text-slate-450 mb-1.5">Cari Pengguna</label>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau email..." class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50/50 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                </div>
+
+                <!-- Role dropdown -->
+                <div>
+                    <label class="block text-[9px] font-extrabold uppercase text-slate-450 mb-1.5">Filter Role</label>
+                    <select name="role" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50/50 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none text-slate-700 font-semibold">
+                        <option value="">Semua Role</option>
+                        @foreach($roles as $r)
+                            <option value="{{ $r->name }}" {{ request('role') == $r->name ? 'selected' : '' }}>{{ strtoupper($r->name) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Status dropdown -->
+                <div>
+                    <label class="block text-[9px] font-extrabold uppercase text-slate-450 mb-1.5">Status Akun</label>
+                    <select name="status" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50/50 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none text-slate-700 font-semibold">
+                        <option value="">Semua Status</option>
+                        <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Aktif</option>
+                        <option value="blocked" {{ request('status') === 'blocked' ? 'selected' : '' }}>Diblokir</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex gap-2 w-full md:w-auto shrink-0 md:pt-5">
+                <button type="submit" class="flex-grow md:flex-grow-0 px-5 py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl transition shadow-sm uppercase tracking-wider">
+                    Saring
+                </button>
+                <a href="{{ route('superadmin.users.index') }}" class="flex-grow md:flex-grow-0 px-5 py-2.5 bg-slate-100 hover:bg-slate-250 text-slate-700 text-xs font-bold rounded-xl transition text-center uppercase tracking-wider border">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
     <div class="bg-white rounded-2xl border border-slate-100 shadow-3xs overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
@@ -37,7 +86,8 @@
                         </th>
                         <th class="p-4">Alamat Email</th>
                         <th class="p-4 w-44">Hak Akses Role</th>
-                        <th class="p-4 w-28 text-center">Aksi</th>
+                        <th class="p-4 w-32 text-center">Status Akun</th>
+                        <th class="p-4 w-48 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-700 text-xs">
@@ -59,6 +109,17 @@
                             @endif
                         </td>
                         <td class="p-4 text-center">
+                            @if($user->is_blocked)
+                                <span class="bg-rose-50 text-rose-700 border border-rose-100 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider">
+                                    🔴 Diblokir
+                                </span>
+                            @else
+                                <span class="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider">
+                                    🟢 Aktif
+                                </span>
+                            @endif
+                        </td>
+                        <td class="p-4 text-center">
                             @php
                                 // Ambil nama role pertama sebagai string aman untuk dilempar ke Javascript modal
                                 $firstRoleName = $user->roles->first()->name ?? '';
@@ -75,13 +136,28 @@
                                        onclick="return confirm('Mulai impersonasi sebagai {{ $user->name }}?')">
                                         Impersonate
                                     </a>
+                                    
+                                    <form action="{{ route('superadmin.users.toggle-block', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin {{ $user->is_blocked ? 'mengaktifkan kembali' : 'memblokir' }} akses akun {{ $user->name }}?')">
+                                        @csrf
+                                        <button type="submit" class="{{ $user->is_blocked ? 'text-emerald-600 hover:text-emerald-800' : 'text-rose-600 hover:text-rose-800' }} font-extrabold tracking-wider uppercase text-[10px]">
+                                            {{ $user->is_blocked ? 'Unblock' : 'Block' }}
+                                        </button>
+                                    </form>
+
+                                    <form action="{{ route('superadmin.users.delete', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun {{ $user->name }} secara permanen? Seluruh data profil, alamat, dan pendaftaran peserta juga akan terhapus.')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-rose-650 hover:text-rose-800 font-extrabold tracking-wider uppercase text-[10px]">
+                                            Delete
+                                        </button>
+                                    </form>
                                 @endif
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="p-8 text-center text-slate-400 italic bg-slate-50/30">Tidak ada data pengguna yang ditemukan.</td>
+                        <td colspan="5" class="p-8 text-center text-slate-400 italic bg-slate-50/30">Tidak ada data pengguna yang ditemukan.</td>
                     </tr>
                     @endforelse
                 </tbody>

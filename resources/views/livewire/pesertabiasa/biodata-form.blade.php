@@ -80,11 +80,16 @@ new class extends Component {
                         {{ $field->name }}
                         @if($field->is_required) <span class="text-red-500">*</span> @endif
                     </label>
+                    
+                    @if($field->description)
+                        <span class="block text-xs text-gray-400 mt-0.5 mb-1.5">{{ $field->description }}</span>
+                    @endif
 
                     {{-- Render Input Text / Number / Date --}}
                     @if(in_array($field->type, ['text', 'number', 'date']))
                         <input type="{{ $field->type }}"
                                wire:model="formData.{{ $field->id }}"
+                               placeholder="{{ $field->example ? 'Contoh: ' . $field->example : '' }}"
                                class="w-full p-2 mt-1 border rounded @error('formData.'.$field->id) border-red-500 @enderror">
 
                     {{-- Render Input Select --}}
@@ -108,7 +113,10 @@ new class extends Component {
 
                         {{-- Tampilkan info jika file sudah pernah diupload sebelumnya --}}
                         @if(is_string($formData[$field->id]) && !empty($formData[$field->id]))
-                            <p class="mt-1 text-xs text-green-600">File sudah tersimpan.</p>
+                            <div class="mt-1 flex items-center gap-2">
+                                <span class="text-xs text-green-600 font-bold">✓ File sudah tersimpan.</span>
+                                <a href="{{ asset('storage/' . $formData[$field->id]) }}" target="_blank" class="text-xs text-blue-600 hover:underline">Lihat File &rarr;</a>
+                            </div>
                         @endif
                     @endif
 

@@ -42,20 +42,42 @@
     @endphp
 
     @if($activeIklan)
-        <div id="iklan-modal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div id="iklan-modal" style="display: none;" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div class="bg-white rounded-3xl p-6 w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-300">
                 @if($activeIklan->banner_path)
                     <img src="{{ asset('storage/'.$activeIklan->banner_path) }}" class="rounded-2xl w-full mb-4 shadow-sm object-cover">
                 @endif
                 <h2 class="text-xl font-black text-slate-800">{{ $activeIklan->title }}</h2>
-                <p class="text-sm text-slate-600 mt-2">{{ $activeIklan->description }}</p>
+                <div class="text-sm text-slate-650 mt-2 leading-relaxed">{!! $activeIklan->description !!}</div>
 
-                <button onclick="document.getElementById('iklan-modal').remove()"
+                <button onclick="closeIklanModal('{{ $activeIklan->id }}')"
                         class="mt-6 w-full py-3 bg-slate-950 text-white font-black uppercase tracking-wider text-xs rounded-xl hover:bg-black transition-all">
                     Mengerti & Tutup
                 </button>
             </div>
         </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const iklanId = '{{ $activeIklan->id }}';
+                if (localStorage.getItem('iklan_closed_' + iklanId) !== 'true') {
+                    document.getElementById('iklan-modal').style.display = 'flex';
+                    
+                    // Track view analytics
+                    fetch("{{ route('iklan.track-view', $activeIklan->id) }}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        }
+                    }).catch(err => console.log('Analytics tracking error:', err));
+                }
+            });
+
+            function closeIklanModal(iklanId) {
+                localStorage.setItem('iklan_closed_' + iklanId, 'true');
+                document.getElementById('iklan-modal').remove();
+            }
+        </script>
     @endif
 
     @livewireScripts

@@ -30,6 +30,7 @@
                         <th class="p-4">Program</th>
                         <th class="p-4">Admin Pelaksana (PJ)</th>
                         <th class="p-4 w-28 text-center">Status</th>
+                        <th class="p-4 w-28 text-center">Pin Beranda</th>
                         <th class="p-4 w-32 text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -59,6 +60,14 @@
                             <span class="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wide {{ $program->status == 'published' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/50' : 'bg-slate-100 text-slate-600' }}">
                                 {{ $program->status }}
                             </span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <form action="{{ route('superadmin.programs.pin', $program->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="px-2.5 py-1 rounded-xl text-[9px] font-extrabold transition-all border {{ $program->is_pinned ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-50 text-slate-450 border-slate-200 hover:bg-slate-100 hover:text-slate-700' }}">
+                                    {{ $program->is_pinned ? '📌 PINNED' : '📌 PIN' }}
+                                </button>
+                            </form>
                         </td>
                         <td class="p-4">
                             <div class="flex items-center justify-center gap-3">
@@ -132,19 +141,36 @@
                 <div class="space-y-1.5">
                     <label class="block text-xs font-bold uppercase text-slate-500 tracking-wide">Icon / Logo Berkas</label>
                     <input type="file" name="logo" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-all cursor-pointer">
+                    <p class="text-[9px] text-slate-400 mt-1 flex items-center gap-1 bg-slate-50 p-2 rounded-lg border border-slate-100/50">
+                        <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span><strong>Panduan Logo:</strong> Rasio 1:1 persegi (contoh: <strong>200 x 200 piksel</strong>). JPEG/PNG maks 1MB.</span>
+                    </p>
                 </div>
                 <div class="space-y-1.5">
                     <label class="block text-xs font-bold uppercase text-slate-500 tracking-wide">Banner Halaman</label>
                     <input type="file" name="banner" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-all cursor-pointer">
+                    <p class="text-[9px] text-slate-400 mt-1 flex items-center gap-1 bg-slate-50 p-2 rounded-lg border border-slate-100/50">
+                        <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span><strong>Panduan Banner:</strong> Rasio lebar 3:1 (contoh: <strong>1200 x 400 piksel</strong>). JPEG/PNG maks 3MB.</span>
+                    </p>
                 </div>
             </div>
 
-            <div class="space-y-1.5">
-                <label class="block text-xs font-bold uppercase text-slate-500 tracking-wide">Status Awal Publikasi</label>
-                <select name="status" class="w-full p-3 border border-slate-200 rounded-xl text-xs bg-slate-50/50 focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none">
-                    <option value="draft">Draft (Sembunyikan dari Publik)</option>
-                    <option value="published">Published (Tampilkan di Katalog Pemohon)</option>
-                </select>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold uppercase text-slate-500 tracking-wide">Status Awal Publikasi</label>
+                    <select name="status" class="w-full p-3 border border-slate-200 rounded-xl text-xs bg-slate-50/50 focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none">
+                        <option value="draft">Draft (Sembunyikan dari Publik)</option>
+                        <option value="published">Published (Tampilkan di Katalog Pemohon)</option>
+                    </select>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold uppercase text-slate-500 tracking-wide">Pin Ke Beranda Utama</label>
+                    <select name="is_pinned" class="w-full p-3 border border-slate-200 rounded-xl text-xs bg-slate-50/50 focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none">
+                        <option value="0">Tidak (Sembunyikan dari Sorotan Utama)</option>
+                        <option value="1">Ya (Pin sebagai Sorotan Utama Beranda)</option>
+                    </select>
+                </div>
             </div>
 
             <div class="pt-4 border-t border-slate-100">
@@ -202,12 +228,40 @@
                 </div>
             </div>
 
-            <div class="space-y-1.5">
-                <label class="block text-xs font-bold uppercase text-slate-500 tracking-wide">Status Sinkronisasi</label>
-                <select name="status" id="edit_status" class="w-full p-3 border border-slate-200 rounded-xl text-xs bg-slate-50/50 focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none">
-                    <option value="draft">Draft</option>
-                    <option value="published">Published</option>
-                </select>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold uppercase text-slate-500 tracking-wide">Status Sinkronisasi</label>
+                    <select name="status" id="edit_status" class="w-full p-3 border border-slate-200 rounded-xl text-xs bg-slate-50/50 focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none">
+                        <option value="draft">Draft</option>
+                        <option value="published">Published</option>
+                    </select>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold uppercase text-slate-500 tracking-wide">Pin Ke Beranda Utama</label>
+                    <select name="is_pinned" id="edit_is_pinned" class="w-full p-3 border border-slate-200 rounded-xl text-xs bg-slate-50/50 focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none">
+                        <option value="0">Tidak</option>
+                        <option value="1">Ya</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold uppercase text-slate-500 tracking-wide">Perbarui Icon / Logo (Opsional)</label>
+                    <input type="file" name="logo" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-all cursor-pointer">
+                    <p class="text-[9px] text-slate-400 mt-1 flex items-center gap-1 bg-slate-50 p-2 rounded-lg border border-slate-100/50">
+                        <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span><strong>Panduan Logo:</strong> Rasio 1:1 persegi (contoh: <strong>200 x 200 piksel</strong>). JPEG/PNG maks 1MB.</span>
+                    </p>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold uppercase text-slate-500 tracking-wide">Perbarui Banner Halaman (Opsional)</label>
+                    <input type="file" name="banner" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-all cursor-pointer">
+                    <p class="text-[9px] text-slate-400 mt-1 flex items-center gap-1 bg-slate-50 p-2 rounded-lg border border-slate-100/50">
+                        <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span><strong>Panduan Banner:</strong> Rasio lebar 3:1 (contoh: <strong>1200 x 400 piksel</strong>). JPEG/PNG maks 3MB.</span>
+                    </p>
+                </div>
             </div>
 
             <div class="pt-4 border-t border-slate-100">
@@ -235,6 +289,7 @@
         document.getElementById('edit_quota').value = p.quota || 0;
         document.getElementById('edit_description').value = p.description || '';
         document.getElementById('edit_status').value = p.status || 'draft';
+        document.getElementById('edit_is_pinned').value = p.is_pinned ? '1' : '0';
 
         // Format tanggal standar database Y-m-d ke input form HTML
         if(p.start_date) {

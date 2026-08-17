@@ -18,6 +18,12 @@ class AlumniModuleTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class]);
+    }
+
     /**
      * Test that changing a registration's status to passed triggers auto-alumni generation.
      */
@@ -53,6 +59,9 @@ class AlumniModuleTest extends TestCase
         // 4. Update status to passed (triggers updated event hook)
         $registration->status = 'passed';
         $registration->save();
+
+        // Manually trigger alumni registration as per new operational workflow
+        resolve(\App\Services\AlumniService::class)->registerAutoAlumni($registration);
 
         // 5. Assert user status is updated to Alumni
         $this->assertEquals('Alumni', $user->fresh()->status);

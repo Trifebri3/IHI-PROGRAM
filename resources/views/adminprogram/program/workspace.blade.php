@@ -3,6 +3,10 @@
 @section('title', 'Workspace Pengelolaan Program')
 
 @section('content')
+<!-- Load Quill editor styling and JS -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+
 <div class="py-6 max-w-7xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
 
     <!-- Top Header Panel -->
@@ -62,7 +66,7 @@
                 <span class="text-sm font-bold text-slate-800">{{ $editingStage ? 'Ubah Atribut Tahapan' : 'Buat Tahapan Baru' }}</span>
             </div>
 
-            <form action="{{ $editingStage ? route('adminprogram.workspace.stage.update', [$program->id, $editingStage->id]) : route('adminprogram.workspace.stage.store', $program->id) }}" method="POST" class="space-y-4">
+            <form id="form-stage" action="{{ $editingStage ? route('adminprogram.workspace.stage.update', [$program->id, $editingStage->id]) : route('adminprogram.workspace.stage.store', $program->id) }}" method="POST" class="space-y-4">
                 @csrf
                 @if($editingStage) @method('PATCH') @endif
 
@@ -84,12 +88,14 @@
 
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 text-emerald-800">Template Pesan Lolos</label>
-                    <textarea name="pass_announcement" placeholder="Tuliskan draf isi pengumuman kelolosan..." class="w-full p-2.5 mt-1 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500" rows="2">{{ old('pass_announcement', $editingStage ? $editingStage->pass_announcement : '') }}</textarea>
+                    <div id="pass-announcement-editor" class="h-32 bg-slate-50/50 rounded-xl text-xs" style="font-size: 11px;">{!! old('pass_announcement', $editingStage ? $editingStage->pass_announcement : '') !!}</div>
+                    <input type="hidden" name="pass_announcement" id="hidden-pass-announcement">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 text-rose-800">Template Pesan Gagal</label>
-                    <textarea name="fail_announcement" placeholder="Tuliskan draf isi penolakan berkas..." class="w-full p-2.5 mt-1 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-rose-500" rows="2">{{ old('fail_announcement', $editingStage ? $editingStage->fail_announcement : '') }}</textarea>
+                    <div id="fail-announcement-editor" class="h-32 bg-slate-50/50 rounded-xl text-xs" style="font-size: 11px;">{!! old('fail_announcement', $editingStage ? $editingStage->fail_announcement : '') !!}</div>
+                    <input type="hidden" name="fail_announcement" id="hidden-fail-announcement">
                 </div>
 
                 <div class="flex space-x-2 pt-1">
@@ -153,10 +159,70 @@
 
     <!-- PANEL TENGAH: DAFTAR REVIEW DOKUMEN & KELULUSAN PESERTA (DENGAN PAGINATION) -->
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <div class="flex items-center space-x-2 mb-4 pb-2 border-b">
-            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
-            <h3 class="text-sm font-bold text-slate-800">Daftar Review Dokumen & Kelulusan Peserta</h3>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-2 border-b">
+            <div class="flex items-center space-x-2">
+                <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                <h3 class="text-sm font-bold text-slate-800">Daftar Review Dokumen & Kelulusan Peserta</h3>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="flex bg-slate-100 p-1 rounded-xl w-fit">
+                <a href="{{ request()->fullUrlWithQuery(['tab' => 'pending', 'page' => null]) }}" 
+                   class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all uppercase tracking-wider {{ request('tab', 'pending') === 'pending' ? 'bg-white text-slate-800 shadow-2xs' : 'text-slate-400 hover:text-slate-650' }}">
+                   ⏳ Sedang Proses ({{ $allApplicants->where('status', 'process')->count() }})
+                </a>
+                <a href="{{ request()->fullUrlWithQuery(['tab' => 'reviewed', 'page' => null]) }}" 
+                   class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all uppercase tracking-wider {{ request('tab') === 'reviewed' ? 'bg-white text-slate-800 shadow-2xs' : 'text-slate-400 hover:text-slate-650' }}">
+                   ✅ Sudah Di-Review ({{ $allApplicants->whereIn('status', ['passed', 'failed'])->count() }})
+                </a>
+            </div>
         </div>
+
+        <!-- Filters Form -->
+        <form action="{{ route('adminprogram.programs.workspace', $program->id) }}" method="GET" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-6 items-end bg-slate-50/50 p-4 border rounded-2xl">
+            <input type="hidden" name="tab" value="{{ request('tab', 'pending') }}">
+            @if(request('edit_stage_id')) <input type="hidden" name="edit_stage_id" value="{{ request('edit_stage_id') }}"> @endif
+            @if(request('manage_stage_id')) <input type="hidden" name="manage_stage_id" value="{{ request('manage_stage_id') }}"> @endif
+            @if(request('view_stage_id')) <input type="hidden" name="view_stage_id" value="{{ request('view_stage_id') }}"> @endif
+            @if(request('view_submission_id')) <input type="hidden" name="view_submission_id" value="{{ request('view_submission_id') }}"> @endif
+
+            <div>
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Cari Nama / Email</label>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama peserta..." class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-white shadow-3xs focus:ring-1 focus:ring-emerald-500 text-slate-800">
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Filter Provinsi</label>
+                <select name="province" class="w-full p-2 border border-slate-200 rounded-xl text-xs text-slate-700 bg-white shadow-3xs focus:ring-1 focus:ring-emerald-500 cursor-pointer">
+                    <option value="">Semua Provinsi</option>
+                    @foreach($provinces as $prov)
+                        <option value="{{ $prov }}" {{ request('province') === $prov ? 'selected' : '' }}>{{ $prov }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Mulai Daftar</label>
+                    <input type="date" name="start_date" value="{{ request('start_date') }}" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-white shadow-3xs focus:ring-1 focus:ring-emerald-500 text-slate-850">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Sampai Daftar</label>
+                    <input type="date" name="end_date" value="{{ request('end_date') }}" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-white shadow-3xs focus:ring-1 focus:ring-emerald-500 text-slate-850">
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs transition uppercase tracking-wider h-[34px]">
+                    Filter
+                </button>
+                @if(request()->anyFilled(['search', 'province', 'start_date', 'end_date']))
+                    <a href="{{ route('adminprogram.programs.workspace', array_filter([$program->id, 'tab' => request('tab', 'pending'), 'edit_stage_id' => request('edit_stage_id'), 'manage_stage_id' => request('manage_stage_id'), 'view_stage_id' => request('view_stage_id'), 'view_submission_id' => request('view_submission_id')])) }}" class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl border text-center flex items-center justify-center transition uppercase tracking-wider h-[34px]">
+                        Reset
+                    </a>
+                @endif
+            </div>
+        </form>
 
         <div class="overflow-x-auto rounded-xl border border-slate-100">
             <table class="w-full text-left border-collapse text-sm">
@@ -234,7 +300,31 @@
                 💡 Silakan klik tombol <span class="font-bold text-emerald-700">"🛠️ Kelola Form"</span> pada salah satu susunan rangkaian alur di atas untuk mulai merakit isi kuesioner kustom pendaftaran.
             </div>
         @else
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6" x-data="{
+                editOpen: false, 
+                editIndex: null,
+                editName: '',
+                editType: '',
+                editRequired: false,
+                editInstruction: '',
+                editPlaceholder: '',
+                editOptions: '',
+                openEditModal(index, item) {
+                    this.editIndex = index;
+                    this.editName = item.name;
+                    this.editType = item.type;
+                    this.editRequired = item.required;
+                    this.editInstruction = item.instruction || '';
+                    this.editPlaceholder = item.placeholder || '';
+                    this.editOptions = (item.options || []).join(', ');
+                    this.editOpen = true;
+                    this.toggleEditOptions(item.type);
+                },
+                showEditOptions: false,
+                toggleEditOptions(type) {
+                    this.showEditOptions = ['dropdown', 'options', 'checkbox'].includes(type);
+                }
+            }">
                 <!-- Workspace Form Header -->
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
@@ -254,18 +344,44 @@
                             @foreach($managingStage->form_schema as $index => $item)
                                 <div class="p-3.5 bg-slate-50/80 rounded-xl border border-slate-100 flex flex-col justify-between shadow-3xs">
                                     <div class="flex justify-between items-center w-full">
-                                        <div class="text-xs font-bold text-slate-700 flex items-center">
-                                            <span class="text-emerald-600 mr-2 text-sm">📎</span>
-                                            <span>{{ $item['name'] }}</span>
-                                            <span class="ml-2 text-[8px] font-black bg-white px-1.5 py-0.5 border rounded text-slate-400 uppercase tracking-wider">{{ $item['type'] }}</span>
-                                            @if($item['required']) <span class="text-rose-500 ml-1.5 font-bold">* Wajib</span> @endif
+                                        <div class="text-xs font-bold text-slate-700 flex items-center min-w-0">
+                                            <span class="bg-emerald-50 text-emerald-700 text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center mr-2 flex-shrink-0 border border-emerald-200 shadow-3xs">
+                                                {{ $index + 1 }}
+                                            </span>
+                                            <span class="truncate">{{ $item['name'] }}</span>
+                                            <span class="ml-2 text-[8px] font-black bg-white px-1.5 py-0.5 border rounded text-slate-400 uppercase tracking-wider flex-shrink-0">{{ $item['type'] }}</span>
+                                            @if($item['required']) <span class="text-rose-500 ml-1.5 font-bold flex-shrink-0">* Wajib</span> @endif
                                         </div>
 
-                                        <form action="{{ route('adminprogram.workspace.field.delete', [$program->id, $managingStage->id, $index]) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-slate-300 hover:text-rose-600 font-bold text-xs p-1 transition-colors">✕</button>
-                                        </form>
+                                        <div class="flex items-center gap-1 shrink-0 ml-4">
+                                            <!-- Move Up (Disabled if first) -->
+                                            @if($index > 0)
+                                                <form action="{{ route('adminprogram.workspace.field.move_up', [$program->id, $managingStage->id, $index]) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit" class="text-slate-400 hover:text-slate-800 text-xs p-1 font-bold transition-colors" title="Pindahkan Ke Atas">▲</button>
+                                                </form>
+                                            @endif
+
+                                            <!-- Move Down (Disabled if last) -->
+                                            @if($index < count($managingStage->form_schema) - 1)
+                                                <form action="{{ route('adminprogram.workspace.field.move_down', [$program->id, $managingStage->id, $index]) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit" class="text-slate-400 hover:text-slate-800 text-xs p-1 font-bold transition-colors" title="Pindahkan Ke Bawah">▼</button>
+                                                </form>
+                                            @endif
+
+                                            <!-- Edit Button -->
+                                            <button type="button" @click="openEditModal({{ $index }}, {{ json_encode($item) }})" class="text-slate-450 hover:text-emerald-600 font-bold text-xs p-1 transition-colors" title="Ubah Bidang">
+                                                ✏️
+                                            </button>
+
+                                            <!-- Delete Button -->
+                                            <form action="{{ route('adminprogram.workspace.field.delete', [$program->id, $managingStage->id, $index]) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin mencabut atribut formulir ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-slate-350 hover:text-rose-600 font-bold text-xs p-1 transition-colors">✕</button>
+                                            </form>
+                                        </div>
                                     </div>
                                     @if(!empty($item['instruction']) || !empty($item['placeholder']) || !empty($item['options']))
                                         <div class="mt-2 text-[10px] text-slate-400 border-t border-dashed border-slate-200/60 pt-1.5 space-y-0.5">
@@ -284,6 +400,84 @@
                             @endforeach
                         </div>
                     @endif
+                </div>
+
+                <!-- Modal Edit Field Kustom -->
+                <div x-show="editOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs overflow-y-auto z-50 flex justify-center items-start p-4" style="display: none;">
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-2xl w-full max-w-xl my-8 overflow-hidden animate-in fade-in zoom-in-95 duration-200" @click.away="editOpen = false">
+                        <!-- Header -->
+                        <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                            <div>
+                                <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded uppercase font-mono">Edit Field Component</span>
+                                <h3 class="text-sm font-bold text-slate-800 mt-1">Ubah Kolom Kuesioner</h3>
+                            </div>
+                            <button type="button" @click="editOpen = false" class="text-slate-450 hover:text-slate-650 text-xs font-bold bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition">✕ Tutup</button>
+                        </div>
+
+                        <!-- Form -->
+                        <form :action="'{{ route('adminprogram.workspace.field.update', [$program->id, $managingStage->id, ':index']) }}'.replace(':index', editIndex)" method="POST" class="p-6 space-y-4">
+                            @csrf
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">Nama Bidang / Pertanyaan</label>
+                                    <input type="text" name="field_name" x-model="editName" class="w-full p-2.5 border border-slate-200 bg-white rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 shadow-3xs" required>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">Tipe Input / Jawaban</label>
+                                    <select name="field_type" x-model="editType" @change="toggleEditOptions($event.target.value)" class="w-full p-2.5 border border-slate-200 bg-white rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 text-slate-700 shadow-3xs">
+                                        <option value="text">Teks Pendek (Short Text)</option>
+                                        <option value="textarea">Teks Panjang (Paragraph)</option>
+                                        <option value="file">Upload Berkas (PDF/Dokumen)</option>
+                                        <option value="image">Upload Gambar (PNG/JPG dengan Preview &amp; Kompresi)</option>
+                                        <option value="dropdown">Pilihan Dropdown</option>
+                                        <option value="datetime">Tanggal &amp; Waktu (Datetime)</option>
+                                        <option value="options">Pilihan Ganda / Radio Button</option>
+                                        <option value="checkbox">Pilihan Kotak Centang (Pilih Lebih Dari 1)</option>
+                                        <option value="url">Tautan / Link URL (Validasi Link Otomatis)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">Deskripsi / Petunjuk Pengisian</label>
+                                    <input type="text" name="field_instruction" x-model="editInstruction" placeholder="Cth: Maksimal file 3MB PDF" class="w-full p-2.5 border border-slate-200 bg-white rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 shadow-3xs text-slate-800">
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">Contoh Jawaban / Placeholder</label>
+                                    <input type="text" name="field_placeholder" x-model="editPlaceholder" placeholder="Cth: Masukkan alamat lengkap" class="w-full p-2.5 border border-slate-200 bg-white rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 shadow-3xs text-slate-800">
+                                </div>
+                            </div>
+
+                            <!-- Options (Shown only for dropdown, options, checkbox) -->
+                            <div x-show="showEditOptions" x-transition class="bg-amber-50/20 border border-amber-100 p-4 rounded-xl space-y-1">
+                                <label class="block text-[11px] font-bold text-slate-700 mb-1">Daftar Pilihan Opsi (Pisahkan dengan koma)</label>
+                                <input type="text" name="field_options" x-model="editOptions" placeholder="Cth: Pria, Wanita, Lainnya" class="w-full p-2.5 border border-slate-200 bg-white rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 shadow-3xs text-slate-800">
+                                <span class="text-[9px] text-slate-400 block pt-1">Gunakan tanda koma (,) untuk memisahkan pilihan opsi masukan kuesioner.</span>
+                            </div>
+
+                            <!-- Wajib Diisi -->
+                            <div class="flex items-center">
+                                <label class="flex items-center text-xs font-bold text-slate-700 cursor-pointer select-none">
+                                    <input type="checkbox" name="field_required" value="1" x-model="editRequired" class="rounded text-emerald-600 focus:ring-emerald-500 border-slate-200 mr-2 w-4 h-4 shadow-3xs"> 
+                                    Tandai sebagai Bidang Wajib Diisi (Required Field)
+                                </label>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="pt-4 border-t flex justify-end gap-2.5">
+                                <button type="button" @click="editOpen = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl shadow-xs transition">
+                                    Batal
+                                </button>
+                                <button type="submit" class="px-5 py-2 bg-gradient-to-r from-emerald-600 to-green-700 text-white font-extrabold text-xs rounded-xl shadow-xs hover:from-emerald-700 transition uppercase tracking-wider">
+                                    Simpan Perubahan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
                 <!-- Form Pembuat/Pemasang Field Baru (Google Form Builder Style) -->
@@ -308,6 +502,7 @@
                                 <option value="datetime">Tanggal &amp; Waktu (Datetime)</option>
                                 <option value="options">Pilihan Ganda / Radio Button</option>
                                 <option value="checkbox">Pilihan Kotak Centang (Pilih Lebih Dari 1)</option>
+                                <option value="url">Tautan / Link URL (Validasi Link Otomatis)</option>
                             </select>
                         </div>
 
@@ -547,7 +742,8 @@
                     </div>
                     <div>
                         <label class="text-[11px] font-bold text-slate-500 uppercase">Isi Pesan Siaran</label>
-                        <textarea name="content" placeholder="Tuliskan petunjuk operasional di sini secara jelas..." class="w-full p-2 border rounded-xl text-xs bg-white" rows="3" required></textarea>
+                        <div id="broadcast-content-editor" class="h-32 bg-slate-50/50 rounded-xl text-xs bg-white" style="font-size: 11px;"></div>
+                        <input type="hidden" name="content" id="hidden-broadcast-content">
                     </div>
                     <div class="flex justify-end">
                         <button type="submit" class="px-5 py-2 bg-slate-800 hover:bg-black text-white font-bold text-xs rounded-xl transition shadow-sm uppercase tracking-wider">
@@ -702,23 +898,53 @@
             </div>
 
             <!-- Danger Zone: Reset Pendaftar Program -->
-            <div class="md:col-span-2 mt-4 p-5 bg-rose-50/40 rounded-2xl border border-rose-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-3xs">
-                <div class="space-y-1">
-                    <div class="flex items-center space-x-2 text-rose-800 font-bold text-xs">
-                        <span>🚨</span>
-                        <span>DANGER ZONE: RESET DATA PENDAFTAR</span>
-                    </div>
-                    <p class="text-[11px] text-slate-500 leading-relaxed max-w-2xl">
-                        Aksi ini akan **menghapus secara permanen seluruh peserta terdaftar** pada program ini, termasuk seluruh isian formulir biodata wajib gatekeeper, semua berkas jawaban kuesioner dinamis di setiap tahap, serta berkas fisik/file yang diunggah. Program akan kembali kosong seperti baru dibuat.
-                    </p>
+            <div class="md:col-span-2 mt-4 p-6 bg-rose-50/40 rounded-2xl border border-rose-100 space-y-4 shadow-3xs">
+                <div class="flex items-center space-x-2 text-rose-800 font-black text-xs uppercase tracking-wider pb-2 border-b border-rose-100">
+                    <span>🚨</span>
+                    <span>DANGER ZONE: PEMBERSIHAN DATA PENDAFTAR</span>
                 </div>
                 
-                <form action="{{ route('adminprogram.workspace.reset_all_applicants', $program->id) }}" method="POST" onsubmit="return confirm('PERINGATAN KERAS! Apakah Anda yakin ingin menghapus SELURUH pendaftar program ini? Semua data pendaftaran, biodata wajib, berkas jawaban, kelulusan, dan file fisik lampiran akan dihilangkan secara permanen dari server dan tidak dapat dikembalikan.');">
-                    @csrf
-                    <button type="submit" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all uppercase tracking-wider whitespace-nowrap">
-                        🔥 Reset Semua Pendaftar
-                    </button>
-                </form>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+                    <!-- Sisi Kiri: Reset Peserta Tertentu -->
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="text-xs font-bold text-slate-800">1. Reset Akun / Peserta Pilihan</h5>
+                            <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed">Pilih salah satu peserta untuk menghapus pendaftarannya beserta jawaban kuesioner dan file unggahannya.</p>
+                        </div>
+                        
+                        <form action="{{ route('adminprogram.workspace.reset_applicant', $program->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data peserta terpilih beserta seluruh berkas jawabannya secara permanen?');" class="flex items-end gap-2">
+                            @csrf
+                            <div class="flex-1">
+                                <select name="registration_id" class="w-full p-2 border border-rose-200 rounded-xl text-xs bg-white text-slate-700 focus:ring-rose-500 focus:border-rose-500 shadow-3xs cursor-pointer" required>
+                                    <option value="">-- Pilih Peserta --</option>
+                                    @foreach($allApplicants as $app)
+                                        @if($app->user)
+                                            <option value="{{ $app->id }}">{{ $app->user->name }} ({{ $app->user->email }})</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all uppercase tracking-wider whitespace-nowrap">
+                                🗑️ Hapus Peserta
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Sisi Kanan: Reset Semua Pendaftar -->
+                    <div class="space-y-3 border-t lg:border-t-0 lg:border-l border-rose-100 pt-4 lg:pt-0 lg:pl-6 flex flex-col justify-between">
+                        <div>
+                            <h5 class="text-xs font-bold text-slate-800">2. Reset Seluruh Pendaftar Program</h5>
+                            <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed">Menghapus secara permanen seluruh peserta terdaftar, isian berkas kuesioner dinamis, serta berkas lampiran yang diunggah.</p>
+                        </div>
+                        
+                        <form action="{{ route('adminprogram.workspace.reset_all_applicants', $program->id) }}" method="POST" onsubmit="return confirm('PERINGATAN KERAS! Apakah Anda yakin ingin menghapus SELURUH pendaftar program ini? Semua data pendaftaran, biodata wajib, berkas jawaban, kelulusan, dan file fisik lampiran akan dihilangkan secara permanen dari server dan tidak dapat dikembalikan.');">
+                            @csrf
+                            <button type="submit" class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all uppercase tracking-wider text-center">
+                                🔥 Reset Semua Pendaftar
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
 
             <!-- Tampilan Preview Tabel Data Kuesioner (Bila Aktif) -->
@@ -851,6 +1077,16 @@
                                                 </div>
                                             @else
                                                 <p class="text-xs text-rose-500 font-bold italic">⚠️ Gambar wajib tidak diunggah peserta!</p>
+                                            @endif
+                                        @elseif($form['type'] === 'url')
+                                            @if(!empty($form['value']))
+                                                <div class="pt-1">
+                                                    <a href="{{ $form['value'] }}" target="_blank" class="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition shadow-3xs">
+                                                        🔗 Buka Tautan Link ({{ $form['value'] }})
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <p class="text-xs text-rose-500 font-bold italic">⚠️ Tautan link wajib tidak diisi peserta!</p>
                                             @endif
                                         @else
                                             <p class="text-xs font-semibold text-slate-800 leading-relaxed whitespace-pre-wrap">{{ $form['value'] ?? '— (Kosong)' }}</p>
@@ -1357,6 +1593,39 @@
                         buttons[activePanel].classList.add('border-emerald-500', 'bg-emerald-50/30', 'ring-1', 'ring-emerald-500');
                     }
                 }
+            }
+
+            // Initialize Quill for Stage Create/Edit Form
+            const quillPass = new Quill('#pass-announcement-editor', {
+                theme: 'snow',
+                placeholder: 'Tuliskan draf isi pengumuman kelolosan...'
+            });
+            const quillFail = new Quill('#fail-announcement-editor', {
+                theme: 'snow',
+                placeholder: 'Tuliskan draf isi penolakan berkas...'
+            });
+
+            // Form stage sync
+            const formStage = document.getElementById('form-stage');
+            if (formStage) {
+                formStage.addEventListener('submit', function() {
+                    document.getElementById('hidden-pass-announcement').value = quillPass.root.innerHTML;
+                    document.getElementById('hidden-fail-announcement').value = quillFail.root.innerHTML;
+                });
+            }
+
+            // Initialize Quill for Broadcasting Engine
+            const quillBroadcast = new Quill('#broadcast-content-editor', {
+                theme: 'snow',
+                placeholder: 'Tuliskan petunjuk operasional di sini secara jelas...'
+            });
+
+            // Form broadcast sync
+            const formBroadcast = document.querySelector('#panel-broadcasting form');
+            if (formBroadcast) {
+                formBroadcast.addEventListener('submit', function() {
+                    document.getElementById('hidden-broadcast-content').value = quillBroadcast.root.innerHTML;
+                });
             }
         });
     </script>

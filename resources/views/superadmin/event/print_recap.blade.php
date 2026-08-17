@@ -140,8 +140,16 @@
                 <tr>
                     <td class="text-center font-mono">{{ $index + 1 }}</td>
                     <td>
-                        <strong>{{ $sub->user->name }}</strong><br>
-                        <span style="font-size: 10px; color: #64748b;">{{ $sub->user->email }}</span>
+                        @if($sub->user)
+                            <strong>{{ $sub->user->name }}</strong><br>
+                            <span style="font-size: 10px; color: #64748b;">{{ $sub->user->email }} (Anggota)</span>
+                        @else
+                            <strong>{{ $sub->guest_name }}</strong><br>
+                            <span style="font-size: 10px; color: #64748b;">{{ $sub->guest_email }} (Umum/Tamu)</span>
+                            @if($sub->guest_phone)
+                                <div style="font-size: 9px; color: #64748b; margin-top: 1px;">📞 {{ $sub->guest_phone }}</div>
+                            @endif
+                        @endif
                     </td>
                     <td class="font-mono">{{ $sub->created_at->format('d M Y - H:i') }} WIB</td>
                     <td>
