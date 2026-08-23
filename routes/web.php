@@ -133,6 +133,7 @@ Route::middleware(['auth', 'verified', 'profile.completed', 'check.profile', 'te
     Route::get('/programs/catalog', [ProgramApplyController::class, 'index'])->name('programs.catalog');
     Route::get('/programs/{id}/apply', [ProgramApplyController::class, 'showApply'])->name('program.apply');
     Route::post('/programs/{id}/apply/store', [ProgramApplyController::class, 'submitApply'])->name('program.apply.store');
+    Route::post('/programs/{id}/apply/draft', [ProgramApplyController::class, 'saveDraft'])->name('program.apply.draft');
 
     // Halaman Blocker Pengumuman Khusus (Bebas dari Blocker internal agar tidak looping redirect)
     Route::get('/programs/{id}/announcement-gate', [ProgramDashboardController::class, 'showAnnouncementGate'])->name('programs.internal.announcement.gate');
@@ -202,6 +203,7 @@ Route::prefix('adminprogram')
         Route::post('/programs/{id}/workspace/stage/store', [ProgramWorkspaceController::class, 'storeStage'])->name('workspace.stage.store');
         Route::patch('/programs/{id}/workspace/stage/{stageId}/update', [ProgramWorkspaceController::class, 'updateStage'])->name('workspace.stage.update');
         Route::delete('/programs/{id}/workspace/stage/{stageId}/delete', [ProgramWorkspaceController::class, 'deleteStage'])->name('workspace.stage.delete');
+        Route::post('/programs/{id}/workspace/stage/{stageId}/toggle-lock', [ProgramWorkspaceController::class, 'toggleLockStage'])->name('workspace.stage.toggle_lock');
 
 // SAKLAR HARDCORE: Sekarang masuk ke grup dan menggunakan ProgramWorkspaceController yang benar
         Route::post('/programs/{id}/toggle-registration', [ProgramWorkspaceController::class, 'toggleRegistration'])
@@ -221,6 +223,8 @@ Route::prefix('adminprogram')
 
         // Broadcasting - Pusat Penyiaran Berkas & Pesan Kustom Admin
         Route::post('/programs/{id}/workspace/announcement/store', [ProgramWorkspaceController::class, 'storeAnnouncement'])->name('workspace.announcement.store');
+        Route::post('/programs/{id}/workspace/announcement/{announcementId}/update', [ProgramWorkspaceController::class, 'updateAnnouncement'])->name('workspace.announcement.update');
+        Route::delete('/programs/{id}/workspace/announcement/{announcementId}/delete', [ProgramWorkspaceController::class, 'deleteAnnouncement'])->name('workspace.announcement.delete');
 
         Route::get('/programs/{id}/applicants/{registrationId}', [ProgramWorkspaceController::class, 'showApplicantSubmission'])->name('programs.applicant.show');
         Route::post('/programs/{id}/applicants/{registrationId}/evaluate', [ProgramWorkspaceController::class, 'evaluateApplicant'])->name('programs.applicant.evaluate');
@@ -260,11 +264,13 @@ Route::prefix('adminprogram')
         // Database Peserta & Profil
         Route::get('/participants', [ParticipantProfileController::class, 'index'])->name('participants.index');
         Route::post('/participants/bulk-action', [ParticipantProfileController::class, 'bulkAction'])->name('participants.bulk-action');
+        Route::post('/participants/bulk-ni', [ParticipantProfileController::class, 'bulkGenerateNi'])->name('participants.bulk-ni');
+        Route::get('/participants/export-ni-template', [ParticipantProfileController::class, 'exportNiTemplate'])->name('participants.ni.export-template');
+        Route::post('/participants/import-ni', [ParticipantProfileController::class, 'importNi'])->name('participants.ni.import');
         Route::get('/participants/{id}', [ParticipantProfileController::class, 'show'])->name('participants.show');
         Route::post('/participants/{id}/update-profile', [ParticipantProfileController::class, 'updateProfile'])->name('participants.update-profile');
         Route::post('/participants/{id}/ni', [ParticipantProfileController::class, 'updateNi'])->name('participants.ni.update');
         Route::post('/participants/{id}/toggle-block', [ParticipantProfileController::class, 'toggleBlock'])->name('participants.toggle-block');
-        Route::post('/participants/bulk-ni', [ParticipantProfileController::class, 'bulkGenerateNi'])->name('participants.bulk-ni');
 
         // Sertifikat & Piagam
         Route::get('/certificates', [CertificateManagementController::class, 'index'])->name('certificates.index');
@@ -376,6 +382,12 @@ Route::middleware(['auth'])->group(function () {
 */
 Route::get('/identity-gate', [IdentityGateController::class, 'showIdentityForm'])->name('identity.gate');
 Route::post('/identity-gate/store', [IdentityGateController::class, 'storeIdentity'])->name('identity.store');
+
+// API Proxy Wilayah Indonesia (EMSIFA) untuk keandalan koneksi & CORS-free
+Route::get('/api-wilayah/provinces', [IdentityGateController::class, 'getProvinces']);
+Route::get('/api-wilayah/regencies/{provinceId}', [IdentityGateController::class, 'getRegencies']);
+Route::get('/api-wilayah/districts/{regencyId}', [IdentityGateController::class, 'getDistricts']);
+Route::get('/api-wilayah/villages/{districtId}', [IdentityGateController::class, 'getVillages']);
 
 /*
 |--------------------------------------------------------------------------

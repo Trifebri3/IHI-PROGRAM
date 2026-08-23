@@ -3,7 +3,7 @@
 @section('title', 'Database & Demografi Peserta')
 
 @section('content')
-<div class="py-6 max-w-7xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8" x-data="{ openBulkGenerator: false }">
+<div class="py-6 max-w-7xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8" x-data="{ openBulkGenerator: false, generatorTab: 'formula', downloadProgramId: '' }">
 
     <!-- Header Page -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -34,40 +34,125 @@
          style="display: none;">
         <div class="border-b border-emerald-100 pb-2 flex items-center justify-between">
             <h3 class="text-sm font-extrabold text-emerald-950 uppercase tracking-wider flex items-center">
-                ⚡ Pusat Generator Nomor Induk (NI) Semi-Otomatis
+                ⚡ Pusat Generator Nomor Induk (NI) Massal
             </h3>
             <button @click="openBulkGenerator = false" class="text-emerald-700 hover:text-emerald-900 text-xs font-bold">Tutup</button>
         </div>
-        <p class="text-xs text-slate-500">Membantu pembuatan nomor induk berurutan secara otomatis untuk semua peserta berstatus **LULUS (Passed)** yang belum memiliki NI.</p>
         
-        <form action="{{ route('adminprogram.participants.bulk-ni') }}" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            @csrf
-            <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Pilih Program Kerja</label>
-                <select name="program_id" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-white text-slate-800">
-                    <option value="">-- Pilih Program --</option>
-                    @foreach($programs as $p)
-                        <option value="{{ $p->id }}">{{ $p->name }}</option>
-                    @endforeach
-                </select>
+        <!-- Tab Switchers -->
+        <div class="flex border-b border-slate-200">
+            <button @click="generatorTab = 'formula'" 
+                    :class="generatorTab === 'formula' ? 'border-emerald-500 text-emerald-600 font-bold border-b-2' : 'text-slate-500 hover:text-slate-800'"
+                    class="py-2 px-4 text-xs uppercase tracking-wider transition outline-none">
+                ⚡ Skema 1: Pola Formula Otomatis
+            </button>
+            <button @click="generatorTab = 'excel'" 
+                    :class="generatorTab === 'excel' ? 'border-emerald-500 text-emerald-600 font-bold border-b-2' : 'text-slate-500 hover:text-slate-800'"
+                    class="py-2 px-4 text-xs uppercase tracking-wider transition outline-none">
+                📂 Skema 2: Ekspor &amp; Impor Excel/CSV
+            </button>
+        </div>
+
+        <!-- TAB 1: FORMULA -->
+        <div x-show="generatorTab === 'formula'" class="space-y-4">
+            <p class="text-[11px] text-slate-500">Membantu pembuatan nomor induk berurutan secara otomatis untuk semua peserta berstatus **LULUS (Passed)** yang belum memiliki NI dengan pola kustom.</p>
+            
+            <form action="{{ route('adminprogram.participants.bulk-ni') }}" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                @csrf
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Pilih Program Kerja</label>
+                    <select name="program_id" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-white text-slate-800 outline-none">
+                        <option value="">-- Pilih Program --</option>
+                        @foreach($programs as $p)
+                            <option value="{{ $p->id }}">{{ $p->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Template Formula</label>
+                    <input type="text" name="formula_template" value="IHI/{PROGRAM_CODE}/{YEAR}/{PROV_CODE}/{SEQ:4}" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs text-slate-800 bg-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Kode Program Kustom</label>
+                    <input type="text" name="program_code" placeholder="Cth: GLI6" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs text-slate-800 bg-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Urutan Berdasarkan</label>
+                    <select name="sort_by" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-white text-slate-800">
+                        <option value="province">Urutan Provinsi (BPS)</option>
+                        <option value="name" selected>Urutan Nama (Abjad)</option>
+                        <option value="created_at">Urutan Tanggal Registrasi</option>
+                    </select>
+                </div>
+                
+                <div class="md:col-span-3 bg-slate-50 p-3 rounded-xl border border-slate-150">
+                    <span class="block text-[10px] font-extrabold text-slate-500 uppercase mb-1">Petunjuk Placeholder Formula:</span>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-y-1 gap-x-2 text-[10px] text-slate-600">
+                        <div><code class="text-emerald-700 font-bold">{YEAR}</code>: Tahun berjalan (cth: {{ date('Y') }})</div>
+                        <div><code class="text-emerald-700 font-bold">{MONTH}</code>: Bulan berjalan (cth: {{ date('m') }})</div>
+                        <div><code class="text-emerald-700 font-bold">{PROGRAM_CODE}</code>: Kode program di atas</div>
+                        <div><code class="text-emerald-700 font-bold">{PROV_CODE}</code>: Kode Provinsi BPS (cth: Jabar -> 32)</div>
+                        <div><code class="text-emerald-700 font-bold">{REGENCY_CODE}</code>: Kode Kabupaten BPS (cth: 3273)</div>
+                        <div><code class="text-emerald-700 font-bold">{SEQ:4}</code>: Urutan berdigit (cth: 0001)</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <button type="submit" class="w-full p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-3xs transition uppercase tracking-wider">
+                        Jana &amp; Jalankan Formula
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- TAB 2: EXCEL -->
+        <div x-show="generatorTab === 'excel'" class="grid grid-cols-1 md:grid-cols-2 gap-6 p-2">
+            <!-- Download Template -->
+            <div class="space-y-3 p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                <h4 class="text-xs font-bold text-slate-800 uppercase flex items-center">
+                    📥 1. Unduh Template Excel / CSV
+                </h4>
+                <p class="text-[11px] text-slate-500">Unduh data seluruh peserta yang berstatus Lulus (passed) untuk diisi Nomor Induknya secara manual di Excel.</p>
+                
+                <div class="space-y-3 pt-1">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Pilih Program</label>
+                        <select x-model="downloadProgramId" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-white text-slate-800 outline-none">
+                            <option value="">-- Pilih Program --</option>
+                            @foreach($programs as $p)
+                                <option value="{{ $p->id }}">{{ $p->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <a :href="downloadProgramId ? '{{ route('adminprogram.participants.ni.export-template') }}?program_id=' + downloadProgramId : '#'"
+                       :class="downloadProgramId ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-3xs' : 'bg-slate-100 text-slate-400 cursor-not-allowed'"
+                       class="inline-flex justify-center items-center px-4 py-2.5 rounded-xl text-xs font-bold transition w-full text-center uppercase tracking-wider">
+                        Unduh Template CSV
+                    </a>
+                </div>
             </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Metode Urutan Nomor Induk</label>
-                <select name="sort_by" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-white text-slate-800">
-                    <option value="province" selected>Urut per Provinsi (Rekomendasi)</option>
-                    <option value="name">Urut per Nama Peserta</option>
-                </select>
+
+            <!-- Upload Template -->
+            <div class="space-y-3 p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                <h4 class="text-xs font-bold text-slate-800 uppercase flex items-center">
+                    📤 2. Unggah &amp; Impor Nomor Induk
+                </h4>
+                <p class="text-[11px] text-slate-500">Unggah kembali file template CSV yang sudah diisi Nomor Induknya untuk disinkronkan ke database secara otomatis.</p>
+                
+                <form action="{{ route('adminprogram.participants.ni.import') }}" method="POST" enctype="multipart/form-data" class="space-y-3 pt-1">
+                    @csrf
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Pilih File CSV/Excel</label>
+                        <input type="file" name="import_file" required accept=".csv,.txt" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-white text-slate-800 outline-none">
+                    </div>
+                    
+                    <button type="submit" class="w-full p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-3xs transition uppercase tracking-wider">
+                        Unggah &amp; Impor Data
+                    </button>
+                </form>
             </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Prefix Kode NI (Opsional)</label>
-                <input type="text" name="prefix" placeholder="Cth: IHI{{ date('Y') }}" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs text-slate-800 bg-white">
-            </div>
-            <div>
-                <button type="submit" class="w-full p-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs transition uppercase tracking-wider">
-                    Jana &amp; Generate Massal
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
 
     <!-- Filter Card & Search Bar -->
@@ -139,18 +224,18 @@
                         <option value="withdrawn" {{ request('participant_status') === 'withdrawn' ? 'selected' : '' }}>Mengundurkan Diri</option>
                     </select>
                 </div>
-
-                <!-- Status Kelulusan filter -->
-                <div>
-                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-2">Status Kelulusan</label>
-                    <select name="status" class="w-full p-2.5 border border-slate-150 rounded-xl text-xs bg-white text-slate-800 outline-none">
-                        <option value="">Semua Status</option>
-                        <option value="process" {{ request('status') === 'process' ? 'selected' : '' }}>Proses Seleksi</option>
-                        <option value="passed" {{ request('status') === 'passed' ? 'selected' : '' }}>Lulus (Passed)</option>
-                        <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Gugur (Failed)</option>
-                    </select>
-                </div>
-
+                @if(request('show_all_applicants'))
+                    <!-- Status Kelulusan filter -->
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-2">Status Kelulusan</label>
+                        <select name="status" class="w-full p-2.5 border border-slate-150 rounded-xl text-xs bg-white text-slate-800 outline-none">
+                            <option value="">Semua Status</option>
+                            <option value="process" {{ request('status') === 'process' ? 'selected' : '' }}>Proses Seleksi</option>
+                            <option value="passed" {{ request('status') === 'passed' ? 'selected' : '' }}>Lulus (Passed)</option>
+                            <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Gugur (Failed)</option>
+                        </select>
+                    </div>
+                @endif
                 <!-- Status KYC filter -->
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-slate-400 mb-2">Status Verifikasi KYC</label>
@@ -193,8 +278,8 @@
             </div>
 
             <div class="flex flex-col sm:flex-row items-center justify-between border-t pt-4 gap-4">
-                <!-- Additional filters: Block status -->
-                <div>
+                <!-- Additional filters: Block status & Show all toggle -->
+                <div class="flex flex-col md:flex-row md:items-center gap-4">
                     <div class="flex items-center space-x-2">
                         <span class="text-[10px] font-bold uppercase text-slate-400">Blokir Akses:</span>
                         <label class="inline-flex items-center text-xs text-slate-600 font-semibold cursor-pointer">
@@ -205,6 +290,13 @@
                         </label>
                         <label class="inline-flex items-center text-xs text-slate-600 font-semibold cursor-pointer ml-3">
                             <input type="radio" name="blocked_status" value="blocked" {{ request('blocked_status') === 'blocked' ? 'checked' : '' }} class="text-emerald-600 mr-1 focus:ring-0 border-slate-350"> Diblokir (Suspended)
+                        </label>
+                    </div>
+
+                    <div class="flex items-center border-l md:pl-4 border-slate-200">
+                        <label class="inline-flex items-center text-xs text-slate-600 font-bold cursor-pointer select-none">
+                            <input type="checkbox" name="show_all_applicants" value="1" {{ request('show_all_applicants') ? 'checked' : '' }} class="rounded text-emerald-600 focus:ring-emerald-500 mr-2 w-4 h-4 border-slate-300 shadow-3xs" onchange="this.form.submit()">
+                            <span>🔍 Tampilkan Semua Pendaftar (Termasuk Belum Lolos)</span>
                         </label>
                     </div>
                 </div>

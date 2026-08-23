@@ -42,10 +42,13 @@
                 @csrf
 
                 <!-- UPLOAD FOTO -->
-                <div class="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center hover:border-emerald-500 transition cursor-pointer">
-                    <input type="file" name="photo" id="photo" class="hidden" onchange="document.getElementById('file-label').innerText = this.files[0].name" required>
-                    <label for="photo" class="cursor-pointer">
-                        <span id="file-label" class="text-xs font-bold text-slate-600">Klik untuk unggah Foto Profil (.jpg/.png)</span>
+                <div class="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center hover:border-emerald-500 transition cursor-pointer flex flex-col items-center justify-center">
+                    <input type="file" name="photo" id="photo" class="hidden" accept="image/png, image/jpeg, image/jpg" onchange="previewPhoto(this)" required>
+                    <label for="photo" class="cursor-pointer flex flex-col items-center space-y-3">
+                        <div id="photo-preview-container" class="hidden w-24 h-24 rounded-full border border-slate-200 overflow-hidden shadow-sm flex items-center justify-center bg-slate-50">
+                            <img id="photo-preview-img" src="" class="w-full h-full object-cover">
+                        </div>
+                        <span id="file-label" class="text-xs font-bold text-slate-600 block">Klik untuk unggah Foto Profil (.jpg/.png)</span>
                     </label>
                 </div>
 
@@ -64,35 +67,20 @@
                         <option value="">Pilih Provinsi</option>
                     </select>
 
-                    <!-- Kabupaten (Input Biasa) -->
-                    <input 
-                        type="text" 
-                        name="kabupaten" 
-                        id="kabupaten" 
-                        placeholder="Kabupaten/Kota"
-                        class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500"
-                        required
-                    >
+                    <!-- Kabupaten (Select/Dropdown) -->
+                    <select name="kabupaten" id="kabupaten" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500" required>
+                        <option value="">Pilih Kabupaten/Kota</option>
+                    </select>
 
-                    <!-- Kecamatan (Input Biasa) -->
-                    <input 
-                        type="text" 
-                        name="kecamatan" 
-                        id="kecamatan" 
-                        placeholder="Kecamatan"
-                        class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500"
-                        required
-                    >
+                    <!-- Kecamatan (Select/Dropdown) -->
+                    <select name="kecamatan" id="kecamatan" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500" required>
+                        <option value="">Pilih Kecamatan</option>
+                    </select>
 
-                    <!-- Desa (Input Biasa) -->
-                    <input 
-                        type="text" 
-                        name="desa" 
-                        id="desa" 
-                        placeholder="Desa/Kelurahan"
-                        class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500"
-                        required
-                    >
+                    <!-- Desa (Select/Dropdown) -->
+                    <select name="desa" id="desa" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500" required>
+                        <option value="">Pilih Desa/Kelurahan</option>
+                    </select>
 
                     <!-- Kampung (Input Biasa) -->
                     <input 
@@ -105,7 +93,7 @@
                 </div>
 
                 <!-- Detail Alamat -->
-                <input type="text" name="detail_alamat" placeholder="Detail Alamat / Patokan Jalan (RT/RW, No Rumah, dll)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500">
+                <input type="text" name="detail_alamat" placeholder="Detail Alamat / Patokan Jalan (RT/RW, No Rumah, dll) (Opsional)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500">
 
                 <button type="submit" class="w-full py-4 bg-emerald-600 text-white font-black text-xs uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition shadow-lg">
                     Verifikasi Data & Buka Akses
@@ -118,46 +106,7 @@
         // DATA WILAYAH (Perbaiki struktur: setiap negara memiliki array provinsi)
         const dataWilayah = {
             Indonesia: {
-                provinsi: [
-                    "Nanggroe Aceh Darussalam",
-                    "Sumatera Utara",
-                    "Sumatera Barat",
-                    "Riau",
-                    "Kepulauan Riau",
-                    "Jambi",
-                    "Bengkulu",
-                    "Sumatera Selatan",
-                    "Kepulauan Bangka Belitung",
-                    "Lampung",
-                    "Banten",
-                    "DKI Jakarta",
-                    "Jawa Barat",
-                    "Jawa Tengah",
-                    "Daerah Istimewa Yogyakarta",
-                    "Jawa Timur",
-                    "Kalimantan Barat",
-                    "Kalimantan Tengah",
-                    "Kalimantan Selatan",
-                    "Kalimantan Timur",
-                    "Kalimantan Utara",
-                    "Bali",
-                    "Nusa Tenggara Barat",
-                    "Nusa Tenggara Timur",
-                    "Sulawesi Utara",
-                    "Sulawesi Tengah",
-                    "Sulawesi Selatan",
-                    "Sulawesi Tenggara",
-                    "Gorontalo",
-                    "Sulawesi Barat",
-                    "Maluku",
-                    "Maluku Utara",
-                    "Papua",
-                    "Papua Barat",
-                    "Papua Selatan",
-                    "Papua Tengah",
-                    "Papua Pegunungan",
-                    "Papua Barat Daya"
-                ]
+                provinsi: [] // Akan dimuat dinamis dari API wilayah
             },
             Malaysia: {
                 provinsi: ["Selangor", "Kuala Lumpur", "Johor", "Penang", "Sabah", "Sarawak"]
@@ -172,59 +121,253 @@
 
         // DOM Elements
         const negaraSelect = document.getElementById('negara');
-        const provinsiSelect = document.getElementById('provinsi');
         
-        // Fungsi untuk mengisi dropdown provinsi berdasarkan negara yang dipilih
-        function updateProvinsi() {
-            const selectedNegara = negaraSelect.value;
-            
-            // Reset dropdown provinsi ke opsi default
-            provinsiSelect.innerHTML = '<option value="">Pilih Provinsi</option>';
-            
-            // Jika tidak ada negara yang dipilih atau negara tidak ada dalam dataWilayah
-            if (!selectedNegara || !dataWilayah[selectedNegara]) {
-                provinsiSelect.disabled = true;
-                return;
-            }
-            
-            // Ambil daftar provinsi dari dataWilayah
-            const provinsiList = dataWilayah[selectedNegara].provinsi;
-            
-            // Jika provinsiList ada dan merupakan array
-            if (provinsiList && Array.isArray(provinsiList) && provinsiList.length > 0) {
-                provinsiSelect.disabled = false;
-                
-                // Tambahkan option untuk setiap provinsi
-                provinsiList.forEach(prov => {
-                    const option = document.createElement('option');
-                    option.value = prov;
-                    option.textContent = prov;
-                    provinsiSelect.appendChild(option);
-                });
-            } else {
-                // Jika tidak ada data provinsi, disable dropdown
-                provinsiSelect.disabled = true;
-            }
-        }
-        
-        // Event listener untuk perubahan pada dropdown negara
-        negaraSelect.addEventListener('change', updateProvinsi);
-        
-        // Inisialisasi pertama kali (karena default Indonesia sudah terpilih)
-        // Panggil updateProvinsi() setelah halaman siap untuk mengisi provinsi Indonesia
-        // Gunakan setTimeout atau DOMContentLoaded untuk memastikan semua elemen sudah siap
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                updateProvinsi();
+        function toTitleCase(str) {
+            return str.toLowerCase().replace(/(^|\s|-)\S/g, function(L) {
+                return L.toUpperCase();
             });
-        } else {
-            updateProvinsi();
         }
-        
-        // Catatan: Kabupaten, Kecamatan, Desa, Kampung bersifat input teks biasa.
-        // Pengguna bebas mengetik manual, tidak terpengaruh pilihan provinsi/negara.
-    </script>
 
+        // Preview Foto Profil sebelum diunggah
+        function previewPhoto(input) {
+            const file = input.files[0];
+            const previewContainer = document.getElementById('photo-preview-container');
+            const previewImg = document.getElementById('photo-preview-img');
+            const fileLabel = document.getElementById('file-label');
+
+            if (file) {
+                if (!file.type.startsWith('image/')) {
+                    alert('Berkas harus berupa gambar (JPG/PNG)!');
+                    input.value = '';
+                    previewContainer.classList.add('hidden');
+                    fileLabel.innerText = 'Klik untuk unggah Foto Profil (.jpg/.png)';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                    fileLabel.innerText = file.name;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewContainer.classList.add('hidden');
+                fileLabel.innerText = 'Klik untuk unggah Foto Profil (.jpg/.png)';
+            }
+        }
+
+        function switchToSelect(id, placeholder, name) {
+            const el = document.getElementById(id);
+            if (el && el.tagName === 'SELECT') return el;
+            
+            const select = document.createElement('select');
+            select.id = id;
+            select.name = name;
+            select.required = true;
+            select.className = "p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500";
+            select.innerHTML = `<option value="">Pilih ${placeholder}</option>`;
+            
+            if (el) el.parentNode.replaceChild(select, el);
+            return select;
+        }
+
+        function switchToInput(id, placeholder, name, isRequired = true) {
+            const el = document.getElementById(id);
+            if (el && el.tagName === 'INPUT') return el;
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = id;
+            input.name = name;
+            input.placeholder = placeholder;
+            if (isRequired) {
+                input.required = true;
+            }
+            input.className = "p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500";
+            
+            if (el) el.parentNode.replaceChild(input, el);
+            return input;
+        }
+
+        function updateRegions() {
+            const selectedNegara = negaraSelect.value;
+            const provinsiSelect = switchToSelect('provinsi', 'Provinsi', 'provinsi');
+            
+            if (selectedNegara === 'Indonesia') {
+                // Switch Kabupaten, Kecamatan, Desa ke Select Dropdown untuk Indonesia
+                const kabupatenSelect = switchToSelect('kabupaten', 'Kabupaten/Kota', 'kabupaten');
+                const kecamatanSelect = switchToSelect('kecamatan', 'Kecamatan', 'kecamatan');
+                const desaSelect = switchToSelect('desa', 'Desa/Kelurahan', 'desa');
+                
+                // Matikan dropdown dinamis sebelum data diisi
+                kabupatenSelect.disabled = true;
+                kecamatanSelect.disabled = true;
+                desaSelect.disabled = true;
+
+                // Ambil data Provinsi Indonesia dari API Wilayah via Local Proxy
+                provinsiSelect.innerHTML = '<option value="">Memuat Provinsi...</option>';
+                provinsiSelect.disabled = true;
+                
+                fetch('/api-wilayah/provinces')
+                    .then(res => {
+                        if (!res.ok) throw new Error('API Respon tidak OK');
+                        return res.json();
+                    })
+                    .then(data => {
+                        provinsiSelect.innerHTML = '<option value="">Pilih Provinsi</option>';
+                        provinsiSelect.disabled = false;
+                        data.forEach(prov => {
+                            const opt = document.createElement('option');
+                            const rawName = prov.nama || prov.name || '';
+                            const formattedName = toTitleCase(rawName);
+                            opt.value = formattedName;
+                            opt.dataset.id = prov.id;
+                            opt.textContent = formattedName;
+                            provinsiSelect.appendChild(opt);
+                        });
+                    })
+                    .catch(err => {
+                        console.error('Gagal memuat provinsi:', err);
+                        provinsiSelect.innerHTML = '<option value="">Gagal memuat data (silakan muat ulang halaman)</option>';
+                    });
+
+                // Handler ketika Provinsi terpilih berubah
+                provinsiSelect.onchange = () => {
+                    const selectedOpt = provinsiSelect.options[provinsiSelect.selectedIndex];
+                    const provinceId = selectedOpt ? selectedOpt.dataset.id : null;
+                    
+                    kabupatenSelect.innerHTML = '<option value="">Pilih Kabupaten/Kota</option>';
+                    kabupatenSelect.disabled = true;
+                    kecamatanSelect.innerHTML = '<option value="">Pilih Kecamatan</option>';
+                    kecamatanSelect.disabled = true;
+                    desaSelect.innerHTML = '<option value="">Pilih Desa/Kelurahan</option>';
+                    desaSelect.disabled = true;
+
+                    if (!provinceId) return;
+
+                    kabupatenSelect.innerHTML = '<option value="">Memuat Kabupaten/Kota...</option>';
+                    fetch(`/api-wilayah/regencies/${provinceId}`)
+                        .then(res => {
+                            if (!res.ok) throw new Error('API Respon tidak OK');
+                            return res.json();
+                        })
+                        .then(data => {
+                            kabupatenSelect.innerHTML = '<option value="">Pilih Kabupaten/Kota</option>';
+                            kabupatenSelect.disabled = false;
+                            data.forEach(reg => {
+                                const opt = document.createElement('option');
+                                const rawName = reg.nama || reg.name || '';
+                                const formattedName = toTitleCase(rawName);
+                                opt.value = formattedName;
+                                opt.dataset.id = reg.id;
+                                opt.textContent = formattedName;
+                                kabupatenSelect.appendChild(opt);
+                            });
+                        })
+                        .catch(err => {
+                            console.error('Gagal memuat kabupaten:', err);
+                            kabupatenSelect.innerHTML = '<option value="">Gagal memuat data (silakan ganti provinsi untuk mengulang)</option>';
+                        });
+                };
+
+                // Handler ketika Kabupaten terpilih berubah
+                kabupatenSelect.onchange = () => {
+                    const selectedOpt = kabupatenSelect.options[kabupatenSelect.selectedIndex];
+                    const regencyId = selectedOpt ? selectedOpt.dataset.id : null;
+                    
+                    kecamatanSelect.innerHTML = '<option value="">Pilih Kecamatan</option>';
+                    kecamatanSelect.disabled = true;
+                    desaSelect.innerHTML = '<option value="">Pilih Desa/Kelurahan</option>';
+                    desaSelect.disabled = true;
+
+                    if (!regencyId) return;
+
+                    kecamatanSelect.innerHTML = '<option value="">Memuat Kecamatan...</option>';
+                    fetch(`/api-wilayah/districts/${regencyId}`)
+                        .then(res => {
+                            if (!res.ok) throw new Error('API Respon tidak OK');
+                            return res.json();
+                        })
+                        .then(data => {
+                            kecamatanSelect.innerHTML = '<option value="">Pilih Kecamatan</option>';
+                            kecamatanSelect.disabled = false;
+                            data.forEach(dist => {
+                                const opt = document.createElement('option');
+                                const rawName = dist.nama || dist.name || '';
+                                const formattedName = toTitleCase(rawName);
+                                opt.value = formattedName;
+                                opt.dataset.id = dist.id;
+                                opt.textContent = formattedName;
+                                kecamatanSelect.appendChild(opt);
+                            });
+                        })
+                        .catch(err => {
+                            console.error('Gagal memuat kecamatan:', err);
+                            kecamatanSelect.innerHTML = '<option value="">Gagal memuat data (silakan ganti kabupaten untuk mengulang)</option>';
+                        });
+                };
+
+                // Handler ketika Kecamatan terpilih berubah
+                kecamatanSelect.onchange = () => {
+                    const selectedOpt = kecamatanSelect.options[kecamatanSelect.selectedIndex];
+                    const districtId = selectedOpt ? selectedOpt.dataset.id : null;
+                    
+                    desaSelect.innerHTML = '<option value="">Pilih Desa/Kelurahan</option>';
+                    desaSelect.disabled = true;
+
+                    if (!districtId) return;
+
+                    desaSelect.innerHTML = '<option value="">Memuat Desa/Kelurahan...</option>';
+                    fetch(`/api-wilayah/villages/${districtId}`)
+                        .then(res => {
+                            if (!res.ok) throw new Error('API Respon tidak OK');
+                            return res.json();
+                        })
+                        .then(data => {
+                            desaSelect.innerHTML = '<option value="">Pilih Desa/Kelurahan</option>';
+                            desaSelect.disabled = false;
+                            data.forEach(vil => {
+                                const opt = document.createElement('option');
+                                const rawName = vil.nama || vil.name || '';
+                                const formattedName = toTitleCase(rawName);
+                                opt.value = formattedName;
+                                opt.dataset.id = vil.id;
+                                opt.textContent = formattedName;
+                                desaSelect.appendChild(opt);
+                            });
+                        })
+                        .catch(err => {
+                            console.error('Gagal memuat desa:', err);
+                            desaSelect.innerHTML = '<option value="">Gagal memuat data (silakan ganti kecamatan untuk mengulang)</option>';
+                        });
+                };
+
+            } else {
+                // Negara Selain Indonesia: Kembalikan Kabupaten, Kecamatan, Desa ke Input Teks Biasa
+                switchToInput('kabupaten', 'Kabupaten/Kota', 'kabupaten');
+                switchToInput('kecamatan', 'Kecamatan', 'kecamatan');
+                switchToInput('desa', 'Desa/Kelurahan', 'desa');
+
+                // Muat provinsi statis untuk negara tersebut
+                provinsiSelect.innerHTML = '<option value="">Pilih Provinsi</option>';
+                provinsiSelect.disabled = !selectedNegara;
+                
+                if (selectedNegara && dataWilayah[selectedNegara]) {
+                    dataWilayah[selectedNegara].provinsi.forEach(prov => {
+                        const opt = document.createElement('option');
+                        opt.value = prov;
+                        opt.textContent = prov;
+                        provinsiSelect.appendChild(opt);
+                    });
+                }
+            }
+        }
+
+        negaraSelect.addEventListener('change', updateRegions);
+        document.addEventListener('DOMContentLoaded', updateRegions);
+
+    </script>
     <style>
         /* Tambahan styling agar placeholder lebih terbaca */
         input::placeholder {

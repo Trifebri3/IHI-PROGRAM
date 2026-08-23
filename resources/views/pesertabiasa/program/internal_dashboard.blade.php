@@ -24,36 +24,139 @@
                 @php
                     $activeStageData = $stageLogs->where('program_stage_id', $registration->current_stage_id)->first();
                     $isRevision = $activeStageData && $activeStageData->status === 'revision';
+                    
+                    // Ambil tahapan sebelumnya yang lolos
+                    $lastPassedStageData = $stageLogs->where('status', 'passed')->sortByDesc(function($log) {
+                        return $log->stage?->sequence ?? 0;
+                    })->first();
+                    
+                    // Cek status pengisian data tahap saat ini
+                    $hasSubmittedActiveStage = $activeStageData && !empty($activeStageData->form_values);
                 @endphp
-                <div class="p-4 rounded-xl border {{ $isRevision ? 'border-amber-200 bg-amber-50/20' : 'border-emerald-100 bg-emerald-50/30' }} space-y-2">
-                    <h5 class="text-sm font-bold text-slate-800">Status Tahap Aktif: {{ $registration->currentStage?->name ?? 'Siklus Kompetisi Selesai' }}</h5>
-                    <p class="text-xs text-slate-600 leading-relaxed italic bg-white p-3 rounded-xl border border-slate-100">
-                        @if($registration->status === 'passed')
-                            {!! $registration->currentStage?->pass_announcement ?? 'Selamat! Anda resmi dinobatkan lulus final seleksi seluruh rangkaian program kerja.' !!}
-                        @elseif($registration->status === 'failed')
-                            {!! $registration->currentStage?->fail_announcement ?? 'Mohon maaf, langkah Anda terhenti dalam rangkaian seleksi program ini.' !!}
-                        @else
-                            @if($isRevision)
-                                ⚠️ Berkas Anda memerlukan revisi. Silakan periksa kolom yang ditandai oleh panitia dan perbaiki berkas Anda.
-                            @else
-                                Berkas pengisian Anda sedang ditinjau intensif oleh panitia penilai. Mohon pantau halaman ini secara berkala.
-                            @endif
-                        @endif
-                    </p>
-                    <div class="flex flex-wrap gap-2 mt-3 pt-1">
-                        @if($registration->currentStage && $registration->currentStage->instruction)
-                            <button type="button" onclick="document.getElementById('instructionModal').classList.remove('hidden')" class="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 text-white text-xs font-bold rounded-xl transition shadow-md uppercase tracking-wider">
-                                📢 Informasi Center &amp; Panduan Seleksi
-                            </button>
-                        @endif
 
-                        @if($registration->status === 'process' && $isRevision)
-                            <a href="{{ route('program.apply', $program->id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold rounded-xl transition shadow-md uppercase tracking-wider">
-                                ✍️ Perbaiki Berkas / Revisi
-                            </a>
-                        @endif
+                @if($registration->status === 'passed')
+                    {{-- KONDISI 1: LOLOS FINAL UTUH --}}
+                    <div class="p-5 rounded-2xl border border-emerald-200 bg-emerald-50/20 space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🏆</span>
+                            <h5 class="text-sm font-black text-emerald-950 uppercase">Selamat! Anda Lulus Seleksi Program</h5>
+                        </div>
+                        <div class="text-xs text-slate-705 leading-relaxed bg-white p-4 rounded-xl border border-slate-100 shadow-3xs announcement-body">
+                            {!! $registration->currentStage?->pass_announcement ?? 'Selamat! Anda resmi dinobatkan lulus final seleksi seluruh rangkaian program kerja.' !!}
+                        </div>
                     </div>
-                </div>
+
+                @elseif($registration->status === 'failed')
+                    {{-- KONDISI 2: GUGUR SECARA UMUM / DI TAHAP INI --}}
+                    <div class="p-5 rounded-2xl border border-rose-200 bg-rose-50/20 space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🔴</span>
+                            <h5 class="text-sm font-black text-rose-900 uppercase">Langkah Terhenti</h5>
+                        </div>
+                        <div class="text-xs text-slate-705 leading-relaxed bg-white p-4 rounded-xl border border-slate-100 shadow-3xs announcement-body">
+                            {!! $registration->currentStage?->fail_announcement ?? 'Mohon maaf, langkah Anda terhenti dalam rangkaian seleksi program ini.' !!}
+                        </div>
+                    </div>
+
+                @else
+                    {{-- KONDISI 3: SEDANG BERPROSES ('process') --}}
+                    @if($isRevision)
+                        {{-- KONDISI 3A: BUTUH REVISI --}}
+                        <div class="p-5 rounded-2xl border border-amber-200 bg-amber-50/20 space-y-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">⚠️</span>
+                                <h5 class="text-sm font-black text-amber-900 uppercase">Berkas Perlu Perbaikan (Revisi)</h5>
+                            </div>
+                            <p class="text-xs text-slate-700 leading-relaxed bg-white p-4 rounded-xl border border-slate-100 shadow-3xs">
+                                Berkas pengisian Anda memerlukan revisi. Silakan periksa kolom yang ditandai oleh panitia dan perbaiki jawaban Anda melalui tombol di bawah.
+                            </p>
+                            @if(!empty($activeStageData->reviewer_notes))
+                                <div class="bg-amber-100/50 border border-amber-200/60 p-3 rounded-lg text-xs text-slate-700 italic">
+                                    <strong>Catatan Reviewer:</strong> "{{ $activeStageData->reviewer_notes }}"
+                                </div>
+                            @endif
+                            <div class="pt-2">
+                                @if($registration->currentStage && $registration->currentStage->is_locked)
+                                    <button type="button" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-slate-100 text-slate-400 text-xs font-bold rounded-xl border cursor-not-allowed uppercase tracking-wider" disabled>
+                                        🔒 Perbaikan Dikunci Sementara
+                                    </button>
+                                @else
+                                    <a href="{{ route('program.apply', $program->id) }}" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold rounded-xl transition shadow-md uppercase tracking-wider">
+                                        ✍️ Perbaiki Berkas / Revisi
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+
+                    @elseif($hasSubmittedActiveStage)
+                        {{-- KONDISI 3B: SUDAH SUBMIT TAHAP AKTIF, SEDANG REVIEW --}}
+                        <div class="p-5 rounded-2xl border border-blue-200 bg-blue-50/20 space-y-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">⏳</span>
+                                <h5 class="text-sm font-black text-blue-900 uppercase">Dalam Penilaian Panitia: {{ $registration->currentStage->name }}</h5>
+                            </div>
+                            <p class="text-xs text-slate-700 leading-relaxed bg-white p-4 rounded-xl border border-slate-100 shadow-3xs">
+                                Berkas jawaban Anda untuk tahap <span class="font-bold text-slate-800">{{ $registration->currentStage->name }}</span> sudah masuk. Tim penilai kami sedang meninjau isian data Anda. Mohon pantau halaman ini secara berkala untuk pengumuman kelulusan tahap ini.
+                            </p>
+                        </div>
+
+                    @else
+                        {{-- KONDISI 3C: TAHAP AKTIF PENDING (BELUM SUBMIT) DAN SUDAH PERNAH LOLOS TAHAP SEBELUMNYA --}}
+                        @if($lastPassedStageData)
+                            <div class="p-5 rounded-2xl border border-emerald-200 bg-emerald-50/20 space-y-4">
+                                <div class="flex items-center gap-2 text-emerald-900">
+                                    <span class="text-xl">🎉</span>
+                                    <div>
+                                        <h5 class="text-sm font-black uppercase">Selamat! Anda Dinyatakan Lolos Tahap</h5>
+                                        <p class="text-[10px] text-emerald-700 font-bold uppercase tracking-wider mt-0.5">{{ $lastPassedStageData->stage->name }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-xs text-slate-700 leading-relaxed bg-white p-4 rounded-xl border border-emerald-100 shadow-3xs announcement-body">
+                                    {!! $lastPassedStageData->stage->pass_announcement ?? '<p>Selamat! Anda lolos ke tahap seleksi berikutnya.</p>' !!}
+                                </div>
+
+                                <div class="border-t border-emerald-100 pt-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                    <div>
+                                        <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Tahapan Selanjutnya:</span>
+                                        <span class="text-xs font-extrabold text-slate-800">{{ $registration->currentStage->name }}</span>
+                                    </div>
+                                    @if($registration->currentStage && $registration->currentStage->is_locked)
+                                        <button type="button" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-slate-100 text-slate-400 text-xs font-bold rounded-xl border cursor-not-allowed uppercase tracking-wider" disabled>
+                                            🔒 Tahapan Berikutnya Belum Dibuka
+                                        </button>
+                                    @else
+                                        <a href="{{ route('program.apply', $program->id) }}" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 text-white text-xs font-black rounded-xl transition shadow-md uppercase tracking-wider">
+                                            👉 Isi Formulir &amp; Lanjut Tahap Berikutnya
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        @else
+                            {{-- KONDISI 3D: TAHAP AWAL (BELUM PERNAH SUBMIT DAN BELUM PERNAH LOLOS) --}}
+                            <div class="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl">📝</span>
+                                    <h5 class="text-sm font-black text-slate-800 uppercase">Formulir Pendaftaran Tersedia</h5>
+                                </div>
+                                <p class="text-xs text-slate-600 leading-relaxed bg-white p-4 rounded-xl border border-slate-100 shadow-3xs">
+                                    Silakan mulai mengisi berkas dan melengkapi formulir pertanyaan seleksi awal untuk tahap <span class="font-bold text-slate-800">{{ $registration->currentStage->name }}</span> agar dapat dievaluasi oleh panitia.
+                                </p>
+                                <div class="pt-2">
+                                    @if($registration->currentStage && $registration->currentStage->is_locked)
+                                        <button type="button" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-slate-100 text-slate-400 text-xs font-bold rounded-xl border cursor-not-allowed uppercase tracking-wider" disabled>
+                                            🔒 Tahap Belum Dibuka
+                                        </button>
+                                    @else
+                                        <a href="{{ route('program.apply', $program->id) }}" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow-md uppercase tracking-wider">
+                                            ✍️ Mulai Mengisi Formulir
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                    @endif
+                @endif
             </div>
 
             <!-- Transkrip Penilaian -->
@@ -136,7 +239,7 @@
                         <span>{{ $ann->title }}</span>
                         <span class="text-[8px] bg-white px-2 py-0.5 rounded border uppercase">{{ $ann->type }}</span>
                     </summary>
-                    <div class="text-slate-600 pt-3 border-t mt-2">{!! $ann->content !!}</div>
+                    <div class="text-slate-650 pt-3 border-t mt-2 announcement-body">{!! $ann->content !!}</div>
                 </details>
             @empty
                 <p class="text-xs text-slate-400 italic text-center py-4">Belum ada pengumuman.</p>
@@ -421,11 +524,43 @@
         height: 14px;
     }
 
-    #instructionModal img, .prose img {
+    #instructionModal img, .prose img, .announcement-body img {
         max-width: 100%;
         height: auto;
-        border-radius: 8px;
-        margin: 12px 0;
+        border-radius: 12px;
+        margin: 12px auto;
+        display: block;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    .announcement-body a, .prose a {
+        color: #047857; /* Emerald 700 */
+        text-decoration: underline;
+        font-weight: 700;
+        transition: color 0.15s ease-in-out;
+    }
+    .announcement-body a:hover, .prose a:hover {
+        color: #065f46; /* Emerald 800 */
+    }
+    .announcement-body ul, .prose ul {
+        list-style-type: disc !important;
+        margin-left: 1.5rem !important;
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
+        padding-left: 0.5rem !important;
+    }
+    .announcement-body ol, .prose ol {
+        list-style-type: decimal !important;
+        margin-left: 1.5rem !important;
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
+        padding-left: 0.5rem !important;
+    }
+    .announcement-body li, .prose li {
+        margin-bottom: 0.25rem !important;
+    }
+    .announcement-body p, .prose p {
+        margin-bottom: 0.75rem !important;
     }
 </style>
 

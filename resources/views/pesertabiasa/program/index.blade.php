@@ -142,15 +142,32 @@
                         @if($reg)
                             @if($reg->status === 'passed')
                                 {{-- SELEBRASI SELESAI & PENERBITAN NOMOR INDUK RESMI --}}
-                                <div class="bg-gradient-to-br from-emerald-600 to-green-700 text-white p-3.5 rounded-xl space-y-1.5 shadow-sm">
-                                    <div class="text-xs font-black uppercase tracking-wider">🎉 SELAMAT! ANDA DITERIMA RESMI</div>
-                                    <div class="text-[11px] text-emerald-100 leading-snug">Anda dinyatakan lulus final seleksi. Berikut Kode Identitas Nomor Induk Program Anda:</div>
-                                    <div class="text-sm font-mono font-bold tracking-widest bg-emerald-900/40 p-1.5 rounded-lg text-center border border-emerald-500/30">
-                                        {{ $reg->final_id_number ?? 'KODE_PROG_GENERATING' }}
-                                    </div>
-                                </div>
+                                 <div class="bg-gradient-to-br from-emerald-600 to-green-700 text-white p-3.5 rounded-xl space-y-2.5 shadow-sm animate-in fade-in duration-300">
+                                     <div class="text-xs font-black uppercase tracking-wider">🎉 SELAMAT! ANDA DITERIMA RESMI</div>
+                                     <div class="text-[11px] text-emerald-100 leading-snug">Anda dinyatakan lulus final seleksi. Berikut Kode Identitas Nomor Induk Program Anda:</div>
+                                     <div class="text-sm font-mono font-bold tracking-widest bg-emerald-900/40 p-1.5 rounded-lg text-center border border-emerald-500/30">
+                                         {{ $reg->final_id_number ?? 'KODE_PROG_GENERATING' }}
+                                     </div>
+                                     <div class="pt-1">
+                                         <a href="{{ route('programs.internal.dashboard', $program->id) }}" class="block w-full text-center py-2.5 bg-white text-emerald-700 hover:bg-emerald-50 font-extrabold rounded-xl transition-all text-xs uppercase tracking-wider shadow-sm flex items-center justify-center gap-1">
+                                             👉 Silakan Cek Katalog Program Saya
+                                         </a>
+                                     </div>
+                                 </div>
                             @elseif($reg->status === 'failed')
                                 {{-- JIKA GUGUR DI TENGAH JALAN --}}
+                                @php
+                                    $failedStageLog = $reg->stageData->where('status', 'failed')->first();
+                                    $failedStage = $failedStageLog ? $failedStageLog->stage : ($reg->currentStage ?? null);
+                                @endphp
+                                @if($failedStage && $failedStage->fail_announcement)
+                                    <div class="p-3 bg-rose-50 border border-rose-100 rounded-xl text-xs text-slate-700 mb-3 space-y-1.5 shadow-3xs">
+                                        <div class="font-bold text-rose-850 uppercase tracking-wide text-[9px] flex items-center gap-1">📢 Pengumuman Gugur Tahap: {{ $failedStage->name }}</div>
+                                        <div class="announcement-body leading-relaxed text-[11px] bg-white p-2.5 rounded-lg border max-h-40 overflow-y-auto">
+                                            {!! $failedStage->fail_announcement !!}
+                                        </div>
+                                    </div>
+                                @endif
                                 <button type="button" class="w-full py-2 bg-slate-200 text-slate-400 text-xs font-bold rounded-xl cursor-not-allowed uppercase tracking-wider border" disabled>
                                     ❌ Langkah Seleksi Anda Terhenti
                                 </button>
@@ -162,11 +179,14 @@
                                     </button>
                                 @else
                                     {{-- JIKA SEDANG ON PROCESS SELEKSI BERJENJANG --}}
-                                    @php
-                                        $activeStageLog = $reg->stageData->where('program_stage_id', $reg->current_stage_id)->first();
-                                        $hasSubmittedActiveStage = ($activeStageLog && !empty($activeStageLog->form_values));
-                                    @endphp
-
+                                     @php
+                                         $activeStageLog = $reg->stageData->where('program_stage_id', $reg->current_stage_id)->first();
+                                         $hasSubmittedActiveStage = ($activeStageLog && !empty($activeStageLog->form_values) && $activeStageLog->status !== 'draft');
+                                         $lastPassedStageData = $reg->stageData->where('status', 'passed')->sortByDesc(function($log) {
+                                             return $log->stage?->sequence ?? 0;
+                                         })->first();
+                                     @endphp
+ 
                                      @if($hasSubmittedActiveStage)
                                          @if($activeStageLog->status === 'revision')
                                              <a href="{{ route('program.apply', $program->id) }}"
@@ -181,13 +201,27 @@
                                              </button>
                                          @endif
                                      @else
-                                        <a href="{{ route('program.apply', $program->id) }}"
-                                           class="block w-full py-2.5 text-center bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold rounded-xl shadow-md shadow-amber-100 transition-all text-xs uppercase tracking-wider animate-pulse">
-                                            📝 ISI FORMULIR: {{ $reg->currentStage->name }} &rarr;
-                                        </a>
-                                    @endif
-                                @endif
-                            @endif
+                                         @if($lastPassedStageData)
+                                             <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-xs text-slate-700 mb-3 space-y-1.5 shadow-3xs">
+                                                 <div class="font-bold text-emerald-850 uppercase tracking-wide text-[9px] flex items-center gap-1">🎉 Selamat! Lolos Tahap: {{ $lastPassedStageData->stage->name }}</div>
+                                                 <div class="announcement-body leading-relaxed text-[11px] bg-white p-2.5 rounded-lg border max-h-40 overflow-y-auto">
+                                                     {!! $lastPassedStageData->stage->pass_announcement !!}
+                                                 </div>
+                                             </div>
+                                         @endif
+                                         @if($reg->currentStage && $reg->currentStage->is_locked)
+                                             <button type="button" class="w-full py-2.5 bg-slate-100 text-slate-400 border border-slate-200 text-xs font-bold rounded-xl cursor-not-allowed uppercase tracking-wider flex items-center justify-center gap-1.5" disabled>
+                                                 🔒 TAHAPAN BELUM DIBUKA: {{ $reg->currentStage->name }}
+                                             </button>
+                                         @else
+                                             <a href="{{ route('program.apply', $program->id) }}"
+                                                class="block w-full py-2.5 text-center bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold rounded-xl shadow-md shadow-amber-100 transition-all text-xs uppercase tracking-wider animate-pulse">
+                                                 📝 ISI FORMULIR: {{ $reg->currentStage->name }} &rarr;
+                                             </a>
+                                         @endif
+                                     @endif
+                                 @endif
+                             @endif
                         @else
                             {{-- BELUM DAFTAR SAMA SEKALI --}}
                             @if($isClosed)
@@ -195,10 +229,20 @@
                                     🔒 Registrasi Ditutup
                                 </button>
                             @else
-                                <a href="{{ route('program.apply', $program->id) }}"
-                                   class="block w-full py-2.5 text-center bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white font-bold rounded-xl shadow-md shadow-emerald-50 transition-all text-xs uppercase tracking-wider">
-                                    Ikuti Program Kerja
-                                </a>
+                                @php
+                                    $firstStage = $program->stages()->orderBy('sequence')->first();
+                                    $isFirstStageLocked = $firstStage ? $firstStage->is_locked : false;
+                                @endphp
+                                @if($isFirstStageLocked)
+                                    <button type="button" class="w-full py-2.5 bg-slate-100 text-slate-400 border border-slate-200 text-xs font-bold rounded-xl cursor-not-allowed uppercase tracking-wider flex items-center justify-center gap-1.5" disabled>
+                                        🔒 PENDAFTARAN BELUM DIBUKA
+                                    </button>
+                                @else
+                                    <a href="{{ route('program.apply', $program->id) }}"
+                                       class="block w-full py-2.5 text-center bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white font-bold rounded-xl shadow-md shadow-emerald-50 transition-all text-xs uppercase tracking-wider">
+                                        Ikuti Program Kerja
+                                    </a>
+                                @endif
                             @endif
                         @endif
                     </div>
@@ -296,6 +340,21 @@
         modal.classList.add('hidden');
         modal.classList.remove('flex');
     }
+
+    // Clear autosave drafts if form application succeeded
+    @if(session('success'))
+        try {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('gli_draft_')) {
+                    localStorage.removeItem(key);
+                    i--;
+                }
+            }
+        } catch(e) {
+            console.error('Error clearing local drafts:', e);
+        }
+    @endif
 </script>
 <style>
     /* Styling scrollbar kustom agar elegan */
@@ -311,6 +370,14 @@
     }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
         background: #94a3b8;
+    }
+    .announcement-body img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 8px auto;
+        display: block;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 </style>
 @endsection

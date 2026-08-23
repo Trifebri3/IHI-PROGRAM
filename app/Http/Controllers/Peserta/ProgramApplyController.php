@@ -64,7 +64,8 @@ if ($request->sort === 'soonest') {
             }
             $previousValues = collect();
             $stageData = null;
-            return view('pesertabiasa.program.apply', compact('program', 'currentStage', 'registration', 'previousValues', 'stageData'));
+            $isStageLocked = (bool)$currentStage->is_locked;
+            return view('pesertabiasa.program.apply', compact('program', 'currentStage', 'registration', 'previousValues', 'stageData', 'isStageLocked'));
         }
 
         // JIKA SUDAH DAFTAR TAPI STATUSNYA GAGAL ATAU LULUS FINAL: Kunci Akses Form
@@ -74,21 +75,22 @@ if ($request->sort === 'soonest') {
 
         // JIKA SEDANG BERPROSES: Ambil tahapan aktif yang ditunjuk oleh `current_stage_id`
         $currentStage = ProgramStage::where('program_id', $id)->findOrFail($registration->current_stage_id);
+        $isStageLocked = (bool)$currentStage->is_locked;
 
         // Cek apakah user sudah mengirim jawaban untuk tahap aktif ini?
         $stageData = RegistrationStageData::where('registration_id', $registration->id)
             ->where('program_stage_id', $currentStage->id)
             ->first();
 
-        // Kunci jika sudah kirim DAN statusnya bukan 'failed' atau 'revision' (artinya 'pending' atau 'passed')
-        if ($stageData && !empty($stageData->form_values) && !in_array($stageData->status, ['failed', 'revision'])) {
+        // Kunci jika sudah kirim DAN statusnya bukan 'failed', 'revision', atau 'draft' (artinya 'pending' atau 'passed')
+        if ($stageData && !empty($stageData->form_values) && !in_array($stageData->status, ['failed', 'revision', 'draft'])) {
             return redirect()->route('programs.catalog')->with('error', 'Anda sudah mengirimkan berkas untuk ' . $currentStage->name . '. Mohon tunggu penilaian panitia!');
         }
 
-        // Ambil data jawaban lama untuk perbaikan/revisi
+        // Ambil data jawaban lama untuk perbaikan/revisi/draf
         $previousValues = $stageData ? collect($stageData->form_values)->keyBy('field_name') : collect();
 
-        return view('pesertabiasa.program.apply', compact('program', 'currentStage', 'registration', 'previousValues', 'stageData'));
+        return view('pesertabiasa.program.apply', compact('program', 'currentStage', 'registration', 'previousValues', 'stageData', 'isStageLocked'));
     }
 
     public function submitApply(Request $request, $id)
@@ -109,6 +111,10 @@ if ($request->sort === 'soonest') {
         }
 
         $currentStage = ProgramStage::where('program_id', $id)->findOrFail($registration ? $registration->current_stage_id : ProgramStage::where('program_id', $id)->orderBy('sequence')->firstOrFail()->id);
+
+        if ($currentStage->is_locked) {
+            return redirect()->back()->with('error', 'Tahapan ini belum dibuka atau sedang dikunci oleh panitia.');
+        }
 
         $stageData = $registration ? RegistrationStageData::where('registration_id', $registration->id)
             ->where('program_stage_id', $currentStage->id)
@@ -141,7 +147,7 @@ if ($request->sort === 'soonest') {
                 $rules[$fieldName] = $isFieldRequired ? 'required' : 'nullable';
                 
                 if ($field['type'] === 'file' || $field['type'] === 'image') {
-                    $rules[$fieldName] .= '|file|mimes:pdf,doc,docx,xls,xlsx,zip,rar,jpg,jpeg,png|max:10240';
+                    $rules[$fieldName] .= '|file|mimes:pdf,doc,docx,xls,xlsx,zip,rar,jpg,jpeg,png|max:5120';
                 } elseif ($field['type'] === 'datetime') {
                     $rules[$fieldName] .= '|date';
                 } elseif ($field['type'] === 'url') {
@@ -151,6 +157,7 @@ if ($request->sort === 'soonest') {
                 }
             }
             $messages[$fieldName . '.required'] = "Isian '" . $field['name'] . "' wajib dipenuhi!";
+            $messages[$fieldName . '.max'] = "Ukuran berkas '" . $field['name'] . "' tidak boleh melebihi 5 MB!";
             if ($field['type'] === 'url') {
                 $messages[$fieldName . '.url'] = "Isian '" . $field['name'] . "' wajib diisi dengan link URL yang valid (diawali dengan http:// atau https://)!";
             }
@@ -222,5 +229,109 @@ if ($request->sort === 'soonest') {
         });
 
         return redirect()->route('programs.catalog')->with('success', 'Berkas untuk ' . $currentStage->name . ' berhasil diunggah!');
+    }
+
+    public function saveDraft(Request $request, $id)
+    {
+        try {
+            $program = Program::findOrFail($id);
+
+            $registration = Registration::where('user_id', auth()->id())
+                ->where('program_id', $id)
+                ->first();
+
+            if ($registration && $registration->status !== 'process') {
+                return response()->json(['success' => false, 'message' => 'Pendaftaran program ini sudah selesai.'], 403);
+            }
+
+            $currentStage = ProgramStage::where('program_id', $id)->findOrFail($registration ? $registration->current_stage_id : ProgramStage::where('program_id', $id)->orderBy('sequence')->firstOrFail()->id);
+
+            if ($currentStage->is_locked) {
+                return response()->json(['success' => false, 'message' => 'Tahapan ini belum dibuka atau sedang dikunci oleh panitia.'], 403);
+            }
+
+            $stageData = $registration ? RegistrationStageData::where('registration_id', $registration->id)
+                ->where('program_stage_id', $currentStage->id)
+                ->first() : null;
+
+            $previousValues = $stageData ? collect($stageData->form_values)->keyBy('field_name') : collect();
+            $formSchema = $currentStage->form_schema ?? [];
+
+            $processedValues = [];
+
+            foreach ($formSchema as $index => $field) {
+                $fieldName = "field_" . $index;
+                $value = $request->input($fieldName);
+
+                if ($field['type'] === 'checkbox' && is_array($value)) {
+                    $value = implode(', ', $value);
+                }
+
+                if ($field['type'] === 'file' || $field['type'] === 'image') {
+                    if ($request->hasFile($fieldName)) {
+                        $value = $request->file($fieldName)->store('program_submissions', 'public');
+                        // Hapus file lama jika diunggah file pengganti baru
+                        $oldPath = $previousValues->get($field['name'])['value'] ?? null;
+                        if ($oldPath) {
+                            \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+                        }
+                    } else {
+                        // Pertahankan file lama
+                        $value = $previousValues->get($field['name'])['value'] ?? null;
+                    }
+                }
+
+                $processedValues[] = [
+                    'field_name' => $field['name'],
+                    'type' => $field['type'],
+                    'value' => $value
+                ];
+            }
+
+            DB::transaction(function() use ($request, $id, &$registration, $currentStage, $processedValues) {
+                if (!$registration) {
+                    $registration = Registration::create([
+                        'user_id' => auth()->id(),
+                        'program_id' => $id,
+                        'current_stage_id' => $currentStage->id,
+                        'status' => 'process',
+                        'motivation' => $request->motivation ? trim($request->motivation) : null
+                    ]);
+
+                    RegistrationStageData::create([
+                        'registration_id' => $registration->id,
+                        'program_stage_id' => $currentStage->id,
+                        'form_values' => $processedValues,
+                        'status' => 'draft'
+                    ]);
+                } else {
+                    if ($request->has('motivation')) {
+                        $registration->update([
+                            'motivation' => $request->motivation ? trim($request->motivation) : $registration->motivation
+                        ]);
+                    }
+
+                    RegistrationStageData::updateOrCreate(
+                        [
+                            'registration_id' => $registration->id,
+                            'program_stage_id' => $currentStage->id
+                        ],
+                        [
+                            'form_values' => $processedValues,
+                            'status' => 'draft'
+                        ]
+                    );
+                }
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Draf berhasil disimpan di database!',
+                'draft_saved_at' => now()->format('H:i:s')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Gagal menyimpan draf ke database: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan sistem saat menyimpan draf.'], 500);
+        }
     }
 }

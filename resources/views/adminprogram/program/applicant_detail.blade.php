@@ -241,6 +241,14 @@
                 ->exists();
         @endphp
 
+        {{-- Form untuk Tandai Sudah Diperiksa --}}
+        <form id="mark-checked-form" action="{{ route('adminprogram.workspace.update_checking', $program->id) }}" method="POST" class="hidden">
+            @csrf
+            <input type="hidden" name="registration_ids[]" value="{{ $registration->id }}">
+            <input type="hidden" name="is_checked" value="checked">
+            <input type="hidden" name="redirect_url" value="{{ route('adminprogram.programs.applicant.show', [$program->id, $registration->id]) }}">
+        </form>
+
         <form id="evaluate-form" action="{{ route('adminprogram.programs.applicant.evaluate', [$program->id, $registration->id]) }}" method="POST" class="p-5 bg-gradient-to-br from-emerald-50/20 to-white border border-emerald-100 rounded-2xl space-y-5" x-data="{ action: '{{ (isset($stageData) && $stageData->status === 'revision') ? 'revision' : 'pass' }}' }">
             @csrf
             <span class="block text-xs font-bold uppercase text-emerald-950 tracking-wider">Terbitkan Lembar Otoritas Kelulusan</span>
@@ -288,7 +296,10 @@
                 <textarea name="reviewer_notes" placeholder="Tuliskan alasan penolakan atau catatan tambahan untuk peserta..." class="w-full p-2.5 mt-1 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500" rows="3"></textarea>
             </div>
 
-            <div class="pt-4 border-t flex justify-end">
+            <div class="pt-4 border-t flex justify-end gap-3">
+                <button type="submit" form="mark-checked-form" class="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-green-700 text-white font-bold rounded-xl shadow-md hover:from-emerald-700 transition-all text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer">
+                    ✓ Tandai Sudah Diperiksa
+                </button>
                 <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-black text-white font-bold rounded-xl shadow-md transition-all text-xs uppercase tracking-wider">
                     Eksekusi & Kirim Pengumuman
                 </button>

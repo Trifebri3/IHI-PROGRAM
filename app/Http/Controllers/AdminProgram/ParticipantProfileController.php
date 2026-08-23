@@ -29,9 +29,19 @@ class ParticipantProfileController extends Controller
             ? Program::pluck('id')->toArray() 
             : $user->managedPrograms()->pluck('programs.id')->toArray();
 
+        $showAll = $request->has('show_all_applicants') && $request->show_all_applicants == '1';
+
         // 2. Query data registrasi dasar
         $query = Registration::with(['user.profile', 'user.address', 'user.verification', 'program'])
             ->whereIn('program_id', $managedProgramIds);
+
+        if (!$showAll) {
+            $query->where('status', 'passed');
+        } else {
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+        }
 
         // 3. Terapkan Filter Pencarian (Nama / Email / NI / ID Peserta)
         if ($request->filled('search')) {
@@ -39,7 +49,7 @@ class ParticipantProfileController extends Controller
             $query->where(function($q) use ($search) {
                 $q->whereHas('user', function ($qu) use ($search) {
                     $qu->where('name', 'LIKE', $search)
-                      ->orWhere('email', 'LIKE', $search);
+                       ->orWhere('email', 'LIKE', $search);
                 })
                 ->orWhere('final_id_number', 'LIKE', $search)
                 ->orWhere('user_id', $search);
@@ -69,11 +79,6 @@ class ParticipantProfileController extends Controller
         // 8. Terapkan Filter Status Keikutsertaan
         if ($request->filled('participant_status')) {
             $query->where('participant_status', $request->participant_status);
-        }
-
-        // 9. Terapkan Filter Status Kelulusan
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
         }
 
         // 10. Terapkan Filter Status Verifikasi KYC
@@ -155,31 +160,47 @@ class ParticipantProfileController extends Controller
         $registrations = $query->paginate(20)->withQueryString();
 
         // 17. Ambil opsi filter unik dari database untuk mempermudah Dropdown
-        $provinces = Address::whereNotNull('provinsi')
+        $passedUserIdsSubquery = Registration::whereIn('program_id', $managedProgramIds)
+            ->when(!$showAll, function($q) {
+                $q->where('status', 'passed');
+            })
+            ->select('user_id');
+
+        $provinces = Address::whereIn('user_id', $passedUserIdsSubquery)
+            ->whereNotNull('provinsi')
             ->where('provinsi', '!=', '')
             ->distinct()
             ->orderBy('provinsi')
             ->pluck('provinsi')
             ->toArray();
 
-        $batches = Registration::whereIn('program_id', $managedProgramIds)
-            ->whereNotNull('batch')
+        $batchesQuery = Registration::whereIn('program_id', $managedProgramIds);
+        if (!$showAll) {
+            $batchesQuery->where('status', 'passed');
+        }
+        $batches = $batchesQuery->whereNotNull('batch')
             ->where('batch', '!=', '')
             ->distinct()
             ->orderBy('batch', 'desc')
             ->pluck('batch')
             ->toArray();
 
-        $locations = Registration::whereIn('program_id', $managedProgramIds)
-            ->whereNotNull('location')
+        $locationsQuery = Registration::whereIn('program_id', $managedProgramIds);
+        if (!$showAll) {
+            $locationsQuery->where('status', 'passed');
+        }
+        $locations = $locationsQuery->whereNotNull('location')
             ->where('location', '!=', '')
             ->distinct()
             ->orderBy('location')
             ->pluck('location')
             ->toArray();
 
-        $regions = Registration::whereIn('program_id', $managedProgramIds)
-            ->whereNotNull('region')
+        $regionsQuery = Registration::whereIn('program_id', $managedProgramIds);
+        if (!$showAll) {
+            $regionsQuery->where('status', 'passed');
+        }
+        $regions = $regionsQuery->whereNotNull('region')
             ->where('region', '!=', '')
             ->distinct()
             ->orderBy('region')
@@ -465,14 +486,15 @@ class ParticipantProfileController extends Controller
     }
 
     /**
-     * Generator Nomor Induk (NI) Massal / Semi-Otomatis
+     * Generator Nomor Induk (NI) Massal / Semi-Otomatis dengan Formula Pola Kustom
      */
     public function bulkGenerateNi(Request $request)
     {
         $request->validate([
             'program_id' => 'required|exists:programs,id',
-            'sort_by' => 'required|in:province,name',
-            'prefix' => 'nullable|string|max:10'
+            'sort_by' => 'required|in:province,name,created_at',
+            'formula_template' => 'required|string',
+            'program_code' => 'nullable|string|max:20'
         ]);
 
         $user = Auth::user();
@@ -485,7 +507,7 @@ class ParticipantProfileController extends Controller
             abort(403, 'Aksi ditolak: Program di luar wewenang pengelolaan Anda.');
         }
 
-        $prefix = $request->filled('prefix') ? strtoupper(trim($request->prefix)) : 'PRG' . date('Y');
+        $template = $request->formula_template;
 
         // Ambil semua registrasi yang statusnya 'passed' (Lulus) dan belum memiliki NI
         $query = Registration::with(['user.address'])
@@ -496,17 +518,19 @@ class ParticipantProfileController extends Controller
                   ->orWhere('final_id_number', '');
             });
 
-        // Urutkan query sesuai preferensi penyortiran (Provinsi atau Nama)
+        // Urutkan query sesuai preferensi penyortiran
         if ($request->sort_by === 'province') {
             $query->leftJoin('addresses', 'registrations.user_id', '=', 'addresses.user_id')
                 ->select('registrations.*')
                 ->orderBy('addresses.provinsi', 'asc')
                 ->orderBy('registrations.created_at', 'asc');
-        } else {
+        } elseif ($request->sort_by === 'name') {
             $query->leftJoin('users', 'registrations.user_id', '=', 'users.id')
                 ->select('registrations.*')
                 ->orderBy('users.name', 'asc')
                 ->orderBy('registrations.created_at', 'asc');
+        } else {
+            $query->orderBy('registrations.created_at', 'asc');
         }
 
         $registrationsToProcess = $query->get();
@@ -515,32 +539,304 @@ class ParticipantProfileController extends Controller
             return redirect()->back()->with('warning', 'Tidak ditemukan peserta berstatus Lulus (Passed) yang belum memiliki Nomor Induk.');
         }
 
+        // Get sequence pattern N length from formula (e.g. {SEQ:4} or {SEQ:5})
+        preg_match('/\{SEQ:(\d+)\}/i', $template, $seqMatches);
+        $seqLength = isset($seqMatches[1]) ? (int)$seqMatches[1] : 5;
+
         $successCount = 0;
-        DB::transaction(function () use ($registrationsToProcess, $prefix, &$successCount) {
-            $year = date('Y');
-            // Menghitung jumlah awal pendaftaran yang sudah memiliki NI agar urutan berlanjut
-            $baseCount = Registration::whereYear('created_at', $year)
+        DB::transaction(function () use ($registrationsToProcess, $template, $request, $seqLength, &$successCount) {
+            // Base count of registrations of this program that already have final_id_number
+            $baseCount = Registration::where('program_id', $request->program_id)
                 ->whereNotNull('final_id_number')
                 ->where('final_id_number', '!=', '')
                 ->count();
 
             foreach ($registrationsToProcess as $index => $reg) {
                 $sequence = $baseCount + $index + 1;
-                $finalIdNumber = $prefix . str_pad($sequence, 5, '0', STR_PAD_LEFT);
 
+                // Resolve province and regency codes
+                $provName = $reg->user->address->provinsi ?? '';
+                $regName = $reg->user->address->kabupaten ?? '';
+
+                $provCode = $this->getProvinceCode($provName);
+                $regencyCode = $this->getRegencyCode($provCode, $regName);
+
+                $placeholders = [
+                    '{YEAR}' => date('Y'),
+                    '{MONTH}' => date('m'),
+                    '{PROGRAM_CODE}' => strtoupper(trim($request->program_code ?? 'PRG')),
+                    '{PROV_CODE}' => $provCode,
+                    '{REGENCY_CODE}' => $regencyCode,
+                ];
+
+                // Case-insensitive replace for placeholders (except SEQ:N)
+                $templateWithPlaceholders = str_ireplace(array_keys($placeholders), array_values($placeholders), $template);
+
+                // Replace sequence with padding
+                $finalIdNumber = preg_replace('/\{SEQ:\d+\}/i', str_pad($sequence, $seqLength, '0', STR_PAD_LEFT), $templateWithPlaceholders);
+
+                // Ensure uniqueness
                 while (Registration::where('final_id_number', $finalIdNumber)->exists()) {
                     $sequence++;
-                    $finalIdNumber = $prefix . str_pad($sequence, 5, '0', STR_PAD_LEFT);
+                    $finalIdNumber = preg_replace('/\{SEQ:\d+\}/i', str_pad($sequence, $seqLength, '0', STR_PAD_LEFT), $templateWithPlaceholders);
                 }
 
                 $reg->update([
-                    'final_id_number' => $finalIdNumber
+                    'final_id_number' => strtoupper($finalIdNumber)
                 ]);
                 $successCount++;
             }
         });
 
-        return redirect()->back()->with('success', "Berhasil menjana secara otomatis {$successCount} Nomor Induk (NI) untuk peserta lulus.");
+        return redirect()->back()->with('success', "Berhasil menjana secara otomatis {$successCount} Nomor Induk (NI) dengan formula untuk peserta lulus.");
+    }
+
+    /**
+     * Ekspor Template CSV khusus untuk pengisian Nomor Induk (NIP) secara massal
+     */
+    public function exportNiTemplate(Request $request)
+    {
+        $request->validate([
+            'program_id' => 'required|exists:programs,id'
+        ]);
+
+        $user = Auth::user();
+        $isSuperAdmin = $user->hasRole('Super Admin');
+        $managedProgramIds = $isSuperAdmin 
+            ? Program::pluck('id')->toArray() 
+            : $user->managedPrograms()->pluck('programs.id')->toArray();
+
+        if (!in_array($request->program_id, $managedProgramIds)) {
+            abort(403, 'Aksi ditolak: Program di luar wewenang pengelolaan Anda.');
+        }
+
+        $program = Program::findOrFail($request->program_id);
+
+        // Ambil semua registrasi yang statusnya 'passed' (Lulus) untuk program ini
+        $registrations = Registration::with(['user.address'])
+            ->where('program_id', $request->program_id)
+            ->where('status', 'passed')
+            ->get();
+
+        $filename = "template_ni_" . str_replace(' ', '_', strtolower($program->name)) . "_" . date('Ymd_His') . ".csv";
+        $headers = [
+            "Content-type"        => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $columns = ['ID Registrasi', 'Nama Lengkap', 'Provinsi Asal', 'Nomor Induk Baru'];
+
+        $callback = function() use($registrations, $columns) {
+            $file = fopen('php://output', 'w');
+            fprintf($file, "sep=,\n"); // Force Excel to recognize commas in all locales
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
+            fputcsv($file, $columns);
+
+            foreach ($registrations as $reg) {
+                fputcsv($file, [
+                    $reg->id,
+                    $reg->user->name,
+                    $reg->user->address->provinsi ?? '—',
+                    $reg->final_id_number ?? ''
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Impor file Excel/CSV untuk update Nomor Induk secara massal
+     */
+    public function importNi(Request $request)
+    {
+        $request->validate([
+            'import_file' => 'required|file|mimes:csv,txt|max:2048'
+        ]);
+
+        $file = $request->file('import_file');
+        $filePath = $file->getRealPath();
+
+        $updatedCount = 0;
+        $errorRows = [];
+
+        $user = Auth::user();
+        $isSuperAdmin = $user->hasRole('Super Admin');
+        $managedProgramIds = $isSuperAdmin 
+            ? Program::pluck('id')->toArray() 
+            : $user->managedPrograms()->pluck('programs.id')->toArray();
+
+        DB::transaction(function () use ($filePath, $managedProgramIds, &$updatedCount, &$errorRows) {
+            $handle = fopen($filePath, 'r');
+            if ($handle !== false) {
+                // Skip UTF-8 BOM if present
+                $bom = fread($handle, 3);
+                if ($bom !== "\xEF\xBB\xBF") {
+                    rewind($handle);
+                }
+
+                // Check if the first line is "sep=..."
+                $firstLine = fgets($handle);
+                $delimiter = ',';
+                if ($firstLine !== false) {
+                    $trimmedFirstLine = trim($firstLine);
+                    if (str_starts_with($trimmedFirstLine, 'sep=')) {
+                        $delimiter = str_replace('sep=', '', $trimmedFirstLine);
+                    } else {
+                        // Not sep= line, rewind to beginning
+                        rewind($handle);
+                        $bom = fread($handle, 3);
+                        if ($bom !== "\xEF\xBB\xBF") {
+                            rewind($handle);
+                        }
+                    }
+                }
+
+                // Read header row
+                $header = fgetcsv($handle, 1000, $delimiter);
+                if (!$header || count($header) < 2) {
+                    // Fallback to auto-detect if something went wrong
+                    rewind($handle);
+                    $bom = fread($handle, 3);
+                    if ($bom !== "\xEF\xBB\xBF") {
+                        rewind($handle);
+                    }
+                    
+                    // Skip sep= line if present again in fallback
+                    $firstLine = fgets($handle);
+                    if ($firstLine !== false && str_starts_with(trim($firstLine), 'sep=')) {
+                        // Keep reading
+                    } else {
+                        rewind($handle);
+                        $bom = fread($handle, 3);
+                        if ($bom !== "\xEF\xBB\xBF") {
+                            rewind($handle);
+                        }
+                    }
+
+                    $tempHeader = fgetcsv($handle, 1000, ',');
+                    if (count($tempHeader) < 2) {
+                        rewind($handle);
+                        $bom = fread($handle, 3);
+                        if ($bom !== "\xEF\xBB\xBF") {
+                            rewind($handle);
+                        }
+                        // Skip sep= line
+                        $firstLine = fgets($handle);
+                        if ($firstLine !== false && str_starts_with(trim($firstLine), 'sep=')) {
+                            // Keep reading
+                        } else {
+                            rewind($handle);
+                            $bom = fread($handle, 3);
+                            if ($bom !== "\xEF\xBB\xBF") {
+                                rewind($handle);
+                            }
+                        }
+                        $delimiter = ';';
+                        $header = fgetcsv($handle, 1000, ';');
+                    } else {
+                        $delimiter = ',';
+                        $header = $tempHeader;
+                    }
+                }
+
+                $rowNum = 1;
+                while (($data = fgetcsv($handle, 1000, $delimiter)) !== false) {
+                    $rowNum++;
+                    // Check if row is empty
+                    if (empty($data) || count($data) < 4) continue;
+
+                    $registrationId = trim($data[0]);
+                    $newNi = trim($data[3]);
+
+                    if (empty($registrationId) || $registrationId === 'ID Registrasi') continue;
+
+                    $registration = Registration::find($registrationId);
+                    if (!$registration) {
+                        $errorRows[] = "Baris {$rowNum}: ID Registrasi '{$registrationId}' tidak ditemukan.";
+                        continue;
+                    }
+
+                    // Pastikan registrasi berada dalam program yang dikelola admin
+                    if (!in_array($registration->program_id, $managedProgramIds)) {
+                        $errorRows[] = "Baris {$rowNum}: Anda tidak memiliki otoritas atas pendaftar ID '{$registrationId}'.";
+                        continue;
+                    }
+
+                    if (empty($newNi)) {
+                        // Reset NI jika kosong
+                        $registration->update(['final_id_number' => null]);
+                        $updatedCount++;
+                        continue;
+                    }
+
+                    // Validasi unique final_id_number
+                    $exists = Registration::where('final_id_number', $newNi)
+                        ->where('id', '!=', $registration->id)
+                        ->exists();
+
+                    if ($exists) {
+                        $errorRows[] = "Baris {$rowNum}: Nomor Induk '{$newNi}' sudah digunakan oleh peserta lain.";
+                        continue;
+                    }
+
+                    $registration->update(['final_id_number' => strtoupper($newNi)]);
+                    $updatedCount++;
+                }
+                fclose($handle);
+            }
+        });
+
+        if (!empty($errorRows)) {
+            $errorMsg = implode('<br>', $errorRows);
+            return redirect()->back()
+                ->with('success', "Berhasil memperbarui {$updatedCount} Nomor Induk.")
+                ->with('warning', "Beberapa baris gagal diimpor:<br>{$errorMsg}");
+        }
+
+        return redirect()->back()->with('success', "Berhasil mengimpor & memperbarui {$updatedCount} Nomor Induk secara massal.");
+    }
+
+    /**
+     * Helper resolving nama provinsi ke kode BPS 2 digit
+     */
+    private function getProvinceCode($provinceName)
+    {
+        if (empty($provinceName)) return '00';
+        $path = base_path('dataalamat/data-indonesia/provinsi.json');
+        if (file_exists($path)) {
+            $provinces = json_decode(file_get_contents($path), true);
+            foreach ($provinces as $p) {
+                if (strcasecmp(trim($p['nama']), trim($provinceName)) === 0) {
+                    return str_pad($p['id'], 2, '0', STR_PAD_LEFT);
+                }
+            }
+        }
+        return '00';
+    }
+
+    /**
+     * Helper resolving nama kabupaten/kota ke kode BPS 4 digit
+     */
+    private function getRegencyCode($provCode, $regencyName)
+    {
+        if (empty($provCode) || empty($regencyName)) return '0000';
+        $path = base_path("dataalamat/data-indonesia/kabupaten/{$provCode}.json");
+        if (file_exists($path)) {
+            $regencies = json_decode(file_get_contents($path), true);
+            foreach ($regencies as $r) {
+                $cleanName = str_ireplace(['kabupaten', 'kota', 'kab.'], '', $regencyName);
+                $cleanRegName = str_ireplace(['kabupaten', 'kota', 'kab.'], '', $r['nama']);
+                if (strcasecmp(trim($cleanRegName), trim($cleanName)) === 0) {
+                    return str_pad($r['id'], 4, '0', STR_PAD_LEFT);
+                }
+            }
+        }
+        return $provCode . '00';
     }
 
     /**

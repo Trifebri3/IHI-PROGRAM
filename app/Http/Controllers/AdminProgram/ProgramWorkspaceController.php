@@ -41,8 +41,18 @@ class ProgramWorkspaceController extends Controller
 
         if ($tab === 'reviewed') {
             $query->whereIn('status', ['passed', 'failed']);
+        } elseif ($tab === 'draft') {
+            $query->where('status', 'process')
+                ->whereHas('stageData', function ($q) {
+                    $q->whereColumn('program_stage_id', 'registrations.current_stage_id')
+                      ->where('status', 'draft');
+                });
         } else {
-            $query->where('status', 'process');
+            $query->where('status', 'process')
+                ->whereDoesntHave('stageData', function ($q) {
+                    $q->whereColumn('program_stage_id', 'registrations.current_stage_id')
+                      ->where('status', 'draft');
+                });
         }
 
         if ($request->filled('search')) {
@@ -81,6 +91,26 @@ class ProgramWorkspaceController extends Controller
             ->where('program_id', $program->id)
             ->latest()
             ->get();
+
+        $pendingCount = Registration::where('program_id', $program->id)
+            ->where('status', 'process')
+            ->whereDoesntHave('stageData', function ($q) {
+                $q->whereColumn('program_stage_id', 'registrations.current_stage_id')
+                  ->where('status', 'draft');
+            })
+            ->count();
+
+        $draftCount = Registration::where('program_id', $program->id)
+            ->where('status', 'process')
+            ->whereHas('stageData', function ($q) {
+                $q->whereColumn('program_stage_id', 'registrations.current_stage_id')
+                  ->where('status', 'draft');
+            })
+            ->count();
+
+        $reviewedCount = Registration::where('program_id', $program->id)
+            ->whereIn('status', ['passed', 'failed'])
+            ->count();
 
         $announcements = ProgramAnnouncement::where('program_id', $id)->orderBy('created_at', 'desc')->get();
 
@@ -213,7 +243,10 @@ class ProgramWorkspaceController extends Controller
             'announcementViewsCount',
             'stageFormRecaps',
             'recentLogs',
-            'provinces'
+            'provinces',
+            'pendingCount',
+            'draftCount',
+            'reviewedCount'
         ));
     }
 
@@ -280,6 +313,17 @@ class ProgramWorkspaceController extends Controller
 
         return redirect()->route('adminprogram.programs.workspace', $id)
             ->with('success', 'Tahapan berhasil dihapus dan urutan disinkronkan kembali.');
+    }
+
+    public function toggleLockStage($id, $stageId)
+    {
+        $stage = ProgramStage::where('program_id', $id)->findOrFail($stageId);
+        $stage->is_locked = !$stage->is_locked;
+        $stage->save();
+
+        $statusMsg = $stage->is_locked ? "Tahapan '{$stage->name}' berhasil dikunci!" : "Kunci tahapan '{$stage->name}' berhasil dibuka!";
+        return redirect()->route('adminprogram.programs.workspace', $id)
+            ->with('success', $statusMsg);
     }
 
     public function storeFormField(Request $request, $id, $stageId)
@@ -441,6 +485,27 @@ class ProgramWorkspaceController extends Controller
         ->where('program_id', $id)
         ->first();
 
+    // 5. Otomatis tandai status periksa di metadata menjadi 'opened' (Sudah Dibuka)
+    $checkingFile = storage_path('app/checking_metadata_' . $id . '.json');
+    $checkingData = [];
+    if (file_exists($checkingFile)) {
+        $checkingData = json_decode(file_get_contents($checkingFile), true) ?? [];
+    }
+    
+    $existing = $checkingData[$registrationId] ?? null;
+    $currentStatus = $existing['status'] ?? (($existing && !empty($existing['is_checked'])) ? 'checked' : 'unopened');
+    
+    if ($currentStatus === 'unopened') {
+        $checkingData[$registrationId] = [
+            'is_checked' => false,
+            'status' => 'opened',
+            'checked_at' => now()->format('Y-m-d H:i'),
+            'checked_by' => auth()->user()->name ?? 'Admin',
+            'batch_name' => $existing['batch_name'] ?? null
+        ];
+        file_put_contents($checkingFile, json_encode($checkingData, JSON_PRETTY_PRINT));
+    }
+
     return view('adminprogram.program.applicant_detail', compact('program', 'registration', 'stageData', 'biodataSubmission'));
 }
 
@@ -538,6 +603,32 @@ public function evaluateApplicant(Request $request, $id, $registrationId)
     }
 });
 
+    // Update checking metadata to sync with evaluation decision
+    $checkingFile = storage_path('app/checking_metadata_' . $id . '.json');
+    $checkingData = [];
+    if (file_exists($checkingFile)) {
+        $checkingData = json_decode(file_get_contents($checkingFile), true) ?? [];
+    }
+    
+    $actionStatus = 'unopened';
+    if ($request->action === 'pass') {
+        $actionStatus = 'passed';
+    } elseif ($request->action === 'fail') {
+        $actionStatus = 'failed';
+    } elseif ($request->action === 'revision') {
+        $actionStatus = 'revision';
+    }
+    
+    $existing = $checkingData[$registrationId] ?? null;
+    $checkingData[$registrationId] = [
+        'is_checked' => in_array($actionStatus, ['passed', 'failed', 'revision']),
+        'status' => $actionStatus,
+        'checked_at' => now()->format('Y-m-d H:i'),
+        'checked_by' => auth()->user()->name ?? 'Admin',
+        'batch_name' => $existing['batch_name'] ?? null
+    ];
+    file_put_contents($checkingFile, json_encode($checkingData, JSON_PRETTY_PRINT));
+
     return redirect()->route('adminprogram.programs.workspace', $id)
         ->with('success', 'Keputusan evaluasi berkas kelulusan berhasil diterbitkan!');
 }
@@ -585,6 +676,23 @@ public function instantPass($id, $registrationId)
         $alumniService = app(\App\Services\AlumniService::class);
         $alumniService->registerAutoAlumni($reg);
     });
+
+    // Update checking metadata to sync with instant pass decision
+    $checkingFile = storage_path('app/checking_metadata_' . $id . '.json');
+    $checkingData = [];
+    if (file_exists($checkingFile)) {
+        $checkingData = json_decode(file_get_contents($checkingFile), true) ?? [];
+    }
+    
+    $existing = $checkingData[$registrationId] ?? null;
+    $checkingData[$registrationId] = [
+        'is_checked' => true,
+        'status' => 'passed',
+        'checked_at' => now()->format('Y-m-d H:i'),
+        'checked_by' => auth()->user()->name ?? 'Admin',
+        'batch_name' => $existing['batch_name'] ?? null
+    ];
+    file_put_contents($checkingFile, json_encode($checkingData, JSON_PRETTY_PRINT));
 
     return redirect()->route('adminprogram.programs.workspace', $id)
         ->with('success', 'Peserta berhasil diluluskan instan, NIA dan piagam kelulusan otomatis diterbitkan!');
@@ -651,6 +759,38 @@ public function storeAnnouncement(Request $request, $id)
 
     return redirect()->route('adminprogram.programs.workspace', $id)
         ->with('success', 'Pengumuman instruksi berhasil disiarkan dan disuntikkan ke email seluruh anggota!');
+}
+
+public function updateAnnouncement(Request $request, $id, $announcementId)
+{
+    $request->validate([
+        'title' => 'required|string|max:255',
+        'content' => 'required|string',
+        'type' => 'required|in:info,instruction,warning'
+    ]);
+
+    $announcement = ProgramAnnouncement::where('program_id', $id)->findOrFail($announcementId);
+    $announcement->update([
+        'title' => trim($request->title),
+        'content' => $request->content,
+        'type' => $request->type
+    ]);
+
+    return redirect()->route('adminprogram.programs.workspace', [$id, 'active_panel' => 'broadcasting'])
+        ->with('success', 'Pengumuman instruksi berhasil diperbarui!');
+}
+
+public function deleteAnnouncement($id, $announcementId)
+{
+    $announcement = ProgramAnnouncement::where('program_id', $id)->findOrFail($announcementId);
+    
+    // Hapus data log tracking pembacaan pengumuman
+    \App\Models\ProgramAnnouncementView::where('program_announcement_id', $announcementId)->delete();
+    
+    $announcement->delete();
+
+    return redirect()->route('adminprogram.programs.workspace', [$id, 'active_panel' => 'broadcasting'])
+        ->with('success', 'Pengumuman instruksi berhasil dihapus secara permanen.');
 }
 
 // MASUKKAN METHOD-METHOD HARDCORE INI DI DALAM CLASS PROGRAMWORKSPACECONTROLLER:
@@ -803,17 +943,45 @@ public function saveApplicantScores(Request $request, $id, $registrationId)
         
         $schema = $stage->form_schema ?? [];
         
-        $headers = ['Nama Peserta', 'Email', 'Tanggal Submit', 'Status Review', 'Catatan Review'];
+        $headers = [
+            'Nama Peserta', 
+            'Email', 
+            'Tanggal Submit', 
+            'Status Review', 
+            'Catatan Review',
+            // Data Alamat Gatekeeper
+            'Negara', 
+            'Provinsi', 
+            'Kabupaten/Kota', 
+            'Kecamatan', 
+            'Desa/Kelurahan', 
+            'Kampung/Dusun', 
+            'Detail Alamat'
+        ];
+
+        // Ambil skema profil/biodata global dinamis dari super admin
+        $globalBiodataFields = \App\Models\BiodataField::all();
+        foreach ($globalBiodataFields as $gField) {
+            $headers[] = '[Profil] ' . $gField->name;
+        }
+
+        // Ambil skema biodata dinamis program
+        $biodataSchemas = \App\Models\ProgramBiodataSchema::where('program_id', $id)->get();
+        foreach ($biodataSchemas as $bSchema) {
+            $headers[] = '[Biodata] ' . $bSchema->field_name;
+        }
+
+        // Dan kuesioner dinamis dari tahapan ini
         foreach ($schema as $field) {
             $headers[] = $field['name'];
         }
         
-        $submissions = RegistrationStageData::with('registration.user')
+        $submissions = RegistrationStageData::with(['registration.user.address', 'registration.user.biodataValues.biodataField'])
             ->where('program_stage_id', $stageId)
             ->whereNotNull('form_values')
             ->get();
             
-        $callback = function() use ($submissions, $headers, $schema) {
+        $callback = function() use ($submissions, $headers, $schema, $biodataSchemas, $globalBiodataFields, $id) {
             $file = fopen('php://output', 'w');
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM UTF-8
             fwrite($file, "sep=;\n"); // Excel delimiter directive
@@ -822,14 +990,61 @@ public function saveApplicantScores(Request $request, $id, $registrationId)
             foreach ($submissions as $sub) {
                 if (!$sub->registration || !$sub->registration->user) continue;
                 
+                $user = $sub->registration->user;
+                $address = $user->address;
+                
+                // Ambil data profil/biodata global
+                $userBiodataValues = $user->biodataValues->keyBy('biodata_field_id');
+
+                // Ambil data biodata tambahan dari table ProgramBiodataSubmission
+                $biodataSub = \App\Models\ProgramBiodataSubmission::where('user_id', $user->id)
+                    ->where('program_id', $id)
+                    ->first();
+                $submittedAnswers = $biodataSub ? ($biodataSub->submitted_answers ?? []) : [];
+
                 $row = [
-                    $sub->registration->user->name,
-                    $sub->registration->user->email,
+                    $user->name,
+                    $user->email,
                     $sub->updated_at ? $sub->updated_at->format('Y-m-d H:i:s') : '-',
                     strtoupper($sub->status),
-                    $sub->reviewer_notes ?? '-'
+                    $sub->reviewer_notes ?? '-',
+                    // Alamat
+                    $address->negara ?? '-',
+                    $address->provinsi ?? '-',
+                    $address->kabupaten ?? '-',
+                    $address->kecamatan ?? '-',
+                    $address->desa ?? '-',
+                    $address->kampung ?? '-',
+                    $address->detail_alamat ?? '-'
                 ];
+
+                // Tulis data profil/biodata global
+                foreach ($globalBiodataFields as $gField) {
+                    $valObj = $userBiodataValues->get($gField->id);
+                    $ansValue = $valObj ? $valObj->value : '-';
+                    
+                    if (is_array($ansValue)) {
+                        $ansValue = implode(', ', $ansValue);
+                    } elseif (is_string($ansValue) && (str_ends_with(strtolower($ansValue), '.jpg') || str_ends_with(strtolower($ansValue), '.png') || str_ends_with(strtolower($ansValue), '.jpeg') || str_ends_with(strtolower($ansValue), '.pdf'))) {
+                        $ansValue = asset('storage/' . $ansValue);
+                    }
+                    $row[] = $ansValue ?? '-';
+                }
                 
+                // Tulis kolom biodata dinamis program
+                foreach ($biodataSchemas as $bSchema) {
+                    $key = str_replace(' ', '_', $bSchema->field_name);
+                    $ansValue = $submittedAnswers[$key] ?? ($submittedAnswers[$bSchema->field_name] ?? '-');
+                    
+                    if (is_array($ansValue)) {
+                        $ansValue = implode(', ', $ansValue);
+                    } elseif (is_string($ansValue) && (str_ends_with(strtolower($ansValue), '.jpg') || str_ends_with(strtolower($ansValue), '.png') || str_ends_with(strtolower($ansValue), '.jpeg') || str_ends_with(strtolower($ansValue), '.pdf'))) {
+                        $ansValue = asset('storage/' . $ansValue);
+                    }
+                    $row[] = $ansValue ?? '-';
+                }
+
+                // Tulis jawaban kuesioner dinamis tahap
                 $values = collect($sub->form_values)->keyBy('field_name');
                 foreach ($schema as $field) {
                     $fieldName = $field['name'];
@@ -872,13 +1087,13 @@ public function saveApplicantScores(Request $request, $id, $registrationId)
     public function exportUserExcel($id, $registrationId)
     {
         $program = Program::findOrFail($id);
-        $registration = Registration::with('user')->where('program_id', $id)->findOrFail($registrationId);
+        $registration = Registration::with(['user.address', 'user.biodataValues.biodataField'])->where('program_id', $id)->findOrFail($registrationId);
         
         $stages = ProgramStage::where('program_id', $id)->orderBy('sequence')->get();
         
         $headers = ['Tahap Program', 'Nama Atribut/Pertanyaan', 'Tipe Jawaban', 'Jawaban / Nilai'];
         
-        $callback = function() use ($registration, $stages, $headers) {
+        $callback = function() use ($registration, $stages, $headers, $id) {
             $file = fopen('php://output', 'w');
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM UTF-8
             fwrite($file, "sep=;\n"); // Excel delimiter directive
@@ -889,6 +1104,48 @@ public function saveApplicantScores(Request $request, $id, $registrationId)
             fputcsv($file, ['Email:', $registration->user->email], ';');
             fputcsv($file, ['Program:', $registration->program->name], ';');
             fputcsv($file, ['Motivasi:', $registration->motivation ?? '-'], ';');
+            
+            // Data Alamat
+            $address = $registration->user->address;
+            fputcsv($file, ['Negara:', $address->negara ?? '-'], ';');
+            fputcsv($file, ['Provinsi:', $address->provinsi ?? '-'], ';');
+            fputcsv($file, ['Kabupaten/Kota:', $address->kabupaten ?? '-'], ';');
+            fputcsv($file, ['Kecamatan:', $address->kecamatan ?? '-'], ';');
+            fputcsv($file, ['Desa/Kelurahan:', $address->desa ?? '-'], ';');
+            fputcsv($file, ['Kampung/Dusun:', $address->kampung ?? '-'], ';');
+            fputcsv($file, ['Detail Alamat:', $address->detail_alamat ?? '-'], ';');
+
+            // Data Profil / Biodata Global Super Admin
+            $globalBiodataFields = \App\Models\BiodataField::all();
+            $userBiodataValues = $registration->user->biodataValues->keyBy('biodata_field_id');
+            foreach ($globalBiodataFields as $gField) {
+                $valObj = $userBiodataValues->get($gField->id);
+                $ansValue = $valObj ? $valObj->value : '-';
+                if (is_array($ansValue)) {
+                    $ansValue = implode(', ', $ansValue);
+                } elseif (is_string($ansValue) && (str_ends_with(strtolower($ansValue), '.jpg') || str_ends_with(strtolower($ansValue), '.png') || str_ends_with(strtolower($ansValue), '.jpeg') || str_ends_with(strtolower($ansValue), '.pdf'))) {
+                    $ansValue = asset('storage/' . $ansValue);
+                }
+                fputcsv($file, ['[Profil] ' . $gField->name . ':', $ansValue ?? '-'], ';');
+            }
+
+            // Data Biodata Wajib Program
+            $biodataSub = \App\Models\ProgramBiodataSubmission::where('user_id', $registration->user_id)
+                ->where('program_id', $id)
+                ->first();
+            $submittedAnswers = $biodataSub ? ($biodataSub->submitted_answers ?? []) : [];
+            $biodataSchemas = \App\Models\ProgramBiodataSchema::where('program_id', $id)->get();
+            foreach ($biodataSchemas as $bSchema) {
+                $key = str_replace(' ', '_', $bSchema->field_name);
+                $ansValue = $submittedAnswers[$key] ?? ($submittedAnswers[$bSchema->field_name] ?? '-');
+                if (is_array($ansValue)) {
+                    $ansValue = implode(', ', $ansValue);
+                } elseif (is_string($ansValue) && (str_ends_with(strtolower($ansValue), '.jpg') || str_ends_with(strtolower($ansValue), '.png') || str_ends_with(strtolower($ansValue), '.jpeg') || str_ends_with(strtolower($ansValue), '.pdf'))) {
+                    $ansValue = asset('storage/' . $ansValue);
+                }
+                fputcsv($file, ['[Biodata] ' . $bSchema->field_name . ':', $ansValue ?? '-'], ';');
+            }
+
             fputcsv($file, [], ';');
             
             fputcsv($file, $headers, ';');
@@ -1055,7 +1312,7 @@ public function saveApplicantScores(Request $request, $id, $registrationId)
         $request->validate([
             'registration_ids' => 'required|array',
             'registration_ids.*' => 'required|integer',
-            'is_checked' => 'required|in:0,1',
+            'is_checked' => 'required|string',
             'batch_name' => 'nullable|string|max:100',
             'checked_by' => 'nullable|string|max:100',
             'checked_at' => 'nullable|date'
@@ -1067,32 +1324,32 @@ public function saveApplicantScores(Request $request, $id, $registrationId)
             $checkingData = json_decode(file_get_contents($checkingFile), true) ?? [];
         }
 
-        $isChecked = (bool) $request->is_checked;
+        $status = trim($request->is_checked);
+        
+        // Backward compatibility mapping for old 0/1 inputs
+        if ($status === '1') {
+            $status = 'checked';
+        } elseif ($status === '0') {
+            $status = 'unopened';
+        }
+
+        // is_checked boolean is true for checked, passed, failed, revision statuses
+        $isChecked = in_array($status, ['checked', 'passed', 'failed', 'revision']);
+        
         $batchName = trim($request->batch_name) ?: null;
         $checkedBy = trim($request->checked_by) ?: (auth()->user()->name ?? 'Admin');
         $checkedAt = $request->checked_at ? date('Y-m-d H:i', strtotime($request->checked_at)) : now()->format('Y-m-d H:i');
 
         foreach ($request->registration_ids as $regId) {
-            if ($isChecked) {
-                $checkingData[$regId] = [
-                    'is_checked' => true,
-                    'checked_at' => $checkedAt,
-                    'checked_by' => $checkedBy,
-                    'batch_name' => $batchName
-                ];
-            } else {
-                if (isset($checkingData[$regId])) {
-                    $checkingData[$regId]['is_checked'] = false;
-                    $checkingData[$regId]['batch_name'] = $batchName;
-                } else {
-                    $checkingData[$regId] = [
-                        'is_checked' => false,
-                        'checked_at' => null,
-                        'checked_by' => null,
-                        'batch_name' => $batchName
-                    ];
-                }
-            }
+            $existing = $checkingData[$regId] ?? null;
+            
+            $checkingData[$regId] = [
+                'is_checked' => $isChecked,
+                'status' => $status,
+                'checked_at' => $isChecked ? $checkedAt : ($status !== 'unopened' ? now()->format('Y-m-d H:i') : null),
+                'checked_by' => $isChecked ? $checkedBy : ($status !== 'unopened' ? (auth()->user()->name ?? 'Admin') : null),
+                'batch_name' => $batchName ?: ($existing['batch_name'] ?? null)
+            ];
         }
 
         file_put_contents($checkingFile, json_encode($checkingData, JSON_PRETTY_PRINT));

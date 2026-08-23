@@ -127,7 +127,14 @@
                             </span>
 
                             <div>
-                                <h5 class="font-bold text-slate-800 text-sm leading-tight">{{ $stg->name }}</h5>
+                                <h5 class="font-bold text-slate-800 text-sm leading-tight flex items-center gap-1.5">
+                                    {{ $stg->name }}
+                                    @if($stg->is_locked)
+                                        <span class="px-1.5 py-0.5 text-[8px] font-bold bg-rose-50 text-rose-600 border border-rose-200 rounded uppercase tracking-wider flex items-center gap-0.5">
+                                            🔒 Terkunci
+                                        </span>
+                                    @endif
+                                </h5>
                                 <span class="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded mt-1.5 inline-block shadow-3xs">
                                     ⏱️ {{ date('d M Y', strtotime($stg->start_date)) }} s/d {{ date('d M Y', strtotime($stg->end_date)) }}
                                 </span>
@@ -137,6 +144,17 @@
                                 <a href="{{ route('adminprogram.programs.workspace', [$program->id, 'manage_stage_id' => $stg->id]) }}#form-builder-workspace" class="px-3 py-1.5 bg-gradient-to-r {{ ($managingStage && $managingStage->id === $stg->id) ? 'from-slate-700 to-slate-800' : 'from-emerald-600 to-emerald-700' }} text-white text-xs font-bold rounded-xl transition flex items-center shadow-xs">
                                     🛠️ Kelola Form ({{ count($stg->form_schema ?? []) }})
                                 </a>
+
+                                <form action="{{ route('adminprogram.workspace.stage.toggle_lock', [$program->id, $stg->id]) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="p-1.5 transition-all {{ $stg->is_locked ? 'text-rose-600 hover:text-rose-800' : 'text-slate-400 hover:text-emerald-700' }}" title="{{ $stg->is_locked ? 'Buka Kunci Akses Tahap' : 'Kunci Akses Tahap' }}">
+                                        @if($stg->is_locked)
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                                        @else
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+                                        @endif
+                                    </button>
+                                </form>
 
                                 <a href="{{ route('adminprogram.programs.workspace', [$program->id, 'edit_stage_id' => $stg->id]) }}" class="p-1.5 text-slate-400 hover:text-emerald-700 transition" title="Edit Data">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
@@ -169,11 +187,15 @@
             <div class="flex bg-slate-100 p-1 rounded-xl w-fit">
                 <a href="{{ request()->fullUrlWithQuery(['tab' => 'pending', 'page' => null]) }}" 
                    class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all uppercase tracking-wider {{ request('tab', 'pending') === 'pending' ? 'bg-white text-slate-800 shadow-2xs' : 'text-slate-400 hover:text-slate-650' }}">
-                   ⏳ Sedang Proses ({{ $allApplicants->where('status', 'process')->count() }})
+                   ⏳ Sedang Proses ({{ $pendingCount }})
+                </a>
+                <a href="{{ request()->fullUrlWithQuery(['tab' => 'draft', 'page' => null]) }}" 
+                   class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all uppercase tracking-wider {{ request('tab') === 'draft' ? 'bg-white text-slate-800 shadow-2xs' : 'text-slate-400 hover:text-slate-650' }}">
+                   ✍️ Draf Pengisian ({{ $draftCount }})
                 </a>
                 <a href="{{ request()->fullUrlWithQuery(['tab' => 'reviewed', 'page' => null]) }}" 
                    class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all uppercase tracking-wider {{ request('tab') === 'reviewed' ? 'bg-white text-slate-800 shadow-2xs' : 'text-slate-400 hover:text-slate-650' }}">
-                   ✅ Sudah Di-Review ({{ $allApplicants->whereIn('status', ['passed', 'failed'])->count() }})
+                   ✅ Sudah Di-Review ({{ $reviewedCount }})
                 </a>
             </div>
         </div>
@@ -247,19 +269,50 @@
                                 <div class="text-[10px] text-slate-400 font-medium mt-0.5">Sequence Tahap: {{ $app->currentStage?->sequence ?? '-' }}</div>
                             </td>
                             <td class="p-3.5">
-                                @if($app->status === 'process')
-                                    <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-200">ON PROCESS</span>
-                                @elseif($app->status === 'passed')
-                                    <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">PASSED FINAL</span>
-                                @else
-                                    <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-rose-50 text-rose-700 border border-rose-200">FAILED</span>
-                                @endif
+                                <div class="flex flex-col gap-1.5">
+                                    {{-- Registration Status --}}
+                                    @if(request('tab') === 'draft')
+                                        <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-center w-fit">DRAF AKTIF</span>
+                                    @elseif($app->status === 'process')
+                                        <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-center w-fit">ON PROCESS</span>
+                                    @elseif($app->status === 'passed')
+                                        <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-center w-fit">PASSED FINAL</span>
+                                    @else
+                                        <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-center w-fit">FAILED</span>
+                                    @endif
+                                    
+                                    {{-- Checking Status --}}
+                                    @php
+                                        $regMeta = $checkingData[$app->id] ?? null;
+                                        $regStatus = $regMeta['status'] ?? (($regMeta && !empty($regMeta['is_checked'])) ? 'checked' : 'unopened');
+                                        
+                                        $regStatusConfig = [
+                                            'unopened' => ['text' => 'Belum Dibuka', 'bg' => 'bg-slate-100 text-slate-600 border-slate-200'],
+                                            'opened' => ['text' => 'Sudah Dibuka', 'bg' => 'bg-blue-50 text-blue-700 border-blue-200'],
+                                            'checked' => ['text' => 'Sudah Diperiksa', 'bg' => 'bg-emerald-50 text-emerald-700 border-emerald-250'],
+                                            'passed' => ['text' => 'Lolos Tahap', 'bg' => 'bg-green-600 text-white border-transparent'],
+                                            'failed' => ['text' => 'Gugur', 'bg' => 'bg-rose-600 text-white border-transparent'],
+                                            'revision' => ['text' => 'Butuh Revisi', 'bg' => 'bg-amber-500 text-white border-transparent']
+                                        ];
+                                        $regCfg = $regStatusConfig[$regStatus] ?? $regStatusConfig['unopened'];
+                                    @endphp
+                                    <span class="inline-flex items-center px-2 py-0.5 text-[9px] font-black rounded border {{ $regCfg['bg'] }} uppercase tracking-wide w-fit">
+                                        {{ $regCfg['text'] }}
+                                    </span>
+                                </div>
                             </td>
                             <td class="p-3.5 font-mono font-bold text-emerald-800 tracking-wide">
                                 {{ $app->final_id_number ?? '-' }}
                             </td>
                             <td class="p-3.5 text-center">
-                                @if($app->status === 'process' && $app->current_stage_id)
+                                @if(request('tab') === 'draft')
+                                    <div class="flex items-center justify-center gap-2">
+                                        <a href="{{ route('adminprogram.programs.applicant.show', [$program->id, $app->id]) }}" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl border whitespace-nowrap">
+                                            👁️ Lihat Draf Sementara
+                                        </a>
+                                        <span class="text-xs text-amber-600 font-bold bg-amber-50 px-2.5 py-1 rounded border border-amber-200 uppercase tracking-wide">Belum Dikirim</span>
+                                    </div>
+                                @elseif($app->status === 'process' && $app->current_stage_id)
                                     <div class="flex items-center justify-center gap-2">
                                         <a href="{{ route('adminprogram.programs.applicant.show', [$program->id, $app->id]) }}" class="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-green-700 text-white text-xs font-bold rounded-xl hover:from-emerald-700 shadow-xs whitespace-nowrap">
                                             🔍 Periksa Berkas
@@ -279,7 +332,11 @@
                     @empty
                         <tr>
                             <td colspan="5" class="p-8 text-center text-slate-400 italic text-xs">
-                                Belum ada berkas pendaftaran masuk dari peserta untuk program ini.
+                                @if(request('tab') === 'draft')
+                                    Tidak ada data draf pengisian sementara pada tahapan berjalan.
+                                @else
+                                    Belum ada berkas pendaftaran masuk dari peserta untuk program ini.
+                                @endif
                             </td>
                         </tr>
                     @endforelse
@@ -319,6 +376,13 @@
                     this.editOptions = (item.options || []).join(', ');
                     this.editOpen = true;
                     this.toggleEditOptions(item.type);
+                    
+                    // Sync value to Quill editor
+                    setTimeout(() => {
+                        if (window.quillEditInstruction) {
+                            window.quillEditInstruction.root.innerHTML = this.editInstruction;
+                        }
+                    }, 50);
                 },
                 showEditOptions: false,
                 toggleEditOptions(type) {
@@ -415,7 +479,7 @@
                         </div>
 
                         <!-- Form -->
-                        <form :action="'{{ route('adminprogram.workspace.field.update', [$program->id, $managingStage->id, ':index']) }}'.replace(':index', editIndex)" method="POST" class="p-6 space-y-4">
+                        <form :action="'{{ route('adminprogram.workspace.field.update', [$program->id, $managingStage->id, ':index']) }}'.replace(':index', editIndex)" method="POST" id="edit-field-form" class="p-6 space-y-4">
                             @csrf
                             
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -440,10 +504,13 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-4">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">Deskripsi / Petunjuk Pengisian</label>
-                                    <input type="text" name="field_instruction" x-model="editInstruction" placeholder="Cth: Maksimal file 3MB PDF" class="w-full p-2.5 border border-slate-200 bg-white rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 shadow-3xs text-slate-800">
+                                    <div class="bg-white rounded-xl border border-slate-200 shadow-3xs overflow-hidden">
+                                        <div id="edit-instruction-editor" style="min-height: 100px; height: 100px;"></div>
+                                    </div>
+                                    <input type="hidden" name="field_instruction" id="hidden-edit-instruction" x-model="editInstruction">
                                 </div>
 
                                 <div>
@@ -481,7 +548,7 @@
                 </div>
 
                 <!-- Form Pembuat/Pemasang Field Baru (Google Form Builder Style) -->
-                <form action="{{ route('adminprogram.workspace.field.store', [$program->id, $managingStage->id]) }}" method="POST" class="p-5 bg-gradient-to-br from-emerald-50/20 to-white border border-emerald-100 rounded-2xl space-y-4 pt-4">
+                <form action="{{ route('adminprogram.workspace.field.store', [$program->id, $managingStage->id]) }}" method="POST" id="create-field-form" class="p-5 bg-gradient-to-br from-emerald-50/20 to-white border border-emerald-100 rounded-2xl space-y-4 pt-4">
                     @csrf
                     <span class="block text-xs font-bold uppercase text-emerald-950">🛠️ Pasang Atribut Input Komponen Baru (Google Form Style)</span>
 
@@ -516,10 +583,13 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-4">
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1">Deskripsi / Petunjuk Pengisian (Opsional)</label>
-                            <input type="text" name="new_field_instruction" placeholder="Cth: Unggah berkas asli berukuran maksimal 3MB dengan format PDF" class="w-full p-2 border border-slate-200 bg-white rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 shadow-3xs">
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-3xs overflow-hidden">
+                                <div id="new-instruction-editor" style="min-height: 80px; height: 80px;"></div>
+                            </div>
+                            <input type="hidden" name="new_field_instruction" id="hidden-new-field-instruction">
                         </div>
 
                         <div>
@@ -715,7 +785,7 @@
 
     
     <!-- BROADCASTING ENGINE -->
-    <div id="panel-broadcasting" class="hidden mt-6 transition-all duration-300">
+    <div id="panel-broadcasting" class="hidden mt-6 transition-all duration-300 space-y-6">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
                 <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded uppercase font-mono">Broadcasting Engine</span>
@@ -751,6 +821,143 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Grid 2: List Pengumuman Aktif (CRUD) -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4" x-data="{
+            editAnnOpen: false,
+            editAnnId: null,
+            editAnnTitle: '',
+            editAnnType: 'info',
+            editAnnContent: '',
+            openEditAnnModal(ann) {
+                this.editAnnId = ann.id;
+                this.editAnnTitle = ann.title;
+                this.editAnnType = ann.type;
+                this.editAnnContent = ann.content || '';
+                this.editAnnOpen = true;
+                
+                // Sync to edit Quill editor
+                setTimeout(() => {
+                    if (window.quillEditBroadcast) {
+                        window.quillEditBroadcast.root.innerHTML = this.editAnnContent;
+                    }
+                }, 50);
+            }
+        }">
+            <div class="border-b pb-3 flex justify-between items-center">
+                <div>
+                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded uppercase font-mono">Broadcast History</span>
+                    <h4 class="text-sm font-bold text-slate-800 mt-1">Riwayat Pengumuman &amp; Instruksi</h4>
+                </div>
+            </div>
+
+            @if($announcements->isEmpty())
+                <p class="text-xs text-slate-400 italic p-6 bg-slate-50 rounded-2xl border border-dashed text-center">Belum ada pengumuman yang disiarkan untuk program ini.</p>
+            @else
+                <div class="overflow-x-auto border border-slate-100 rounded-2xl shadow-3xs">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                <th class="p-4 w-32">Tanggal Siar</th>
+                                <th class="p-4 w-64">Judul Pengumuman</th>
+                                <th class="p-4 w-36">Derajat Sifat</th>
+                                <th class="p-4">Isi Pesan</th>
+                                <th class="p-4 text-center w-36">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-xs text-slate-700 font-semibold">
+                            @foreach($announcements as $ann)
+                                <tr>
+                                    <td class="p-4 text-[10px] text-slate-500 font-mono">
+                                        {{ $ann->created_at ? $ann->created_at->format('d M Y H:i') : '-' }}
+                                    </td>
+                                    <td class="p-4 text-xs font-bold text-slate-800">
+                                        {{ $ann->title }}
+                                    </td>
+                                    <td class="p-4">
+                                        @if($ann->type === 'info')
+                                            <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-blue-50 text-blue-700 border border-blue-100 uppercase">Info Standar</span>
+                                        @elseif($ann->type === 'instruction')
+                                            <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-amber-50 text-amber-700 border border-amber-100 uppercase">Instruksi Wajib</span>
+                                        @else
+                                            <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-rose-50 text-rose-700 border border-rose-100 uppercase">Darurat</span>
+                                        @endif
+                                    </td>
+                                    <td class="p-4 text-xs text-slate-500 max-w-xs truncate font-normal">
+                                        {!! strip_tags($ann->content) !!}
+                                    </td>
+                                    <td class="p-4 text-center">
+                                        <div class="flex items-center justify-center gap-2">
+                                            {{-- Tombol Edit --}}
+                                            <button type="button" @click="openEditAnnModal({ id: {{ $ann->id }}, title: '{{ addslashes($ann->title) }}', type: '{{ $ann->type }}', content: `{{ addslashes($ann->content) }}` })" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-[10px] transition cursor-pointer">
+                                                ✏️ Edit
+                                            </button>
+
+                                            {{-- Tombol Hapus --}}
+                                            <form action="{{ route('adminprogram.workspace.announcement.delete', [$program->id, $ann->id]) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengumuman ini secara permanen?')" class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg text-[10px] transition cursor-pointer">
+                                                    🗑️ Hapus
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+
+            <!-- Modal Edit Pengumuman (Alpine) -->
+            <div x-show="editAnnOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs overflow-y-auto z-50 flex justify-center items-start p-4" style="display: none;">
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-2xl w-full max-w-xl my-8 overflow-hidden animate-in fade-in zoom-in-95 duration-200" @click.away="editAnnOpen = false">
+                    <!-- Header -->
+                    <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                        <div>
+                            <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded uppercase font-mono">Edit Broadcast Announcement</span>
+                            <h3 class="text-sm font-bold text-slate-800 mt-1">Ubah Pengumuman / Instruksi</h3>
+                        </div>
+                        <button type="button" @click="editAnnOpen = false" class="text-slate-450 hover:text-slate-650 text-xs font-bold bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition">✕ Tutup</button>
+                    </div>
+
+                    <!-- Form -->
+                    <form :action="'{{ route('adminprogram.workspace.announcement.update', [$program->id, ':annId']) }}'.replace(':annId', editAnnId)" method="POST" id="edit-ann-form" class="p-6 space-y-4">
+                        @csrf
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <div class="sm:col-span-2">
+                                <label class="text-[11px] font-bold text-slate-500 uppercase">Judul Pengumuman</label>
+                                <input type="text" name="title" x-model="editAnnTitle" class="w-full p-2 border rounded-xl text-xs bg-white text-slate-800 font-bold" required>
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-500 uppercase">Derajat Sifat</label>
+                                <select name="type" x-model="editAnnType" class="w-full p-2 border rounded-xl text-xs bg-white text-slate-700">
+                                    <option value="info">Info Standar</option>
+                                    <option value="instruction">Instruksi Wajib Baca (Blocker)</option>
+                                    <option value="warning">Peringatan Darurat</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-500 uppercase">Isi Pesan Siaran</label>
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-3xs overflow-hidden">
+                                <div id="edit-broadcast-content-editor" style="min-height: 120px; height: 120px;"></div>
+                            </div>
+                            <input type="hidden" name="content" id="hidden-edit-broadcast-content">
+                        </div>
+                        <div class="pt-4 border-t flex justify-end gap-2.5">
+                            <button type="button" @click="editAnnOpen = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl shadow-xs transition">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-5 py-2 bg-gradient-to-r from-emerald-600 to-green-700 text-white font-extrabold text-xs rounded-xl shadow-xs hover:from-emerald-700 transition uppercase tracking-wider">
+                                Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -1212,8 +1419,12 @@
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Status Periksa:</label>
                         <select id="chk_filter_status" onchange="filterCheckingTable()" class="w-full p-2 border border-slate-200 bg-white rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 text-slate-700 shadow-3xs">
                             <option value="all">Semua</option>
-                            <option value="checked">Sudah Diperiksa</option>
-                            <option value="unchecked">Belum Diperiksa</option>
+                            <option value="unopened">⏳ Belum Dibuka</option>
+                            <option value="opened">📖 Sudah Dibuka</option>
+                            <option value="checked">✅ Sudah Diperiksa</option>
+                            <option value="passed">🎉 Lolos Tahap</option>
+                            <option value="failed">❌ Gugur</option>
+                            <option value="revision">⚠️ Butuh Revisi</option>
                         </select>
                     </div>
 
@@ -1256,8 +1467,12 @@
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tandai Status:</label>
                             <select name="is_checked" class="w-full p-2 border border-slate-200 bg-white rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 text-slate-700 shadow-3xs" required>
-                                <option value="1">✅ Sudah Diperiksa</option>
-                                <option value="0">⏳ Belum Diperiksa</option>
+                                <option value="checked">✅ Sudah Diperiksa</option>
+                                <option value="unopened">⏳ Belum Dibuka</option>
+                                <option value="opened">📖 Sudah Dibuka</option>
+                                <option value="passed">🎉 Lolos Tahap</option>
+                                <option value="failed">❌ Gugur</option>
+                                <option value="revision">⚠️ Butuh Revisi</option>
                             </select>
                         </div>
 
@@ -1302,14 +1517,24 @@
                         @forelse($allApplicants as $app)
                             @php
                                 $meta = $checkingData[$app->id] ?? null;
-                                $isChecked = $meta && !empty($meta['is_checked']);
+                                $status = $meta['status'] ?? (($meta && !empty($meta['is_checked'])) ? 'checked' : 'unopened');
                                 $batchName = ($meta['batch_name'] ?? '') ?: 'Tanpa Kelompok';
+                                
+                                $statusConfig = [
+                                    'unopened' => ['text' => 'Belum Dibuka', 'bg' => 'bg-slate-100 text-slate-600 border-slate-200'],
+                                    'opened' => ['text' => 'Sudah Dibuka', 'bg' => 'bg-blue-50 text-blue-700 border-blue-200'],
+                                    'checked' => ['text' => 'Sudah Diperiksa', 'bg' => 'bg-emerald-50 text-emerald-700 border-emerald-200'],
+                                    'passed' => ['text' => 'Lolos Tahap', 'bg' => 'bg-green-600 text-white border-transparent'],
+                                    'failed' => ['text' => 'Gugur', 'bg' => 'bg-rose-600 text-white border-transparent'],
+                                    'revision' => ['text' => 'Butuh Revisi', 'bg' => 'bg-amber-500 text-white border-transparent']
+                                ];
+                                $cfg = $statusConfig[$status] ?? $statusConfig['unopened'];
                             @endphp
                             <tr class="hover:bg-slate-50/50 transition checking-row" 
                                 data-id="{{ $app->id }}"
                                 data-name="{{ strtolower($app->user->name ?? '') }}"
                                 data-email="{{ strtolower($app->user->email ?? '') }}"
-                                data-checked="{{ $isChecked ? 'checked' : 'unchecked' }}"
+                                data-checked="{{ $status }}"
                                 data-batch="{{ strtolower($batchName) }}"
                                 data-timestamp="{{ strtotime($app->created_at) }}">
                                 
@@ -1332,25 +1557,19 @@
                                 </td>
                                 
                                 <td class="p-4">
-                                    @if($isChecked)
-                                        <span class="inline-flex items-center px-2 py-0.5 text-[9px] font-black rounded bg-emerald-50 text-emerald-700 border border-emerald-100 uppercase tracking-wide">
-                                            Sudah Diperiksa
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center px-2 py-0.5 text-[9px] font-black rounded bg-amber-50 text-amber-700 border border-amber-100 uppercase tracking-wide">
-                                            Belum Diperiksa
-                                        </span>
-                                    @endif
+                                    <span class="inline-flex items-center px-2.5 py-0.5 text-[9px] font-black rounded border {{ $cfg['bg'] }} uppercase tracking-wide">
+                                        {{ $cfg['text'] }}
+                                    </span>
                                 </td>
                                 
                                 <td class="p-4 text-[11px] leading-relaxed">
-                                    @if($isChecked)
+                                    @if($status !== 'unopened')
                                         <div class="space-y-0.5 text-slate-600">
                                             <div><span class="font-bold text-slate-400">Oleh:</span> {{ $meta['checked_by'] ?? 'Admin' }}</div>
-                                            <div class="text-[9px] font-mono text-slate-400"><span class="font-bold text-slate-400">Waktu:</span> {{ $meta['checked_at'] }}</div>
+                                            <div class="text-[9px] font-mono text-slate-400"><span class="font-bold text-slate-400">Waktu:</span> {{ $meta['checked_at'] ?? '-' }}</div>
                                         </div>
                                     @else
-                                        <span class="text-slate-400 italic font-medium">Belum diperiksa oleh panitia.</span>
+                                        <span class="text-slate-400 italic font-medium">Belum dibuka oleh panitia.</span>
                                     @endif
                                 </td>
                                 
@@ -1595,37 +1814,123 @@
                 }
             }
 
+            // Initialize Quill for Field Edit
+            if (document.getElementById('edit-instruction-editor')) {
+                window.quillEditInstruction = new Quill('#edit-instruction-editor', {
+                    theme: 'snow',
+                    placeholder: 'Tuliskan deskripsi atau petunjuk pendaftaran di sini...'
+                });
+
+                // Sync edit field content on submit
+                const editFieldForm = document.getElementById('edit-field-form');
+                if (editFieldForm) {
+                    editFieldForm.addEventListener('submit', function() {
+                        // Check if Quill editor has actual text inside (Quill leaves <p><br></p> when empty)
+                        const text = window.quillEditInstruction.getText().trim();
+                        if (text === '') {
+                            document.getElementById('hidden-edit-instruction').value = '';
+                        } else {
+                            document.getElementById('hidden-edit-instruction').value = window.quillEditInstruction.root.innerHTML;
+                        }
+                    });
+                }
+            }
+
+            // Initialize Quill for New Field
+            if (document.getElementById('new-instruction-editor')) {
+                window.quillNewInstruction = new Quill('#new-instruction-editor', {
+                    theme: 'snow',
+                    placeholder: 'Tuliskan deskripsi atau petunjuk pendaftaran di sini...'
+                });
+
+                // Sync new field content on submit
+                const createFieldForm = document.getElementById('create-field-form');
+                if (createFieldForm) {
+                    createFieldForm.addEventListener('submit', function() {
+                        const text = window.quillNewInstruction.getText().trim();
+                        if (text === '') {
+                            document.getElementById('hidden-new-field-instruction').value = '';
+                        } else {
+                            document.getElementById('hidden-new-field-instruction').value = window.quillNewInstruction.root.innerHTML;
+                        }
+                    });
+                }
+            }
+
+            // Rich Toolbar Options for announcements, rules, and messages
+            const richToolbarOptions = [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'align': [] }],
+                ['link', 'image', 'video'],
+                ['clean']
+            ];
+
             // Initialize Quill for Stage Create/Edit Form
-            const quillPass = new Quill('#pass-announcement-editor', {
-                theme: 'snow',
-                placeholder: 'Tuliskan draf isi pengumuman kelolosan...'
-            });
-            const quillFail = new Quill('#fail-announcement-editor', {
-                theme: 'snow',
-                placeholder: 'Tuliskan draf isi penolakan berkas...'
-            });
+            let quillPass, quillFail;
+            if (document.getElementById('pass-announcement-editor')) {
+                quillPass = new Quill('#pass-announcement-editor', {
+                    theme: 'snow',
+                    placeholder: 'Tuliskan draf isi pengumuman kelolosan...',
+                    modules: { toolbar: richToolbarOptions }
+                });
+            }
+            if (document.getElementById('fail-announcement-editor')) {
+                quillFail = new Quill('#fail-announcement-editor', {
+                    theme: 'snow',
+                    placeholder: 'Tuliskan draf isi penolakan berkas...',
+                    modules: { toolbar: richToolbarOptions }
+                });
+            }
 
             // Form stage sync
             const formStage = document.getElementById('form-stage');
             if (formStage) {
                 formStage.addEventListener('submit', function() {
-                    document.getElementById('hidden-pass-announcement').value = quillPass.root.innerHTML;
-                    document.getElementById('hidden-fail-announcement').value = quillFail.root.innerHTML;
+                    if (quillPass) {
+                        document.getElementById('hidden-pass-announcement').value = quillPass.root.innerHTML;
+                    }
+                    if (quillFail) {
+                        document.getElementById('hidden-fail-announcement').value = quillFail.root.innerHTML;
+                    }
                 });
             }
 
             // Initialize Quill for Broadcasting Engine
-            const quillBroadcast = new Quill('#broadcast-content-editor', {
-                theme: 'snow',
-                placeholder: 'Tuliskan petunjuk operasional di sini secara jelas...'
-            });
-
-            // Form broadcast sync
-            const formBroadcast = document.querySelector('#panel-broadcasting form');
-            if (formBroadcast) {
-                formBroadcast.addEventListener('submit', function() {
-                    document.getElementById('hidden-broadcast-content').value = quillBroadcast.root.innerHTML;
+            let quillBroadcast;
+            if (document.getElementById('broadcast-content-editor')) {
+                quillBroadcast = new Quill('#broadcast-content-editor', {
+                    theme: 'snow',
+                    placeholder: 'Tuliskan petunjuk operasional di sini secara jelas...',
+                    modules: { toolbar: richToolbarOptions }
                 });
+
+                // Form broadcast sync
+                const formBroadcast = document.querySelector('#panel-broadcasting form');
+                if (formBroadcast) {
+                    formBroadcast.addEventListener('submit', function() {
+                        document.getElementById('hidden-broadcast-content').value = quillBroadcast.root.innerHTML;
+                    });
+                }
+            }
+
+            // Initialize Quill for Edit Broadcasting Engine
+            if (document.getElementById('edit-broadcast-content-editor')) {
+                window.quillEditBroadcast = new Quill('#edit-broadcast-content-editor', {
+                    theme: 'snow',
+                    placeholder: 'Tuliskan petunjuk operasional di sini secara jelas...',
+                    modules: { toolbar: richToolbarOptions }
+                });
+
+                // Form edit broadcast sync
+                const editAnnForm = document.getElementById('edit-ann-form');
+                if (editAnnForm) {
+                    editAnnForm.addEventListener('submit', function() {
+                        document.getElementById('hidden-edit-broadcast-content').value = window.quillEditBroadcast.root.innerHTML;
+                    });
+                }
             }
         });
     </script>

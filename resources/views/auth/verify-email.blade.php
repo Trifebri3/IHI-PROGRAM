@@ -218,7 +218,7 @@
 <form method="POST" action="{{ route('verification.send') }}" id="resendForm">
     @csrf
     <button type="submit" class="btn-resend" id="resendBtn">
-        <span>Kirim Ulang Email Verifikasi</span>
+        <span>Kirim Email Sekarang</span>
     </button>
 </form>
 
