@@ -72,9 +72,12 @@
             @endif
 
             @if(!$registration)
-                <div class="mb-5">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                        Harapan &amp; Motivasi Mengikuti Program <span class="text-rose-500 font-black">*</span>
+                <div id="field-card-motivation" data-needs-revision="false" class="p-4 rounded-2xl border border-slate-200 bg-slate-50/10 space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-300 mb-5">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 flex justify-between items-center">
+                        <span>
+                            Harapan &amp; Motivasi Mengikuti Program <span class="text-rose-500 font-black">*</span>
+                        </span>
+                        <span id="status-badge-motivation" class="ml-2 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded"></span>
                     </label>
                     <textarea name="motivation" 
                               placeholder="Tuliskan harapan dan motivasi Anda mengikuti program ini secara rinci..." 
@@ -116,20 +119,26 @@
                     }
                 @endphp
 
-                <div class="p-4 rounded-2xl border transition-all {{ $boxStyle }} space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div id="field-card-{{ $index }}" 
+                     data-needs-revision="{{ $needsRevision ? 'true' : 'false' }}"
+                     data-index="{{ $index }}"
+                     class="p-4 rounded-2xl border transition-all {{ $boxStyle }} space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 flex justify-between items-center">
                         <span>
                             {{ $field['name'] }}
                             @if($field['required']) <span class="text-rose-500 font-black">*</span> @endif
                         </span>
                         
-                        @if($stageData && $stageData->status === 'revision')
-                            @if($needsRevision)
-                                <span class="text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded uppercase tracking-wider animate-pulse">⚠️ Perlu Revisi</span>
-                            @else
-                                <span class="text-[9px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded uppercase tracking-wider">✓ Sudah Sesuai</span>
+                        <div class="flex items-center gap-1.5">
+                            @if($stageData && $stageData->status === 'revision')
+                                @if($needsRevision)
+                                    <span class="text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded uppercase tracking-wider animate-pulse">⚠️ Perlu Revisi</span>
+                                @else
+                                    <span class="text-[9px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded uppercase tracking-wider">✓ Sudah Sesuai</span>
+                                @endif
                             @endif
-                        @endif
+                            <span id="status-badge-{{ $index }}" class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded"></span>
+                        </div>
                     </label>
 
                     @if($needsRevision && !empty($fieldData['revision_note']))
@@ -365,6 +374,18 @@
         const stageId = @json($currentStage->id);
         const draftKey = `gli_draft_${programId}_${stageId}`;
         const isStageLocked = @json($isStageLocked);
+        const serverValues = {
+            motivation: @json($registration->motivation ?? ''),
+            @foreach($currentStage->form_schema as $index => $field)
+                @php
+                    $prevVal = $previousValues->get($field['name'])['value'] ?? '';
+                    if (is_array($prevVal)) {
+                        $prevVal = implode(', ', $prevVal);
+                    }
+                @endphp
+                "field_{{ $index }}": @json($prevVal),
+            @endforeach
+        };
         function addLog(category, message) {
             const time = new Date().toLocaleTimeString('id-ID', { hour12: false });
             console.log(`[${time}] [${category}] ${message}`);
@@ -635,21 +656,102 @@
             uniqueFieldNames.forEach(fieldName => {
                 const fieldGroup = form.querySelectorAll(`[name="${fieldName}"], [name="${fieldName}[]"]`);
                 let isFilled = false;
+                let isDraftVal = false;
+                let hasFileUploaded = false;
+                
+                // Get current value (aggregated if multiple like checkboxes or radios)
+                let currentVal = '';
+                const checkedVals = [];
                 
                 fieldGroup.forEach(el => {
                     if (el.type === 'checkbox' || el.type === 'radio') {
-                        if (el.checked) isFilled = true;
+                        if (el.checked) {
+                            isFilled = true;
+                            checkedVals.push(el.value);
+                        }
                     } else if (el.type === 'file') {
-                        if (el.files.length > 0) isFilled = true;
-                        // Search parent or sibling for previous file upload hint
+                        if (el.files.length > 0) {
+                            isFilled = true;
+                            hasFileUploaded = true;
+                        }
                         const parent = el.closest('.p-4');
-                        if (parent && parent.querySelector('.underline')) isFilled = true;
+                        if (parent && parent.querySelector('.underline')) {
+                            isFilled = true;
+                            hasFileUploaded = true;
+                        }
                     } else {
-                        if (el.value.trim() !== '') isFilled = true;
+                        if (el.value.trim() !== '') {
+                            isFilled = true;
+                            currentVal = el.value.trim();
+                        }
                     }
                 });
 
-                if (isFilled) filledFields++;
+                if (checkedVals.length > 0) {
+                    currentVal = checkedVals.join(', ');
+                }
+
+                // Check if it is a draft (edited/modified compared to serverValues)
+                const origVal = serverValues[fieldName] || '';
+                
+                if (isFilled) {
+                    filledFields++;
+                    // If it is a file input, we assume it matches server unless a new file is uploaded
+                    if (hasFileUploaded) {
+                        let fileSelected = false;
+                        fieldGroup.forEach(el => {
+                            if (el.type === 'file' && el.files.length > 0) fileSelected = true;
+                        });
+                        isDraftVal = fileSelected;
+                    } else {
+                        isDraftVal = (currentVal !== origVal);
+                    }
+                } else {
+                    isDraftVal = false;
+                }
+
+                // Apply styling to the card container and badge
+                let cardId = 'field-card-' + fieldName.replace('field_', '');
+                if (fieldName === 'motivation') {
+                    cardId = 'field-card-motivation';
+                }
+                
+                const card = document.getElementById(cardId);
+                let badgeId = 'status-badge-' + fieldName.replace('field_', '');
+                if (fieldName === 'motivation') {
+                    badgeId = 'status-badge-motivation';
+                }
+                const badge = document.getElementById(badgeId);
+
+                if (card && badge) {
+                    const needsRevision = card.getAttribute('data-needs-revision') === 'true';
+
+                    // Reset classes
+                    card.className = 'p-4 rounded-2xl border transition-all space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-300';
+                    badge.className = 'ml-2 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded';
+
+                    if (!isFilled) {
+                        // BELUM DIISI (Slate/Grey)
+                        card.classList.add('border-slate-200', 'bg-slate-50/10');
+                        badge.classList.add('text-slate-400', 'bg-slate-100', 'border', 'border-slate-200');
+                        badge.innerText = 'Belum Diisi';
+                    } else if (needsRevision && !isDraftVal) {
+                        // REVISI (Amber/Orange) - only if they haven't modified it yet
+                        card.classList.add('border-amber-350', 'bg-amber-50/20', 'ring-1', 'ring-amber-250');
+                        badge.classList.add('text-amber-700', 'bg-amber-50', 'border', 'border-amber-200');
+                        badge.innerText = 'Perlu Revisi';
+                    } else if (isDraftVal) {
+                        // DRAF / EDIT (Blue)
+                        card.classList.add('border-blue-300', 'bg-blue-50/20', 'ring-1', 'ring-blue-200');
+                        badge.classList.add('text-blue-700', 'bg-blue-50', 'border', 'border-blue-200', 'animate-pulse');
+                        badge.innerText = '✍ Draf';
+                    } else {
+                        // SUDAH DIISI / TERSIMPAN (Emerald/Green)
+                        card.classList.add('border-emerald-250', 'bg-emerald-50/20');
+                        badge.classList.add('text-emerald-700', 'bg-emerald-50', 'border', 'border-emerald-200');
+                        badge.innerText = '✓ Tersimpan';
+                    }
+                }
             });
 
             const progressPercent = Math.round((filledFields / totalFields) * 100);
