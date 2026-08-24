@@ -104,7 +104,9 @@
     // DATA VARIABEL UTAMA DARI LARAVEL (Dipakai bersama oleh Chart & Map)
     const rawStatsData = @json($stats);
     const rawDataProvinsi = @json($stats->pluck('total', 'provinsi'));
+    const participantsAddressData = @json($participantsData);
     const dataProvinsi = {};
+    const dataKabupaten = {};
 
     // Fungsi standarisasi penulisan teks nama provinsi agar sinkron dengan file GeoJSON
     function cleanProvinceName(name) {
@@ -120,7 +122,7 @@
             .replace(/IRIAN\s+JAYA\s+BARAT/g, 'PAPUA BARAT')
             .replace(/IRIAN\s+JAYA\s+TIMUR/g, 'PAPUA')
             .replace(/IRIAN\s+JAYA\s+TENGAH/g, 'PAPUA')
-            .replace(/IRIAN\s+JAYA/g, 'PAPUA')
+            .replace(/IRIAN\s+JAYA\s/g, 'PAPUA')
             .trim();
             
         const mappings = {
@@ -138,12 +140,30 @@
         return mappings[cleaned] || cleaned;
     }
 
-    // Normalisasikan key dari database agar siap dicocokkan
-    for (let prov in rawDataProvinsi) {
-        if (rawDataProvinsi.hasOwnProperty(prov)) {
-            dataProvinsi[cleanProvinceName(prov)] = rawDataProvinsi[prov];
-        }
+    function cleanKabupatenName(name) {
+        if (!name) return "";
+        return name.toUpperCase()
+            .replace(/KABUPATEN\s+/g, '')
+            .replace(/KAB\.\s+/g, '')
+            .replace(/KOTA\s+/g, '')
+            .trim();
     }
+
+    // Normalisasikan key dari database agar siap dicocokkan
+    participantsAddressData.forEach(p => {
+        if (p.provinsi) {
+            const provClean = cleanProvinceName(p.provinsi);
+            dataProvinsi[provClean] = (dataProvinsi[provClean] || 0) + 1;
+
+            if (p.kabupaten) {
+                const kabClean = cleanKabupatenName(p.kabupaten);
+                if (!dataKabupaten[provClean]) {
+                    dataKabupaten[provClean] = {};
+                }
+                dataKabupaten[provClean][kabClean] = (dataKabupaten[provClean][kabClean] || 0) + 1;
+            }
+        }
+    });
 
     // =========================================================
     // 1. GRAFIK BATANG HORIZONTAL (Mampu Menampung Banyak Data)
@@ -218,6 +238,14 @@
                          '#f8fafc';
     }
 
+    function getRegencyColor(d) {
+        return d > 10  ? '#047857' :
+               d > 5   ? '#059669' :
+               d > 2   ? '#10b981' :
+               d > 0   ? '#34d399' :
+                         '#f8fafc';
+    }
+
     function styleFeature(feature) {
         const rawName = feature.properties.PROVINSI || feature.properties.Provinsi || feature.properties.provinsi || feature.properties.Propinsi || feature.properties.propinsi || feature.properties.NAME_1 || feature.properties.PROP_NAME || "";
         const cleanedName = cleanProvinceName(rawName);
@@ -233,6 +261,146 @@
     }
 
     let geojsonLayer;
+    let regencyGeoJsonData = null;
+    let regencyLayer = null;
+    let isDrilledDown = false;
+    let backButtonInstance = null;
+
+    const BackButtonControl = L.Control.extend({
+        options: { position: 'topright' },
+        onAdd: function (map) {
+            const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+            const button = L.DomUtil.create('a', '', container);
+            button.href = '#';
+            button.innerHTML = '⬅ Peta Nasional';
+            button.style.backgroundColor = 'white';
+            button.style.padding = '6px 10px';
+            button.style.width = 'auto';
+            button.style.height = 'auto';
+            button.style.fontSize = '11px';
+            button.style.fontWeight = 'bold';
+            button.style.color = '#047857';
+            button.style.textDecoration = 'none';
+            button.style.display = 'inline-flex';
+            button.style.alignItems = 'center';
+            button.style.borderRadius = '4px';
+
+            L.DomEvent.on(button, 'click', function (e) {
+                L.DomEvent.stopPropagation(e);
+                L.DomEvent.preventDefault(e);
+                resetToNationalMap();
+            });
+
+            return container;
+        }
+    });
+
+    function drillDownToProvince(rawProvinceName, bounds) {
+        const cleanedProvName = cleanProvinceName(rawProvinceName);
+        isDrilledDown = true;
+        map.fitBounds(bounds);
+
+        if (!backButtonInstance) {
+            backButtonInstance = new BackButtonControl();
+            map.addControl(backButtonInstance);
+        }
+
+        if (regencyGeoJsonData) {
+            renderRegenciesOfProvince(cleanedProvName);
+        } else {
+            // Tampilkan loading popup sementara mendownload file 12MB (di-stream/compress)
+            const loadingPopup = L.popup()
+                .setLatLng(bounds.getCenter())
+                .setContent('<div class="text-xs text-slate-500 font-bold p-1"><span class="animate-pulse">🔄 Loading Peta Kabupaten...</span></div>')
+                .openOn(map);
+
+            fetch('https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/indonesia-regency-city.json')
+                .then(res => res.json())
+                .then(data => {
+                    regencyGeoJsonData = data;
+                    map.closePopup(loadingPopup);
+                    renderRegenciesOfProvince(cleanedProvName);
+                })
+                .catch(err => {
+                    console.error("Gagal memuat peta kabupaten:", err);
+                    map.closePopup(loadingPopup);
+                    alert("Gagal memuat batas kabupaten/kota.");
+                });
+        }
+    }
+
+    function renderRegenciesOfProvince(cleanedProvName) {
+        if (regencyLayer) {
+            map.removeLayer(regencyLayer);
+        }
+        if (geojsonLayer) {
+            map.removeLayer(geojsonLayer);
+        }
+
+        const filteredFeatures = regencyGeoJsonData.features.filter(f => {
+            const fProv = cleanProvinceName(f.properties.state_name);
+            return fProv === cleanedProvName;
+        });
+
+        const filteredGeoJson = {
+            type: "FeatureCollection",
+            features: filteredFeatures
+        };
+
+        regencyLayer = L.geoJson(filteredGeoJson, {
+            style: function(feature) {
+                const kabName = cleanKabupatenName(feature.properties.regency_na);
+                const count = (dataKabupaten[cleanedProvName] && dataKabupaten[cleanedProvName][kabName]) || 0;
+                return {
+                    fillColor: getRegencyColor(count),
+                    weight: 1.5,
+                    opacity: 1,
+                    color: '#ffffff',
+                    fillOpacity: 0.85
+                };
+            },
+            onEachFeature: function(feature, layer) {
+                const kabRaw = feature.properties.regency_na;
+                const kabName = cleanKabupatenName(kabRaw);
+                const count = (dataKabupaten[cleanedProvName] && dataKabupaten[cleanedProvName][kabName]) || 0;
+                
+                layer.bindPopup(`
+                    <div class="font-sans p-1 text-center">
+                        <b class="text-xs text-slate-900 block border-b border-slate-100 pb-1 mb-1 uppercase tracking-wide">${kabRaw}</b>
+                        <span class="text-[11px] text-slate-500">Total: <strong class="text-emerald-600">${count} Peserta</strong></span>
+                    </div>
+                `, { closeButton: false });
+
+                layer.on({
+                    mouseover: function (e) {
+                        e.target.setStyle({ weight: 2.5, color: '#047857', fillOpacity: 0.95 });
+                        e.target.openPopup();
+                    },
+                    mouseout: function (e) {
+                        regencyLayer.resetStyle(e.target);
+                        e.target.closePopup();
+                    }
+                });
+            }
+        }).addTo(map);
+    }
+
+    function resetToNationalMap() {
+        isDrilledDown = false;
+        if (regencyLayer) {
+            map.removeLayer(regencyLayer);
+            regencyLayer = null;
+        }
+        if (geojsonLayer) {
+            geojsonLayer.addTo(map);
+        }
+        map.setView([-2.5, 118.0], 5);
+        if (backButtonInstance) {
+            map.removeControl(backButtonInstance);
+            backButtonInstance = null;
+        }
+    }
+
     function onEachFeature(feature, layer) {
         const rawName = feature.properties.PROVINSI || feature.properties.Provinsi || feature.properties.provinsi || feature.properties.Propinsi || feature.properties.propinsi || feature.properties.NAME_1 || "Tidak Diketahui";
         const cleanedName = cleanProvinceName(rawName);
@@ -243,7 +411,7 @@
                 <b class="text-xs text-slate-900 block border-b border-slate-100 pb-1 mb-1 uppercase tracking-wide">${rawName}</b>
                 <span class="text-[11px] text-slate-500">Total: <strong class="text-emerald-600">${count} Peserta</strong></span>
             </div>
-        `);
+        `, { closeButton: false });
 
         layer.on({
             mouseover: function (e) {
@@ -256,7 +424,9 @@
                 e.target.closePopup();
             },
             click: function (e) {
-                map.fitBounds(e.target.getBounds());
+                if (!isDrilledDown) {
+                    drillDownToProvince(rawName, e.target.getBounds());
+                }
             }
         });
     }

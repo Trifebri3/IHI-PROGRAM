@@ -31,10 +31,17 @@ public function index()
         ->groupBy('provinsi')
         ->get();
 
+        // Mengambil data lengkap alamat untuk pemetaan kabupaten kustom
+        $participantsData = Address::whereIn('user_id', function($query) use ($programId) {
+            $query->select('user_id')->from('registrations')->where('program_id', $programId);
+        })
+        ->select('provinsi', 'kabupaten')
+        ->get();
+
         // Data statistik umum
         $totalPeserta = Registration::where('program_id', $programId)->count();
 
-        return view('public.statistics', compact('program', 'stats', 'totalPeserta'));
+        return view('public.statistics', compact('program', 'stats', 'participantsData', 'totalPeserta'));
     }
 
     public function mapData($programId)
@@ -45,7 +52,7 @@ public function index()
                 ->from('registrations')
                 ->where('program_id', $programId)
                 ->whereNotNull('final_id_number'); // Hanya peserta resmi terverifikasi
-        })->select('provinsi', 'kabupaten', 'kecamatan', 'desa')->get();
+        })->select('provinsi', 'kabupaten')->get();
 
         // Data ini akan dikirim ke Leaflet.js
         return response()->json($participants);

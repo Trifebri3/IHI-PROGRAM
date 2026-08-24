@@ -336,12 +336,36 @@ Route::prefix('superadmin')
     Route::post('/form-builder', [FormBuilderController::class, 'store'])->name('form-builder.store');
     Route::delete('/form-builder/{id}', [FormBuilderController::class, 'destroy'])->name('form-builder.destroy');
 
+    // Gerbang OTP Kode Rahasia (Secret Gate)
+    Route::get('/secret-gate', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'showSecretGate'])->name('secret-gate');
+    Route::post('/secret-gate/verify', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'verifySecretGate'])->name('secret-gate.verify');
+    Route::post('/secret-gate/lock', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'lockConsole'])->name('secret-gate.lock');
 
+    // System Intelligence & Optimization Consoles (Protected by Secret Code & Role)
+    Route::middleware(['secret.console'])->group(function() {
+        Route::get('/system-intelligence', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'index'])->name('system-intelligence.index');
+        Route::post('/system-intelligence/self-healing', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'triggerSelfHealing'])->name('system-intelligence.self-healing');
+        Route::post('/system-intelligence/toggle-user-block/{id}', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'toggleUserBlock'])->name('system-intelligence.toggle-user-block');
+        Route::post('/system-intelligence/settings', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'saveSettings'])->name('system-intelligence.save-settings');
+        Route::post('/system-intelligence/test-ai', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'testAiConnection'])->name('system-intelligence.test-ai');
+        Route::post('/system-intelligence/errors/{id}/status', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'updateErrorStatus'])->name('system-intelligence.update-error-status');
+        Route::get('/system-intelligence/export-excel', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'exportExcel'])->name('system-intelligence.export-excel');
 
+        // Modul Baru: Optimisasi Admin
+        Route::get('/optimization', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'index'])->name('optimization.index');
+        Route::post('/optimization/check-system', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'checkSystemNow'])->name('optimization.check-system');
+        Route::post('/optimization/toggle-maintenance', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'toggleMaintenanceMode'])->name('optimization.toggle-maintenance');
+        Route::post('/optimization/toggle-defense', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'toggleDefenseMode'])->name('optimization.toggle-defense');
+        Route::post('/optimization/toggle-secret-defense', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'toggleSecretDefense'])->name('optimization.toggle-secret-defense');
+        Route::post('/optimization/run-test', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'runFeatureTest'])->name('optimization.run-test');
+        Route::post('/optimization/test-gatekeeper-upload', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'testGatekeeperUpload'])->name('optimization.test-gatekeeper-upload');
+        Route::get('/optimization/download-test-report', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'downloadTestReport'])->name('optimization.download-test-report');
 
-
-
-
+        // Privileged Access Security Gate & Recovery Links
+        Route::post('/privileged-access/verify-gate', [\App\Http\Controllers\SuperAdmin\PrivilegedAccessController::class, 'verifySecurityGate'])->name('privileged-access.verify-gate');
+        Route::post('/privileged-access/generate-recovery', [\App\Http\Controllers\SuperAdmin\PrivilegedAccessController::class, 'generateRecoveryLink'])->name('privileged-access.generate-recovery');
+        Route::post('/privileged-access/update-password', [\App\Http\Controllers\SuperAdmin\PrivilegedAccessController::class, 'updateGatePassword'])->name('privileged-access.update-password');
+    });
     });
 
 
@@ -469,15 +493,17 @@ Route::middleware(['auth'])->prefix('superadmin')->group(function () {
     Route::match(['get', 'post'], '/users/{id}/impersonate', [UserController::class, 'impersonate'])->name('superadmin.users.impersonate');
     Route::post('/users/{id}/toggle-block', [UserController::class, 'toggleBlock'])->name('superadmin.users.toggle-block');
 
-    // Super Power Panel Tools
-    Route::get('/power-panel', [SuperPowerController::class, 'index'])->name('superadmin.power-panel.index');
-    Route::post('/power-panel/generate-dummy', [SuperPowerController::class, 'generateDummyUsers'])->name('superadmin.power-panel.generate-dummy');
-    Route::post('/power-panel/delete-dummy', [SuperPowerController::class, 'deleteAllDummyUsers'])->name('superadmin.power-panel.delete-dummy');
-    Route::post('/power-panel/import-users', [SuperPowerController::class, 'importUsers'])->name('superadmin.power-panel.import-users');
-    Route::get('/power-panel/download-template', [SuperPowerController::class, 'downloadCsvTemplate'])->name('superadmin.power-panel.download-template');
-    Route::post('/power-panel/force-register', [SuperPowerController::class, 'forceRegisterUsers'])->name('superadmin.power-panel.force-register');
-    Route::post('/power-panel/toggle-mitigation', [SuperPowerController::class, 'toggleMitigation'])->name('superadmin.power-panel.toggle-mitigation');
-    Route::post('/power-panel/resolve-ticket/{id}', [SuperPowerController::class, 'resolveTicket'])->name('superadmin.power-panel.resolve-ticket');
+    // Super Power Panel Tools (Protected by Secret Code)
+    Route::middleware(['secret.console'])->group(function() {
+        Route::get('/power-panel', [SuperPowerController::class, 'index'])->name('superadmin.power-panel.index');
+        Route::post('/power-panel/generate-dummy', [SuperPowerController::class, 'generateDummyUsers'])->name('superadmin.power-panel.generate-dummy');
+        Route::post('/power-panel/delete-dummy', [SuperPowerController::class, 'deleteAllDummyUsers'])->name('superadmin.power-panel.delete-dummy');
+        Route::post('/power-panel/import-users', [SuperPowerController::class, 'importUsers'])->name('superadmin.power-panel.import-users');
+        Route::get('/power-panel/download-template', [SuperPowerController::class, 'downloadCsvTemplate'])->name('superadmin.power-panel.download-template');
+        Route::post('/power-panel/force-register', [SuperPowerController::class, 'forceRegisterUsers'])->name('superadmin.power-panel.force-register');
+        Route::post('/power-panel/toggle-mitigation', [SuperPowerController::class, 'toggleMitigation'])->name('superadmin.power-panel.toggle-mitigation');
+        Route::post('/power-panel/resolve-ticket/{id}', [SuperPowerController::class, 'resolveTicket'])->name('superadmin.power-panel.resolve-ticket');
+    });
 });
 
 Route::post('/impersonate/stop', [\App\Http\Controllers\Public\ImpersonationController::class, 'stop'])->name('impersonate.stop');

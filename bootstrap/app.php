@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
 ->withMiddleware(function (Middleware $middleware) {
     $middleware->web(append: [
         \App\Http\Middleware\CheckBlockedUser::class,
+        \App\Http\Middleware\CheckMaintenanceMode::class,
     ]);
 
     $middleware->alias([
@@ -23,7 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         'check.profile' => \App\Http\Middleware\CheckProfileCompletion::class,
         'terms.accepted' => \App\Http\Middleware\EnsureTermsAccepted::class,
         'lms.api.key' => \App\Http\Middleware\EnsureLmsApiKey::class, // <-- TAMBAHKAN INI
-
+        'secret.console' => \App\Http\Middleware\RequireSecretConsoleCode::class,
     ]);
 })
     ->withExceptions(function (Exceptions $exceptions) {

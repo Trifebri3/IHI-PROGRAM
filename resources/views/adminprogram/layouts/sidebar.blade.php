@@ -92,7 +92,6 @@
                 </li>
             </ul>
         </div>
-
     </div>
 
     <div class="mt-auto pt-4 border-t border-slate-100">
