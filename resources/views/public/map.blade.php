@@ -174,7 +174,7 @@
                 .setContent('<div class="text-xs text-slate-500 font-bold p-1"><span class="animate-pulse">🔄 Loading Peta Kabupaten...</span></div>')
                 .openOn(map);
 
-            fetch('https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/indonesia-regency-city.json')
+            fetch('https://cdn.jsdelivr.net/gh/superpikar/indonesia-geojson@master/indonesia-regency-city.json')
                 .then(res => res.json())
                 .then(data => {
                     regencyGeoJsonData = data;
@@ -315,7 +315,7 @@
             });
 
             // Setelah data terhitung, baru load file GeoJSON Peta Indonesia Resmi (CDN Publik Stabil)
-            return fetch('https://raw.githubusercontent.com/denyherianto/indonesia-geojson-topojson-maps-with-38-provinces/main/GeoJSON/indonesia-38-provinces.geojson');
+            return fetch('https://cdn.jsdelivr.net/gh/denyherianto/indonesia-geojson-topojson-maps-with-38-provinces@main/GeoJSON/indonesia-38-provinces.geojson');
         })
         .then(response => response.json())
         .then(geojsonData => {

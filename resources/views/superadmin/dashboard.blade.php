@@ -114,8 +114,24 @@
 
     </div>
 
+    <!-- PROGRAM FILTER DROPDOWN -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 mt-10">
+        <div>
+            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">🎯 Filter Analisis & Data Registrasi</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Pilih program kerja di bawah untuk melihat statistik kelulusan & tabel pendaftar secara rinci.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <select id="programFilterSelect" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition w-full md:w-[280px]">
+                <option value="all">📊 Semua Program (Global)</option>
+                @foreach($programsList as $p)
+                    <option value="{{ $p->id }}">🎓 {{ $p->name }}</option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+
     <!-- STATS COUNTERS -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
         <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
             <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pengguna</p>
@@ -136,6 +152,38 @@
                 <h3 class="text-3xl font-black text-slate-800 mt-1">{{ $totalRegistrations }}</h3>
             </div>
             <div class="bg-emerald-50 text-emerald-600 p-4 rounded-xl">📝</div>
+        </div>
+    </div>
+
+    <!-- PROGRAM SPECIFIC EXTENDED STATS (Hidden on "all", visible on specific program) -->
+    <div id="extendedStatsSection" class="hidden grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pendaftaran Masuk</p>
+                <h3 id="ext-stat-total" class="text-2xl font-black text-slate-800 mt-1">0</h3>
+            </div>
+            <div class="bg-blue-50 text-blue-600 p-3 rounded-lg text-sm">📥</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lolos Seleksi (Passed)</p>
+                <h3 id="ext-stat-passed" class="text-2xl font-black text-emerald-700 mt-1">0</h3>
+            </div>
+            <div class="bg-emerald-50 text-emerald-600 p-3 rounded-lg text-sm">✅</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Draft / Belum Kirim</p>
+                <h3 id="ext-stat-draft" class="text-2xl font-black text-amber-600 mt-1">0</h3>
+            </div>
+            <div class="bg-amber-50 text-amber-600 p-3 rounded-lg text-sm">📋</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Gugur Seleksi (Failed)</p>
+                <h3 id="ext-stat-failed" class="text-2xl font-black text-rose-600 mt-1">0</h3>
+            </div>
+            <div class="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm">❌</div>
         </div>
     </div>
 
@@ -182,6 +230,52 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- DETAIL PENDAFTARAN PROGRAM TABLE -->
+    <div id="participantTableSection" class="hidden bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mt-8 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h3 id="tableProgramTitle" class="text-base font-black text-slate-800 tracking-tight">Daftar Pendaftar Program</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Berikut adalah detail peserta yang terdaftar pada program kerja yang dipilih.</p>
+            </div>
+            <!-- Search & Filter Status -->
+            <div class="flex flex-col sm:flex-row gap-2">
+                <input type="text" id="participantSearchInput" placeholder="Cari nama atau email..." class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none w-full sm:w-[220px]">
+                <select id="statusFilterSelect" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none w-full sm:w-[150px]">
+                    <option value="all">Semua Status</option>
+                    <option value="passed">Lolos (Passed)</option>
+                    <option value="draft">Draf (Draft/Process)</option>
+                    <option value="failed">Gugur (Failed)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-100">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-100">
+                        <th class="p-4">Nama Peserta</th>
+                        <th class="p-4">Email</th>
+                        <th class="p-4">Wilayah (Provinsi / Kabupaten)</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4">Terakhir Diperbarui</th>
+                    </tr>
+                </thead>
+                <tbody id="participantTableBody" class="divide-y divide-slate-100 text-slate-600 font-medium">
+                    <!-- Row templates filled by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination controls -->
+        <div class="flex items-center justify-between text-xs text-slate-400 pt-2">
+            <span id="paginationInfo">Menampilkan 0 - 0 dari 0 data</span>
+            <div class="flex gap-2">
+                <button id="btnPrevPage" class="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg font-bold text-slate-600 disabled:opacity-50 transition" disabled>Sebelumnya</button>
+                <button id="btnNextPage" class="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg font-bold text-slate-600 disabled:opacity-50 transition" disabled>Selanjutnya</button>
+            </div>
+        </div>
     </div>
 
     <!-- Chart JS Script -->
@@ -243,6 +337,191 @@
                             }
                         }
                     }
+                }
+            });
+
+            // ==========================================
+            // LOGIC FOR INTERACTIVE PROGRAM FILTER AJAX
+            // ==========================================
+            const programFilterSelect = document.getElementById('programFilterSelect');
+            const extendedStatsSection = document.getElementById('extendedStatsSection');
+            const participantTableSection = document.getElementById('participantTableSection');
+            const tableProgramTitle = document.getElementById('tableProgramTitle');
+            
+            const extStatTotal = document.getElementById('ext-stat-total');
+            const extStatPassed = document.getElementById('ext-stat-passed');
+            const extStatDraft = document.getElementById('ext-stat-draft');
+            const extStatFailed = document.getElementById('ext-stat-failed');
+            
+            const participantTableBody = document.getElementById('participantTableBody');
+            const participantSearchInput = document.getElementById('participantSearchInput');
+            const statusFilterSelect = document.getElementById('statusFilterSelect');
+            
+            const btnPrevPage = document.getElementById('btnPrevPage');
+            const btnNextPage = document.getElementById('btnNextPage');
+            const paginationInfo = document.getElementById('paginationInfo');
+            
+            let allParticipants = [];
+            let filteredParticipants = [];
+            let currentPage = 1;
+            const rowsPerPage = 10;
+            
+            programFilterSelect.addEventListener('change', function() {
+                const programId = this.value;
+                const programName = this.options[this.selectedIndex].text;
+                
+                if (programId === 'all') {
+                    extendedStatsSection.classList.add('hidden');
+                    participantTableSection.classList.add('hidden');
+                    return;
+                }
+                
+                // Show loading state
+                participantTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="p-8 text-center text-slate-400">
+                            <span class="animate-pulse font-bold text-xs">🔄 Memuat data analisis program...</span>
+                        </td>
+                    </tr>
+                `;
+                extendedStatsSection.classList.remove('hidden');
+                participantTableSection.classList.remove('hidden');
+                tableProgramTitle.innerText = `Daftar Pendaftar: ${programName}`;
+                
+                // Fetch data via AJAX
+                fetch(`{{ url('/superadmin/dashboard/program-stats') }}/${programId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update counts
+                            extStatTotal.innerText = data.total_registrations;
+                            extStatPassed.innerText = data.total_passed;
+                            extStatDraft.innerText = data.total_draft;
+                            extStatFailed.innerText = data.total_failed;
+                            
+                            // Save list
+                            allParticipants = data.list;
+                            filteredParticipants = [...allParticipants];
+                            currentPage = 1;
+                            
+                            // Apply filters and render
+                            applyFiltersAndRender();
+                        } else {
+                            alert('Gagal memuat data statistik program.');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('Terjadi kesalahan koneksi saat memuat data.');
+                    });
+            });
+            
+            function applyFiltersAndRender() {
+                const searchQuery = participantSearchInput.value.toLowerCase();
+                const statusFilter = statusFilterSelect.value;
+                
+                filteredParticipants = allParticipants.filter(p => {
+                    const matchesSearch = p.name.toLowerCase().includes(searchQuery) || p.email.toLowerCase().includes(searchQuery);
+                    
+                    let matchesStatus = true;
+                    if (statusFilter !== 'all') {
+                        if (statusFilter === 'draft') {
+                            matchesStatus = (p.status === 'draft' || p.status === 'process');
+                        } else {
+                            matchesStatus = p.status === statusFilter;
+                        }
+                    }
+                    
+                    return matchesSearch && matchesStatus;
+                });
+                
+                currentPage = 1;
+                renderTable();
+            }
+            
+            function renderTable() {
+                const totalItems = filteredParticipants.length;
+                const totalPages = Math.ceil(totalItems / rowsPerPage) || 1;
+                
+                if (currentPage > totalPages) currentPage = totalPages;
+                if (currentPage < 1) currentPage = 1;
+                
+                const startIndex = (currentPage - 1) * rowsPerPage;
+                const endIndex = Math.min(startIndex + rowsPerPage, totalItems);
+                
+                const pageItems = filteredParticipants.slice(startIndex, endIndex);
+                
+                participantTableBody.innerHTML = '';
+                
+                if (pageItems.length === 0) {
+                    participantTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="p-8 text-center text-slate-400 italic">Tidak ada data pendaftar yang cocok.</td>
+                        </tr>
+                    `;
+                    paginationInfo.innerText = 'Menampilkan 0 - 0 dari 0 data';
+                    btnPrevPage.disabled = true;
+                    btnNextPage.disabled = true;
+                    return;
+                }
+                
+                pageItems.forEach(p => {
+                    let badgeClass = 'bg-slate-100 text-slate-600';
+                    let badgeText = p.status;
+                    
+                    if (p.status === 'passed') {
+                        badgeClass = 'bg-emerald-100 text-emerald-800';
+                        badgeText = 'Lolos (Passed)';
+                    } else if (p.status === 'draft' || p.status === 'process') {
+                        badgeClass = 'bg-amber-100 text-amber-800';
+                        badgeText = 'Draft / Belum Kirim';
+                    } else if (p.status === 'failed') {
+                        badgeClass = 'bg-rose-100 text-rose-800';
+                        badgeText = 'Gugur (Failed)';
+                    } else if (p.status === 'pending') {
+                        badgeClass = 'bg-blue-100 text-blue-800';
+                        badgeText = 'Pending Review';
+                    }
+                    
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50/50 transition-colors border-b border-slate-100';
+                    row.innerHTML = `
+                        <td class="p-4 font-bold text-slate-800">${p.name}</td>
+                        <td class="p-4 text-slate-500 font-mono text-[11px]">${p.email}</td>
+                        <td class="p-4">
+                            <span class="block text-slate-700">${p.province}</span>
+                            <span class="block text-[10px] text-slate-400 font-bold">${p.regency}</span>
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${badgeClass}">
+                                ${badgeText}
+                            </span>
+                        </td>
+                        <td class="p-4 text-[11px] text-slate-400 font-mono">${p.updated_at}</td>
+                    `;
+                    participantTableBody.appendChild(row);
+                });
+                
+                paginationInfo.innerText = `Menampilkan ${startIndex + 1} - ${endIndex} dari ${totalItems} data`;
+                btnPrevPage.disabled = currentPage === 1;
+                btnNextPage.disabled = currentPage === totalPages;
+            }
+            
+            participantSearchInput.addEventListener('input', applyFiltersAndRender);
+            statusFilterSelect.addEventListener('change', applyFiltersAndRender);
+            
+            btnPrevPage.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+            
+            btnNextPage.addEventListener('click', () => {
+                const totalPages = Math.ceil(filteredParticipants.length / rowsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
                 }
             });
         });

@@ -21,6 +21,7 @@ class DashboardController extends Controller
             $totalUsers = User::count();
             $totalPrograms = Program::count();
             $totalRegistrations = \App\Models\Registration::count();
+            $programsList = Program::all();
 
             // Get registration and graduation counts per program
             $programStats = Program::withCount([
@@ -48,7 +49,8 @@ class DashboardController extends Controller
                 'chartLabels',
                 'chartRegistrations',
                 'chartPassed',
-                'recentLogs'
+                'recentLogs',
+                'programsList'
             ));
         }
 
@@ -129,5 +131,59 @@ class DashboardController extends Controller
 
         // 4. Default / Fallback: Lemparkan ke view Peserta Biasa
         return view('pesertabiasa.dashboard');
+    }
+
+    /**
+     * Get detailed program statistics (API for Super Admin Dashboard)
+     */
+    public function getProgramStats($programId)
+    {
+        $user = auth()->user();
+        if (!$user || !$user->hasRole('Super Admin')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        if ($programId === 'all') {
+            $totalRegistrations = \App\Models\Registration::count();
+            $totalPassed = \App\Models\Registration::where('status', 'passed')->count();
+            $totalDraft = \App\Models\Registration::whereIn('status', ['process', 'draft'])->count();
+            $totalFailed = \App\Models\Registration::where('status', 'failed')->count();
+
+            $registrations = \App\Models\Registration::with(['user.profile', 'user.address'])
+                ->latest()
+                ->limit(100)
+                ->get();
+        } else {
+            $program = Program::findOrFail($programId);
+            $totalRegistrations = \App\Models\Registration::where('program_id', $programId)->count();
+            $totalPassed = \App\Models\Registration::where('program_id', $programId)->where('status', 'passed')->count();
+            $totalDraft = \App\Models\Registration::where('program_id', $programId)->whereIn('status', ['process', 'draft'])->count();
+            $totalFailed = \App\Models\Registration::where('program_id', $programId)->where('status', 'failed')->count();
+
+            $registrations = \App\Models\Registration::where('program_id', $programId)
+                ->with(['user.profile', 'user.address'])
+                ->latest()
+                ->get();
+        }
+
+        $list = $registrations->map(function ($reg) {
+            return [
+                'name' => $reg->user->name ?? 'User Tidak Diketahui',
+                'email' => $reg->user->email ?? '-',
+                'status' => $reg->status,
+                'province' => $reg->user->address->provinsi ?? '-',
+                'regency' => $reg->user->address->kabupaten ?? '-',
+                'updated_at' => $reg->updated_at->format('Y-m-d H:i')
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'total_registrations' => $totalRegistrations,
+            'total_passed' => $totalPassed,
+            'total_draft' => $totalDraft,
+            'total_failed' => $totalFailed,
+            'list' => $list
+        ]);
     }
 }

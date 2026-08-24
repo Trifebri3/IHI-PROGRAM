@@ -293,6 +293,7 @@ Route::prefix('superadmin')
     ->group(function () {
         // Manajemen Pembuat Form Biodata Pusat (EAV Engine)
         Route::get('/biodata', [BiodataController::class, 'index'])->name('biodata.index');
+        Route::get('/dashboard/program-stats/{programId}', [DashboardController::class, 'getProgramStats'])->name('dashboard.program-stats');
         Route::get('/form-builder', [FormBuilderController::class, 'index'])->name('form-builder.index');
 	Route::post('/form-builder/store', [FormBuilderController::class, 'store'])->name('form-builder.store-legacy');
         Route::delete('/form-builder/{id}/delete', [FormBuilderController::class, 'destroy'])->name('form-builder.delete');
