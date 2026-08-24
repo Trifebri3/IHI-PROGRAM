@@ -669,8 +669,7 @@
             }
         }
 
-        // Initialize listeners and setup page
-        document.addEventListener('DOMContentLoaded', () => {
+        function initForm() {
             addLog('Sistem', 'Formulir aplikasi dimuat. Draf otomatis aktif.');
             
             // Show Laravel errors in log if present
@@ -712,58 +711,59 @@
                 });
             }
 
-                // Manual Save Draft to Database handler
-                const manualSaveBtn = document.getElementById('manual-save-draft-btn');
-                const loadingIcon = document.getElementById('draft-loading-icon');
-                
-                if (manualSaveBtn && !isStageLocked) {
-                    manualSaveBtn.addEventListener('click', () => {
-                        manualSaveBtn.disabled = true;
-                        loadingIcon.classList.remove('hidden');
-                        addLog('Sistem', 'Menyimpan draf formulir ke database server...');
+            // Manual Save Draft to Database handler
+            const manualSaveBtn = document.getElementById('manual-save-draft-btn');
+            const loadingIcon = document.getElementById('draft-loading-icon');
+            
+            if (manualSaveBtn && !isStageLocked) {
+                manualSaveBtn.addEventListener('click', () => {
+                    manualSaveBtn.disabled = true;
+                    loadingIcon.classList.remove('hidden');
+                    addLog('Sistem', 'Menyimpan draf formulir ke database server...');
 
-                        const formData = new FormData(form);
-                        
-                        fetch('{{ route('program.apply.draft', $program->id) }}', {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            manualSaveBtn.disabled = false;
-                            loadingIcon.classList.add('hidden');
+                    const formData = new FormData(form);
+                    
+                    fetch('{{ route('program.apply.draft', $program->id) }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        manualSaveBtn.disabled = false;
+                        loadingIcon.classList.add('hidden');
 
-                            if (data.success) {
-                                addLog('Sukses', 'Draf berhasil disimpan di database server!');
-                                
-                                // Synced to local storage too
-                                saveDraft();
-                                
-                                const lastSavedTime = data.draft_saved_at || new Date().toLocaleTimeString('id-ID', { hour12: false });
-                                const saveTimeText = document.getElementById('save-time-text');
-                                if (saveTimeText) {
-                                    saveTimeText.innerText = `Terakhir disimpan (Server): ${lastSavedTime}`;
-                                }
-                                alert('Draf jawaban Anda berhasil disimpan ke database server!');
-                            } else {
-                                addLog('Error', 'Gagal menyimpan draf: ' + (data.message || 'Error tidak diketahui.'));
-                                alert('Gagal menyimpan draf: ' + (data.message || 'Terjadi kesalahan.'));
+                        if (data.success) {
+                            addLog('Sukses', 'Draf berhasil disimpan di database server!');
+                            
+                            // Synced to local storage too
+                            saveDraft();
+                            
+                            const lastSavedTime = data.draft_saved_at || new Date().toLocaleTimeString('id-ID', { hour12: false });
+                            const saveTimeText = document.getElementById('save-time-text');
+                            if (saveTimeText) {
+                                saveTimeText.innerText = `Terakhir disimpan (Server): ${lastSavedTime}`;
                             }
-                        })
-                        .catch(error => {
-                            manualSaveBtn.disabled = false;
-                            loadingIcon.classList.add('hidden');
-                            console.error('Error saving draft:', error);
-                            addLog('Error', 'Gagal terhubung ke server untuk menyimpan draf.');
-                            alert('Koneksi terganggu. Gagal terhubung ke server.');
-                        });
+                            alert('Draf jawaban Anda berhasil disimpan ke database server!');
+                        } else {
+                            addLog('Error', 'Gagal menyimpan draf: ' + (data.message || 'Error tidak diketahui.'));
+                            alert('Gagal menyimpan draf: ' + (data.message || 'Terjadi kesalahan.'));
+                        }
+                    })
+                    .catch(error => {
+                        manualSaveBtn.disabled = false;
+                        loadingIcon.classList.add('hidden');
+                        console.error('Error saving draft:', error);
+                        addLog('Error', 'Gagal terhubung ke server untuk menyimpan draf.');
+                        alert('Koneksi terganggu. Gagal terhubung ke server.');
                     });
-                }
+                });
+            }
 
-                // Submit listener
+            // Submit listener
+            if (form) {
                 form.addEventListener('submit', (e) => {
                     // Cek koneksi internet sebelum submit
                     if (!navigator.onLine) {
@@ -812,7 +812,7 @@
                     if (submitBtn) {
                         submitBtn.disabled = true;
                         submitBtn.innerHTML = `
-                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2500/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
@@ -850,7 +850,13 @@
                     }
                 });
             }
-        });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initForm);
+        } else {
+            initForm();
+        }
     </script>
 
     <style>
