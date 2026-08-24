@@ -431,6 +431,7 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::get('/public/program', [PublicStatisticController::class, 'index'])->name('public.program.index');
+Route::get('/public/program/map-data-all', [PublicStatisticController::class, 'mapDataAll'])->name('public.program.map.data.all');
 Route::get('/public/program/{id}/stats', [PublicStatisticController::class, 'showProgramStats'])->name('public.program.stats');
 Route::get('/public/program/{id}/map-data', [PublicStatisticController::class, 'mapData'])->name('public.program.map.data');
 Route::get('/public/program/{id}/participants', [PublicStatisticController::class, 'participants'])->name('public.program.participants');

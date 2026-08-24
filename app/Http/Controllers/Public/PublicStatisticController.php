@@ -79,11 +79,14 @@ public function participants(Request $request, $programId)
     return view('public.participants', compact('program', 'participants', 'provinces', 'regencies'));
 }
 
+    public function mapDataAll()
+    {
+        $participants = Address::whereIn('user_id', function($query) {
+            $query->select('user_id')
+                ->from('registrations')
+                ->whereNotNull('final_id_number');
+        })->select('provinsi', 'kabupaten')->get();
 
-
-
-
-
-
-
+        return response()->json($participants);
+    }
 }
