@@ -5,10 +5,17 @@
 @section('content')
 <div class="py-6 max-w-4xl mx-auto space-y-6 px-4 sm:px-6">
 
-    <div>
-        <a href="{{ route('adminprogram.programs.workspace', $program->id) }}" class="inline-flex items-center text-xs bg-white text-slate-600 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition font-bold border shadow-3xs">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <a href="{{ route('adminprogram.programs.workspace', $program->id) }}" class="inline-flex items-center text-xs bg-white text-slate-600 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition font-bold border shadow-3xs w-fit">
             &larr; Kembali ke Workspace
         </a>
+        
+        <form action="{{ route('adminprogram.programs.applicant.reset-answers', [$program->id, $registration->id]) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus / mengosongkan seluruh jawaban berkas kuesioner dari peserta ini? Seluruh berkas lampiran fisik juga akan terhapus secara permanen dari server dan status pengisian akan di-reset menjadi kosong.')">
+            @csrf
+            <button type="submit" class="inline-flex items-center text-xs bg-red-50 hover:bg-red-100 text-red-700 px-3.5 py-2 rounded-xl border border-red-200 transition font-bold shadow-3xs cursor-pointer">
+                🗑️ Hapus & Kosongkan Jawaban Peserta
+            </button>
+        </form>
     </div>
 
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
@@ -174,12 +181,22 @@
                     $needsRevision = isset($form['needs_revision']) && $form['needs_revision'];
                 @endphp
                 <div class="p-4 rounded-xl border border-slate-100 bg-slate-50/50 space-y-1.5 shadow-3xs relative" x-data="{ requested: {{ $needsRevision ? 'true' : 'false' }} }">
-                    <!-- Checkbox to mark field for revision -->
-                    <div class="absolute top-4 right-4 flex items-center gap-1.5 bg-white border border-slate-200 p-1.5 px-2.5 rounded-lg shadow-3xs">
-                        <label class="flex items-center text-[10px] font-bold text-slate-500 cursor-pointer select-none">
+                    <!-- Checkbox to mark field for revision & Hapus Satuan -->
+                    <div class="absolute top-4 right-4 flex items-center gap-2 bg-white border border-slate-200 p-1.5 px-2.5 rounded-lg shadow-3xs">
+                        <label class="flex items-center text-[10px] font-bold text-slate-500 cursor-pointer select-none {{ !empty($form['value']) ? 'border-r pr-2 mr-0.5' : '' }}">
                             <input type="checkbox" name="revision_fields[]" value="{{ $form['field_name'] }}" x-model="requested" form="evaluate-form" class="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 mr-1">
                             Minta Revisi
                         </label>
+                        
+                        @if(!empty($form['value']))
+                            <form action="{{ route('adminprogram.programs.applicant.reset-single-answer', [$program->id, $registration->id]) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus/mengosongkan isian bidang ini saja? Berkas lampiran fisik (jika ada) akan dihapus permanen.')">
+                                @csrf
+                                <input type="hidden" name="field_name" value="{{ $form['field_name'] }}">
+                                <button type="submit" class="text-rose-600 hover:text-rose-800 transition text-[10px] font-extrabold flex items-center gap-0.5 cursor-pointer">
+                                    🗑️ Hapus
+                                </button>
+                            </form>
+                        @endif
                     </div>
 
                     <span class="block text-xs font-bold text-slate-400 uppercase tracking-wide mr-24">{{ $form['field_name'] }} <span class="text-[9px] font-normal uppercase">({{ $form['type'] }})</span></span>

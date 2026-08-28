@@ -430,24 +430,7 @@
             @error('phone_number') <div class="text-red-600 text-xs mt-1">{{ $message }}</div> @enderror
         </div>
 
-        <div class="input-group">
-            <label class="form-label" for="address">Alamat Domisili</label>
-            <textarea id="address" name="address" rows="2" class="input-field" placeholder="Jl. Hijau No. 12, Bandung">{{ old('address') }}</textarea>
-            @error('address') <div class="text-red-600 text-xs mt-1">{{ $message }}</div> @enderror
-        </div>
 
-        <div class="input-group">
-            <label class="form-label">Foto Profil</label>
-            <label class="photo-upload-zone" id="uploadZone">
-                <input type="file" name="profile_photo" id="profilePhoto" accept="image/*" style="display: none;">
-                <span id="uploadText" class="text-sm text-gray-500">Klik atau taruh foto di sini (Max 2MB)</span>
-                <span id="fileName" class="file-name"></span>
-            </label>
-            <div id="photoPreview" class="photo-preview">
-                <img id="previewImg" src="#" alt="Preview Foto">
-            </div>
-            @error('profile_photo') <div class="text-red-600 text-xs mt-1">{{ $message }}</div> @enderror
-        </div>
 
         <div class="form-grid">
             <div class="input-group">
@@ -514,88 +497,7 @@
 
     <script>
         (function() {
-            // ========== UPLOAD FOTO FUNCTIONALITY ==========
-            const fileInput = document.getElementById('profilePhoto');
-            const uploadZone = document.getElementById('uploadZone');
-            const uploadText = document.getElementById('uploadText');
-            const fileNameSpan = document.getElementById('fileName');
-            const previewDiv = document.getElementById('photoPreview');
-            const previewImg = document.getElementById('previewImg');
 
-            if (uploadZone) {
-                uploadZone.addEventListener('click', function(e) {
-                    if (e.target !== fileInput) {
-                        fileInput.click();
-                    }
-                });
-            }
-
-            if (fileInput) {
-                fileInput.addEventListener('change', function(e) {
-                    const file = e.target.files[0];
-                    if (file) {
-                        if (file.size > 2 * 1024 * 1024) {
-                            alert('Ukuran file terlalu besar! Maksimal 2MB.');
-                            fileInput.value = '';
-                            fileNameSpan.textContent = '';
-                            previewDiv.style.display = 'none';
-                            uploadText.innerHTML = 'Klik atau taruh foto di sini (Max 2MB)';
-                            return;
-                        }
-
-                        if (!file.type.startsWith('image/')) {
-                            alert('Hanya file gambar yang diperbolehkan (JPG, PNG, GIF, dll).');
-                            fileInput.value = '';
-                            fileNameSpan.textContent = '';
-                            previewDiv.style.display = 'none';
-                            uploadText.innerHTML = 'Klik atau taruh foto di sini (Max 2MB)';
-                            return;
-                        }
-
-                        fileNameSpan.textContent = file.name;
-                        uploadText.innerHTML = '✓ Foto dipilih';
-
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            previewImg.src = e.target.result;
-                            previewDiv.style.display = 'block';
-                        };
-                        reader.readAsDataURL(file);
-                    } else {
-                        fileNameSpan.textContent = '';
-                        previewDiv.style.display = 'none';
-                        uploadText.innerHTML = 'Klik atau taruh foto di sini (Max 2MB)';
-                    }
-                });
-            }
-
-            // Drag and drop
-            if (uploadZone) {
-                uploadZone.addEventListener('dragover', function(e) {
-                    e.preventDefault();
-                    uploadZone.style.borderColor = '#22c55e';
-                    uploadZone.style.background = '#f0fdf4';
-                });
-
-                uploadZone.addEventListener('dragleave', function(e) {
-                    e.preventDefault();
-                    uploadZone.style.borderColor = '#cbd5e1';
-                    uploadZone.style.background = '#fafafa';
-                });
-
-                uploadZone.addEventListener('drop', function(e) {
-                    e.preventDefault();
-                    uploadZone.style.borderColor = '#cbd5e1';
-                    uploadZone.style.background = '#fafafa';
-
-                    const files = e.dataTransfer.files;
-                    if (files.length > 0) {
-                        fileInput.files = files;
-                        const changeEvent = new Event('change', { bubbles: true });
-                        fileInput.dispatchEvent(changeEvent);
-                    }
-                });
-            }
 
             // ========== FORM VALIDASI DAN LOADING ANIMATION ==========
             const form = document.getElementById('registerForm');
@@ -612,8 +514,15 @@
             ];
             let messageIndex = 0;
 
+            let isSubmitted = false;
+
             if (form) {
                 form.addEventListener('submit', function(e) {
+                    if (isSubmitted) {
+                        e.preventDefault();
+                        return false;
+                    }
+
                     const password = document.getElementById('password');
                     const passwordConfirm = document.getElementById('password_confirmation');
                     const terms = document.getElementById('terms');
@@ -642,9 +551,14 @@
                         return;
                     }
 
+                    isSubmitted = true;
+
                     // TAMPILKAN LOADING OVERLAY DENGAN ANIMASI
                     loadingOverlay.classList.add('active');
                     submitBtn.classList.add('loading');
+                    setTimeout(() => {
+                        submitBtn.disabled = true;
+                    }, 50);
 
                     // Animasi teks loading berganti setiap 1.5 detik
                     const messageInterval = setInterval(() => {

@@ -312,7 +312,9 @@
 
                     // Tampilkan loading state
                     confirmBtn.classList.add('loading');
-                    confirmBtn.disabled = true;
+                    setTimeout(() => {
+                        confirmBtn.disabled = true;
+                    }, 50);
                 });
             }
 

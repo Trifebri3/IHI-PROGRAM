@@ -329,7 +329,9 @@
 
                     // Tampilkan loading state
                     submitBtn.classList.add('loading');
-                    submitBtn.disabled = true;
+                    setTimeout(() => {
+                        submitBtn.disabled = true;
+                    }, 50);
                 });
             }
 

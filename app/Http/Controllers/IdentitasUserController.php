@@ -190,7 +190,24 @@ class IdentitasUserController extends Controller
     {
         $user = Auth::user();
 
-        // Validasi input password
+        // Jika user wajib ganti password (karena mitigasi/auto-password)
+        if ($user->must_change_password) {
+            $request->validate([
+                'password' => ['required', 'string', Password::defaults(), 'confirmed'],
+            ], [
+                'password.required' => 'Password baru wajib diisi.',
+                'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+            ]);
+
+            $user->update([
+                'password' => Hash::make($request->password),
+                'must_change_password' => false,
+            ]);
+
+            return redirect()->route('dashboard')->with('success', 'Password Anda berhasil diperbarui! Silakan lanjutkan mengakses dashboard.');
+        }
+
+        // Validasi input password biasa
         $validated = $request->validate([
             'current_password' => ['required', 'string'],
             'password' => ['required', 'string', Password::defaults(), 'confirmed'],
@@ -205,8 +222,7 @@ class IdentitasUserController extends Controller
             return redirect()->back()->withErrors(['current_password' => 'Password saat ini yang Anda masukkan salah.']);
         }
 
-        // Update password baru (Laravel otomatis melakukan hashing jika menggunakan casts,
-        // namun aman jika kita hash manual menggunakan Hash::make)
+        // Update password baru
         $user->update([
             'password' => Hash::make($request->password),
         ]);

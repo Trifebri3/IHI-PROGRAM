@@ -22,6 +22,23 @@ class SystemIntelligenceController extends Controller
             abort(403, 'Akses ditolak: Area khusus Super Admin.');
         }
 
+        $data = $this->getSystemMetrics();
+
+        return view('superadmin.system_intelligence.index', $data);
+    }
+
+    public function getRealtimeApi()
+    {
+        if (!Auth::user()->hasRole('Super Admin')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $data = $this->getSystemMetrics();
+        return response()->json($data);
+    }
+
+    private function getSystemMetrics()
+    {
         // Initialize persistent logs in Indonesian
         $logsPath = storage_path('app/system_intelligence_logs.json');
         if (!file_exists($logsPath)) {
@@ -286,7 +303,7 @@ class SystemIntelligenceController extends Controller
             'security_blocks' => [0, 0, 1, 3, 12, 2, 0]
         ];
 
-        return view('superadmin.system_intelligence.index', compact(
+        return compact(
             'overallHealth', 'appHealth', 'dbHealth', 'cacheHealth', 'queueHealth', 'storageHealth',
             'dbLatency', 'cacheLatency', 'failedJobsCount', 'pendingJobsCount', 'diskUsedPercent',
             'availabilityData', 'memoryUsage', 'cpuUsage', 'averageResponseTime',
@@ -295,7 +312,7 @@ class SystemIntelligenceController extends Controller
             'codebaseFindings', 'dailyData', 'weeklyData', 'monthlyData', 'yearlyData',
             'anomalousUsers', 'aiSettings', 'aggregatedErrors', 'errorsToday',
             'errorsYesterday', 'errorTrendPct', 'apmChartData'
-        ));
+        );
     }
 
     /**
@@ -488,9 +505,7 @@ class SystemIntelligenceController extends Controller
         ];
 
         array_unshift($logs, $newLog);
-        file_put_contents($logsPath, json_encode($logs, JSON_PRETTY_PRINT));
-
-        try {
+        file_put_contents($logsPath, json_encode($logs, JSON_PRETTY_PRINT));        try {
             DB::table('audit_logs')->insert([
                 'user_id' => Auth::id(),
                 'action' => 'RUN_SYSTEM_SELF_HEALING',
@@ -504,9 +519,75 @@ class SystemIntelligenceController extends Controller
 
         return response()->json([
             'success' => true,
-            'log' => $newLog,
-            'message' => 'AI Self-Healing selesai dijalankan! Seluruh berkas cache dibersihkan dan sistem kembali optimal.'
+            'message' => 'AI Self-Healing dan Pembersihan Cache Berhasil Diproses!',
+            'logs' => $logs
         ]);
+    }
+
+    public function refreshSystemTotal(Request $request)
+    {
+        // Pastikan hanya Super Admin yang bisa mengakses
+        if (!Auth::user()->hasRole('Super Admin')) {
+            return response()->json(['error' => 'Akses ditolak.'], 403);
+        }
+
+        try {
+            // 1. Jalankan perintah Artisan Laravel untuk membersihkan Cache
+            Artisan::call('cache:clear');
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
+            Artisan::call('auth:clear-resets');
+
+            // 2. Bersihkan tabel database sessions, cache, password_reset_tokens, dan personal_access_tokens
+            DB::table('cache')->truncate();
+            DB::table('password_reset_tokens')->truncate();
+            DB::table('personal_access_tokens')->truncate();
+            
+            // Hapus semua data session kecuali session admin yang sedang aktif agar admin tidak ter-kick/logout
+            $currentSessionId = session()->getId();
+            DB::table('sessions')->where('id', '!=', $currentSessionId)->delete();
+
+            // 3. Catat aksi di audit_logs
+            DB::table('audit_logs')->insert([
+                'user_id' => Auth::id(),
+                'action' => 'REFRESH_SYSTEM_TOTAL',
+                'details' => 'Melakukan refresh sistem total: membersihkan semua cache (config, route, view), mengosongkan token API (Sanctum), membersihkan tiket reset password, dan menghapus sesi user lain.',
+                'ip_address' => $request->ip(),
+                'created_at' => now()
+            ]);
+
+            // Tambahkan catatan di log system intelligence
+            $logsPath = storage_path('app/system_intelligence_logs.json');
+            $logs = [];
+            if (file_exists($logsPath)) {
+                $logs = json_decode(file_get_contents($logsPath), true);
+            }
+            $newLog = [
+                'id' => count($logs) + 1,
+                'timestamp' => date('Y-m-d H:i:s'),
+                'level' => 'SELESAI',
+                'incident' => 'Pembersihan Total Cache & Reset Sesi/Token',
+                'diagnosis' => 'Refresh total dipicu secara manual oleh Super Admin untuk membersihkan overhead memori server.',
+                'action' => 'Melakukan flush cache aplikasi, konfigurasi, rute, view compile, tabel personal access tokens, dan tabel sesi.',
+                'verification' => 'Seluruh cache dibersihkan. Memori server dibebaskan. Status sistem: 100% FRESH.',
+                'status' => 'Selesai'
+            ];
+            array_unshift($logs, $newLog);
+            file_put_contents($logsPath, json_encode($logs, JSON_PRETTY_PRINT));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Sistem Berhasil Direfresh Total! Semua cache dibersihkan, token API Sanctum direset, dan sesi pengguna lain dikosongkan.',
+                'logs' => $logs
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mereset sistem: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

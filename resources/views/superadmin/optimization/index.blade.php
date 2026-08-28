@@ -889,6 +889,28 @@
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('privilegedConsole', () => ({
+            init() {
+                this.startRealtimePolling();
+            },
+            startRealtimePolling() {
+                setInterval(() => {
+                    fetch('{{ route("optimization.api") }}')
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data && !data.error) {
+                                this.maintenance = data.maintenance;
+                                this.defense = data.defense;
+                                this.secretDefense = data.secretDefense;
+                                this.diagnostic = data.diagnostic;
+                                this.logs = data.logs;
+                                this.securityGateLogs = data.securityGateLogs;
+                                this.telemetry = data.telemetry;
+                                this.isPrivilegedSessionActive = data.isPrivilegedSessionActive;
+                            }
+                        })
+                        .catch(err => console.error("Optimization Polling Error:", err));
+                }, 3000);
+            },
             activeTab: 'sys_intel_overview',
             maintenance: @json($maintenance),
             defense: @json($defense),

@@ -229,6 +229,8 @@ Route::prefix('adminprogram')
         Route::get('/programs/{id}/applicants/{registrationId}', [ProgramWorkspaceController::class, 'showApplicantSubmission'])->name('programs.applicant.show');
         Route::post('/programs/{id}/applicants/{registrationId}/evaluate', [ProgramWorkspaceController::class, 'evaluateApplicant'])->name('programs.applicant.evaluate');
         Route::post('/programs/{id}/applicants/{registrationId}/instant-pass', [ProgramWorkspaceController::class, 'instantPass'])->name('programs.applicant.instant-pass');
+        Route::post('/programs/{id}/applicants/{registrationId}/reset-answers', [ProgramWorkspaceController::class, 'resetApplicantAnswers'])->name('programs.applicant.reset-answers');
+        Route::post('/programs/{id}/applicants/{registrationId}/reset-single-answer', [ProgramWorkspaceController::class, 'resetApplicantSingleAnswer'])->name('programs.applicant.reset-single-answer');
 
         // Konfigurasi Struktur JP & Skema Kriteria Nilai Program
         Route::post('/programs/{id}/workspace/academic/schema', [ProgramWorkspaceController::class, 'storeAcademicSchema'])->name('workspace.academic.schema');
@@ -345,7 +347,9 @@ Route::prefix('superadmin')
     // System Intelligence & Optimization Consoles (Protected by Secret Code & Role)
     Route::middleware(['secret.console'])->group(function() {
         Route::get('/system-intelligence', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'index'])->name('system-intelligence.index');
+        Route::get('/system-intelligence/api', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'getRealtimeApi'])->name('system-intelligence.api');
         Route::post('/system-intelligence/self-healing', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'triggerSelfHealing'])->name('system-intelligence.self-healing');
+        Route::post('/system-intelligence/refresh-all', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'refreshSystemTotal'])->name('system-intelligence.refresh-all');
         Route::post('/system-intelligence/toggle-user-block/{id}', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'toggleUserBlock'])->name('system-intelligence.toggle-user-block');
         Route::post('/system-intelligence/settings', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'saveSettings'])->name('system-intelligence.save-settings');
         Route::post('/system-intelligence/test-ai', [\App\Http\Controllers\Admin\SystemIntelligenceController::class, 'testAiConnection'])->name('system-intelligence.test-ai');
@@ -354,6 +358,7 @@ Route::prefix('superadmin')
 
         // Modul Baru: Optimisasi Admin
         Route::get('/optimization', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'index'])->name('optimization.index');
+        Route::get('/optimization/api', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'getRealtimeApi'])->name('optimization.api');
         Route::post('/optimization/check-system', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'checkSystemNow'])->name('optimization.check-system');
         Route::post('/optimization/toggle-maintenance', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'toggleMaintenanceMode'])->name('optimization.toggle-maintenance');
         Route::post('/optimization/toggle-defense', [\App\Http\Controllers\SuperAdmin\OptimizationController::class, 'toggleDefenseMode'])->name('optimization.toggle-defense');
@@ -488,12 +493,17 @@ use App\Http\Controllers\SuperAdmin\UserController;
 use App\Http\Controllers\SuperAdmin\SuperPowerController;
 
 Route::middleware(['auth'])->prefix('superadmin')->group(function () {
+    Route::get('/users/export', [UserController::class, 'export'])->name('superadmin.users.export');
+    Route::post('/users/toggle-mitigation-global', [UserController::class, 'toggleMitigationGlobal'])->name('superadmin.users.toggle-mitigation-global');
+    Route::post('/users/bulk', [UserController::class, 'bulkAction'])->name('superadmin.users.bulk');
     Route::get('/users', [UserController::class, 'index'])->name('superadmin.users.index');
     Route::post('/users', [UserController::class, 'store'])->name('superadmin.users.store');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('superadmin.users.update');
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('superadmin.users.delete');
     Route::match(['get', 'post'], '/users/{id}/impersonate', [UserController::class, 'impersonate'])->name('superadmin.users.impersonate');
     Route::post('/users/{id}/toggle-block', [UserController::class, 'toggleBlock'])->name('superadmin.users.toggle-block');
+    Route::post('/users/{id}/bypass-email', [UserController::class, 'bypassEmail'])->name('superadmin.users.bypass-email');
+    Route::post('/users/{id}/force-password', [UserController::class, 'forcePassword'])->name('superadmin.users.force-password');
 
     // Super Power Panel Tools (Protected by Secret Code)
     Route::middleware(['secret.console'])->group(function() {

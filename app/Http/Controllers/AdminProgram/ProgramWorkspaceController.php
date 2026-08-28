@@ -509,6 +509,100 @@ class ProgramWorkspaceController extends Controller
     return view('adminprogram.program.applicant_detail', compact('program', 'registration', 'stageData', 'biodataSubmission'));
 }
 
+    public function resetApplicantAnswers($id, $registrationId)
+    {
+        // 1. Validasi hak akses program
+        $program = auth()->user()->managedPrograms()->findOrFail($id);
+
+        // 2. Ambil data pendaftaran peserta
+        $registration = Registration::where('program_id', $id)->findOrFail($registrationId);
+
+        // 3. Ambil data kuesioner aktif pendaftar dan hapus berkas-berkas fisiknya jika ada
+        $stageData = RegistrationStageData::where('registration_id', $registrationId)
+            ->where('program_stage_id', $registration->current_stage_id)
+            ->first();
+
+        if ($stageData) {
+            // Hapus file fisik dari storage jika ada file yang diunggah
+            if (is_array($stageData->form_values)) {
+                foreach ($stageData->form_values as $item) {
+                    if (isset($item['type']) && ($item['type'] === 'file' || $item['type'] === 'image')) {
+                        $filePath = $item['value'] ?? null;
+                        if ($filePath) {
+                            \Illuminate\Support\Facades\Storage::disk('public')->delete($filePath);
+                        }
+                    }
+                }
+            }
+
+            // Hapus data stage data
+            $stageData->delete();
+        }
+
+        // 4. Update status check metadata ke unopened
+        $checkingFile = storage_path('app/checking_metadata_' . $id . '.json');
+        if (file_exists($checkingFile)) {
+            $checkingData = json_decode(file_get_contents($checkingFile), true) ?? [];
+            if (isset($checkingData[$registrationId])) {
+                $checkingData[$registrationId]['is_checked'] = false;
+                $checkingData[$registrationId]['status'] = 'unopened';
+                file_put_contents($checkingFile, json_encode($checkingData, JSON_PRETTY_PRINT));
+            }
+        }
+
+        return redirect()->route('adminprogram.programs.workspace', $id)
+            ->with('success', 'Jawaban kuesioner pendaftar berhasil dihapus/dikosongkan kembali!');
+    }
+
+    public function resetApplicantSingleAnswer(Request $request, $id, $registrationId)
+    {
+        $request->validate([
+            'field_name' => 'required|string'
+        ]);
+
+        $fieldName = $request->field_name;
+
+        // 1. Validasi hak akses program
+        $program = auth()->user()->managedPrograms()->findOrFail($id);
+
+        // 2. Ambil data pendaftaran peserta
+        $registration = Registration::where('program_id', $id)->findOrFail($registrationId);
+
+        // 3. Cari data kuesioner aktif pendaftar
+        $stageData = RegistrationStageData::where('registration_id', $registrationId)
+            ->where('program_stage_id', $registration->current_stage_id)
+            ->first();
+
+        if ($stageData && is_array($stageData->form_values)) {
+            $formValues = $stageData->form_values;
+            $updated = false;
+
+            foreach ($formValues as &$item) {
+                if (isset($item['field_name']) && $item['field_name'] === $fieldName) {
+                    // Hapus file fisik dari storage jika ada file yang diunggah
+                    if (isset($item['type']) && ($item['type'] === 'file' || $item['type'] === 'image')) {
+                        $filePath = $item['value'] ?? null;
+                        if ($filePath) {
+                            \Illuminate\Support\Facades\Storage::disk('public')->delete($filePath);
+                        }
+                    }
+
+                    // Reset value menjadi null
+                    $item['value'] = null;
+                    $updated = true;
+                    break;
+                }
+            }
+
+            if ($updated) {
+                $stageData->form_values = $formValues;
+                $stageData->save();
+            }
+        }
+
+        return redirect()->back()->with('success', "Jawaban untuk '" . $fieldName . "' berhasil dikosongkan secara bersih!");
+    }
+
 public function evaluateApplicant(Request $request, $id, $registrationId)
 {
     $request->validate([

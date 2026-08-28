@@ -123,6 +123,17 @@ if ($request->sort === 'soonest') {
         $previousValues = $stageData ? collect($stageData->form_values)->keyBy('field_name') : collect();
         $formSchema = $currentStage->form_schema ?? [];
 
+        // Auto-prepend protocol for URL fields before validation
+        foreach ($formSchema as $index => $field) {
+            $fieldName = "field_" . $index;
+            if ($field['type'] === 'url' && $request->filled($fieldName)) {
+                $val = trim($request->input($fieldName));
+                if ($val && !preg_match('/^https?:\/\//i', $val)) {
+                    $request->merge([$fieldName => 'https://' . $val]);
+                }
+            }
+        }
+
         // --- VALIDASI FORM DINAMIS ---
         $rules = [];
         $messages = [];
@@ -256,6 +267,17 @@ if ($request->sort === 'soonest') {
 
             $previousValues = $stageData ? collect($stageData->form_values)->keyBy('field_name') : collect();
             $formSchema = $currentStage->form_schema ?? [];
+
+            // Auto-prepend protocol for URL fields before saving draft
+            foreach ($formSchema as $index => $field) {
+                $fieldName = "field_" . $index;
+                if ($field['type'] === 'url' && $request->filled($fieldName)) {
+                    $val = trim($request->input($fieldName));
+                    if ($val && !preg_match('/^https?:\/\//i', $val)) {
+                        $request->merge([$fieldName => 'https://' . $val]);
+                    }
+                }
+            }
 
             $processedValues = [];
 

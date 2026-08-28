@@ -56,6 +56,18 @@ protected $fillable = [
         $this->notify(new QueuedVerifyEmail);
     }
 
+    /**
+     * Override hasVerifiedEmail untuk mendukung bypass verifikasi email global saat mitigasi aktif
+     */
+    public function hasVerifiedEmail(): bool
+    {
+        if (\App\Models\SystemSetting::getVal('mitigation_mode', '0') === '1') {
+            return true;
+        }
+
+        return ! is_null($this->email_verified_at);
+    }
+
     // Tambahkan relasi di dalam class User
     public function verification()
     {

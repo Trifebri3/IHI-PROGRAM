@@ -320,7 +320,9 @@
 
                     // Tampilkan loading state
                     resetBtn.classList.add('loading');
-                    resetBtn.disabled = true;
+                    setTimeout(() => {
+                        resetBtn.disabled = true;
+                    }, 50);
                 });
             }
 

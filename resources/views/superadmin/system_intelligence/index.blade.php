@@ -45,6 +45,15 @@
                 </svg>
                 <span x-text="healingStatus === 'running' ? 'Menjalankan AI Perbaikan...' : 'Picu AI Perbaikan Mandiri' "></span>
             </button>
+
+            <button @click="runSystemRefresh()" 
+                    :disabled="healingStatus === 'running'"
+                    class="px-5 py-3 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg class="w-4 h-4" :class="healingStatus === 'running' ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4"/>
+                </svg>
+                <span x-text="healingStatus === 'running' ? 'Memproses Refresh...' : 'Refresh System Total' "></span>
+            </button>
         </div>
     </div>
 
@@ -123,7 +132,8 @@
             <div class="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col justify-between min-h-[100px] shadow-xs">
                 <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Status Kesehatan</span>
                 <span class="text-lg font-black tracking-wide mt-2" 
-                      :class="'{{ $overallHealth }}' === 'SEHAT' ? 'text-emerald-600' : ('{{ $overallHealth }}' === 'PERINGATAN' ? 'text-amber-600' : 'text-rose-600')">
+                      :class="overallHealth === 'SEHAT' ? 'text-emerald-600' : (overallHealth === 'PERINGATAN' ? 'text-amber-600' : 'text-rose-600')"
+                      x-text="overallHealth">
                     {{ $overallHealth }}
                 </span>
             </div>
@@ -139,7 +149,7 @@
             </div>
             <div class="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col justify-between min-h-[100px] shadow-xs">
                 <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Skor Keamanan</span>
-                <span class="text-lg font-black text-emerald-600 tracking-wide mt-2">
+                <span class="text-lg font-black text-emerald-600 tracking-wide mt-2" x-text="securityScore + '/100'">
                     {{ $securityScore }}/100
                 </span>
             </div>
@@ -316,7 +326,8 @@
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold text-slate-700">Laravel Core Engine</span>
                     <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono"
-                          :class="'{{ $appHealth }}' === 'SEHAT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'">
+                          :class="appHealth === 'SEHAT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'"
+                          x-text="appHealth">
                         {{ $appHealth }}
                     </span>
                 </div>
@@ -331,13 +342,14 @@
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold text-slate-700">Koneksi Basis Data (Database)</span>
                     <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono"
-                          :class="'{{ $dbHealth }}' === 'SEHAT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'">
+                          :class="dbHealth === 'SEHAT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
+                          x-text="dbHealth">
                         {{ $dbHealth }}
                     </span>
                 </div>
                 <div class="text-[11px] text-slate-500 space-y-1.5 font-mono">
                     <div>Driver Database: <span class="text-slate-800 font-bold">{{ config('database.default') }}</span></div>
-                    <div>Latensi Query: <span class="text-emerald-600 font-bold">{{ $dbLatency }} ms</span></div>
+                    <div>Latensi Query: <span class="text-emerald-600 font-bold" x-text="dbLatency + ' ms'">{{ $dbLatency }} ms</span></div>
                     <div>Koneksi Operasional: <span class="text-emerald-600 font-bold">LANCAR</span></div>
                 </div>
             </div>
@@ -346,13 +358,14 @@
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold text-slate-700">Sistem Cache (Penyimpanan Sementara)</span>
                     <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono"
-                          :class="'{{ $cacheHealth }}' === 'SEHAT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'">
+                          :class="cacheHealth === 'SEHAT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
+                          x-text="cacheHealth">
                         {{ $cacheHealth }}
                     </span>
                 </div>
                 <div class="text-[11px] text-slate-500 space-y-1.5 font-mono">
                     <div>Driver Cache: <span class="text-slate-800 font-bold">{{ config('cache.default') }}</span></div>
-                    <div>Latensi Baca-Tulis: <span class="text-emerald-600 font-bold">{{ $cacheLatency }} ms</span></div>
+                    <div>Latensi Baca-Tulis: <span class="text-emerald-600 font-bold" x-text="cacheLatency + ' ms'">{{ $cacheLatency }} ms</span></div>
                     <div>Status Uji: <span class="text-emerald-600 font-bold">100% SUKSES</span></div>
                 </div>
             </div>
@@ -361,13 +374,14 @@
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold text-slate-700">Pekerja Antrean (Queue Workers)</span>
                     <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono"
-                          :class="'{{ $queueHealth }}' === 'SEHAT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'">
+                          :class="queueHealth === 'SEHAT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'"
+                          x-text="queueHealth">
                         {{ $queueHealth }}
                     </span>
                 </div>
                 <div class="text-[11px] text-slate-500 space-y-1.5 font-mono">
-                    <div>Antrean Gagal (Failed Jobs): <span class="text-slate-800 font-bold">{{ $failedJobsCount }}</span></div>
-                    <div>Antrean Tertunda: <span class="text-slate-800 font-bold">{{ $pendingJobsCount }}</span></div>
+                    <div>Antrean Gagal (Failed Jobs): <span class="text-slate-800 font-bold" x-text="failedJobsCount">{{ $failedJobsCount }}</span></div>
+                    <div>Antrean Tertunda: <span class="text-slate-800 font-bold" x-text="pendingJobsCount">{{ $pendingJobsCount }}</span></div>
                     <div>Status Daemon: <span class="text-emerald-600 font-bold">ONLINE</span></div>
                 </div>
             </div>
@@ -376,12 +390,13 @@
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold text-slate-700">Kapasitas Penyimpanan Disk</span>
                     <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono"
-                          :class="'{{ $storageHealth }}' === 'SEHAT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'">
+                          :class="storageHealth === 'SEHAT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
+                          x-text="storageHealth">
                         {{ $storageHealth }}
                     </span>
                 </div>
                 <div class="text-[11px] text-slate-500 space-y-1.5 font-mono">
-                    <div>Kapasitas Disk Terpakai: <span class="text-slate-800 font-bold">{{ $diskUsedPercent }}%</span></div>
+                    <div>Kapasitas Disk Terpakai: <span class="text-slate-800 font-bold" x-text="diskUsedPercent + '%'">{{ $diskUsedPercent }}%</span></div>
                     <div>Folder Media Lokal: <span class="text-emerald-600 font-bold">WRITABLE (LANCAR)</span></div>
                     <div>Folder Logs Writable: <span class="text-emerald-600 font-bold">YES</span></div>
                 </div>
@@ -715,33 +730,33 @@
             <div class="bg-white border border-slate-200 p-5 rounded-3xl space-y-4 shadow-sm">
                 <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Beban CPU Server</span>
                 <div class="flex items-end justify-between">
-                    <span class="text-3xl font-black text-slate-800">{{ $cpuUsage }}%</span>
+                    <span class="text-3xl font-black text-slate-800" x-text="cpuUsage + '%'">{{ $cpuUsage }}%</span>
                     <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">AMAN</span>
                 </div>
                 <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
-                    <div class="bg-emerald-500 h-full rounded-full" style="width: {{ $cpuUsage }}%"></div>
+                    <div class="bg-emerald-500 h-full rounded-full" :style="'width: ' + cpuUsage + '%'"></div>
                 </div>
             </div>
             <!-- Memory -->
             <div class="bg-white border border-slate-200 p-5 rounded-3xl space-y-4 shadow-sm">
                 <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Beban Memori RAM PHP</span>
                 <div class="flex items-end justify-between">
-                    <span class="text-3xl font-black text-slate-800">{{ $memoryUsage }} MB</span>
+                    <span class="text-3xl font-black text-slate-800" x-text="memoryUsage + ' MB'">{{ $memoryUsage }} MB</span>
                     <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">AMAN</span>
                 </div>
                 <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
-                    <div class="bg-emerald-500 h-full rounded-full" style="width: 28%"></div>
+                    <div class="bg-emerald-500 h-full rounded-full" :style="'width: ' + Math.min(100, Math.round((memoryUsage / 512) * 100)) + '%'"></div>
                 </div>
             </div>
             <!-- Response Time -->
             <div class="bg-white border border-slate-200 p-5 rounded-3xl space-y-4 shadow-sm">
                 <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Waktu Respons Aplikasi</span>
                 <div class="flex items-end justify-between">
-                    <span class="text-3xl font-black text-slate-800">{{ $averageResponseTime }} ms</span>
+                    <span class="text-3xl font-black text-slate-800" x-text="averageResponseTime + ' ms'">{{ $averageResponseTime }} ms</span>
                     <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">O(1) CACHED</span>
                 </div>
                 <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
-                    <div class="bg-emerald-500 h-full rounded-full" style="width: 14%"></div>
+                    <div class="bg-emerald-500 h-full rounded-full" :style="'width: ' + Math.min(100, Math.round((averageResponseTime / 500) * 100)) + '%'"></div>
                 </div>
             </div>
         </div>
@@ -1011,7 +1026,7 @@
             <div class="bg-white border border-slate-200 p-5 rounded-3xl space-y-4 flex flex-col justify-between shadow-sm">
                 <div>
                     <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Skor Risiko Keamanan</span>
-                    <span class="text-5xl font-black text-emerald-600 mt-2 block">{{ $securityScore }}/100</span>
+                    <span class="text-5xl font-black text-emerald-600 mt-2 block" x-text="securityScore + '/100'">{{ $securityScore }}/100</span>
                 </div>
                 <div class="text-[11px] text-slate-500 space-y-2 mt-4">
                     <div class="flex items-center justify-between">
@@ -1099,19 +1114,19 @@
             <!-- Pengguna -->
             <div class="bg-white border border-slate-200 p-5 rounded-3xl space-y-2 shadow-sm">
                 <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Pengguna Terdaftar</span>
-                <span class="text-3xl font-black text-slate-800 block">{{ $activeUsers }} Akun</span>
+                <span class="text-3xl font-black text-slate-800 block" x-text="activeUsers + ' Akun'">{{ $activeUsers }} Akun</span>
                 <span class="text-[10px] text-slate-400 font-mono block">Sumber data: tabel users</span>
             </div>
             <!-- Ukuran Database -->
             <div class="bg-white border border-slate-200 p-5 rounded-3xl space-y-2 shadow-sm">
                 <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Ukuran Kapasitas Basis Data</span>
-                <span class="text-3xl font-black text-slate-800 block">{{ $dbSize }}</span>
+                <span class="text-3xl font-black text-slate-800 block" x-text="dbSize">{{ $dbSize }}</span>
                 <span class="text-[10px] text-slate-400 font-mono block">Dihitung dari server transaksional</span>
             </div>
             <!-- Pendaftaran -->
             <div class="bg-white border border-slate-200 p-5 rounded-3xl space-y-2 shadow-sm">
                 <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Pendaftaran Program Kerja</span>
-                <span class="text-3xl font-black text-slate-800 block">{{ $totalRegistrations }} Entri</span>
+                <span class="text-3xl font-black text-slate-800 block" x-text="totalRegistrations + ' Entri'">{{ $totalRegistrations }} Entri</span>
                 <span class="text-[10px] text-slate-400 font-mono block">Sumber data: tabel registrations</span>
             </div>
         </div>
@@ -1214,6 +1229,26 @@
             healingSteps: [],
             logs: @json($healingLogs),
             
+            // Live Server metrics for realtime audit
+            overallHealth: '{{ $overallHealth }}',
+            appHealth: '{{ $appHealth }}',
+            dbHealth: '{{ $dbHealth }}',
+            cacheHealth: '{{ $cacheHealth }}',
+            queueHealth: '{{ $queueHealth }}',
+            storageHealth: '{{ $storageHealth }}',
+            dbLatency: '{{ $dbLatency }}',
+            cacheLatency: '{{ $cacheLatency }}',
+            failedJobsCount: {{ $failedJobsCount }},
+            pendingJobsCount: {{ $pendingJobsCount }},
+            diskUsedPercent: {{ $diskUsedPercent }},
+            memoryUsage: {{ $memoryUsage }},
+            cpuUsage: {{ $cpuUsage }},
+            averageResponseTime: {{ $averageResponseTime }},
+            securityScore: {{ $securityScore }},
+            activeUsers: {{ $activeUsers }},
+            totalRegistrations: {{ $totalRegistrations }},
+            dbSize: '{{ $dbSize }}',
+
             // State untuk Audit Kode dengan Pagination
             findings: @json($codebaseFindings),
             currentPage: 1,
@@ -1282,7 +1317,76 @@
                 this.$nextTick(() => {
                     this.initChart();
                     this.initApmCharts();
+                    this.startRealtimePolling();
                 });
+            },
+
+            // Polling telemetri realtime server-side
+            startRealtimePolling() {
+                setInterval(() => {
+                    fetch('{{ route("system-intelligence.api") }}')
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data && !data.error) {
+                                this.overallHealth = data.overallHealth;
+                                this.appHealth = data.appHealth;
+                                this.dbHealth = data.dbHealth;
+                                this.cacheHealth = data.cacheHealth;
+                                this.queueHealth = data.queueHealth;
+                                this.storageHealth = data.storageHealth;
+                                this.dbLatency = data.dbLatency;
+                                this.cacheLatency = data.cacheLatency;
+                                this.failedJobsCount = data.failedJobsCount;
+                                this.pendingJobsCount = data.pendingJobsCount;
+                                this.diskUsedPercent = data.diskUsedPercent;
+                                this.memoryUsage = data.memoryUsage;
+                                this.cpuUsage = data.cpuUsage;
+                                this.averageResponseTime = data.averageResponseTime;
+                                this.securityScore = data.securityScore;
+                                this.activeUsers = data.activeUsers;
+                                this.totalRegistrations = data.totalRegistrations;
+                                this.dbSize = data.dbSize;
+                                this.logs = data.healingLogs;
+                                this.errorLogs = data.aggregatedErrors;
+                                this.anomalousUsers = data.anomalousUsers;
+                                this.findings = data.codebaseFindings;
+                                
+                                // Update chart datasets
+                                this.chartDataSets.daily.labels = Object.keys(data.dailyData);
+                                this.chartDataSets.daily.data = Object.values(data.dailyData);
+                                this.chartDataSets.weekly.labels = Object.keys(data.weeklyData);
+                                this.chartDataSets.weekly.data = Object.values(data.weeklyData);
+                                this.chartDataSets.monthly.labels = Object.keys(data.monthlyData);
+                                this.chartDataSets.monthly.data = Object.values(data.monthlyData);
+                                this.chartDataSets.yearly.labels = Object.keys(data.yearlyData);
+                                this.chartDataSets.yearly.data = Object.values(data.yearlyData);
+
+                                if (this.chartInstance) {
+                                    const activeSet = this.chartDataSets[this.chartPeriod];
+                                    this.chartInstance.data.labels = activeSet.labels;
+                                    this.chartInstance.data.datasets[0].data = activeSet.data;
+                                    this.chartInstance.update();
+                                }
+
+                                if (this.trafficChartInstance) {
+                                    this.trafficChartInstance.data.datasets[0].data = data.apmChartData.traffic;
+                                    this.trafficChartInstance.data.datasets[1].data = data.apmChartData.latency;
+                                    this.trafficChartInstance.update();
+                                }
+                                if (this.resourcesChartInstance) {
+                                    this.resourcesChartInstance.data.datasets[0].data = data.apmChartData.cpu;
+                                    this.resourcesChartInstance.data.datasets[1].data = data.apmChartData.sql_latency;
+                                    this.resourcesChartInstance.update();
+                                }
+                                if (this.loginChartInstance) {
+                                    this.loginChartInstance.data.datasets[0].data = data.apmChartData.logins;
+                                    this.loginChartInstance.data.datasets[1].data = data.apmChartData.security_blocks;
+                                    this.loginChartInstance.update();
+                                }
+                            }
+                        })
+                        .catch(err => console.error("Realtime Polling Error:", err));
+                }, 3000);
             },
 
             // Menginisialisasi chart dengan Chart.js
@@ -1763,6 +1867,51 @@
                     }
                 } catch(e) {
                     this.healingStatus = 'error';
+                }
+            },
+
+            // Refresh System Total Trigger
+            async runSystemRefresh() {
+                if (!confirm('Apakah Anda yakin ingin melakukan refresh sistem total? Semua cache (config, route, view) akan dibersihkan, token API Sanctum akan direset (sehingga semua perangkat API harus login ulang), dan semua sesi user lain akan dihapus secara bersih.')) {
+                    return;
+                }
+                
+                this.healingStatus = 'running';
+                this.healingSteps = [];
+                
+                const steps = [
+                    '🧹 [REFRESH] Menghapus cache konfigurasi, rute, dan view compiled...',
+                    '🔑 [RESET] Mengosongkan tabel personal access tokens (API Sanctum) secara total...',
+                    '🔐 [CLEANUP] Membersihkan tiket reset password yang kadaluarsa...',
+                    '🚪 [SESSIONS] Menghapus semua sesi pengguna lain di server untuk memulihkan memori...',
+                    '📝 [LOG] Mencatat aksi pembersihan total ke database audit log...'
+                ];
+                
+                for (let i = 0; i < steps.length; i++) {
+                    await new Promise(resolve => setTimeout(resolve, 600));
+                    this.healingSteps.push(steps[i]);
+                }
+                
+                try {
+                    const response = await fetch('{{ route('superadmin.system-intelligence.refresh-all') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        this.logs = result.logs;
+                        this.healingStatus = 'success';
+                        this.showToast(result.message, 'success');
+                    } else {
+                        this.healingStatus = 'error';
+                        this.showToast(result.message || 'Gagal mereset sistem.', 'error');
+                    }
+                } catch(e) {
+                    this.healingStatus = 'error';
+                    this.showToast('Gagal terhubung ke pengontrol refresh.', 'error');
                 }
             }
         }));

@@ -15,10 +15,7 @@ class CheckProfileCompletion
      */
 public function handle(Request $request, Closure $next)
 {
-    // Cek apakah user sudah punya data profil & alamat
-    if (!auth()->user()->profile || !auth()->user()->address) {
-        return redirect()->route('identity.gate'); // Arahkan ke route baru
-    }
+    // Bypass pengecekan karena data profil & alamat sekarang tidak wajib
     return $next($request);
 }
 }

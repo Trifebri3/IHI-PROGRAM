@@ -93,6 +93,29 @@ class OptimizationController extends Controller
             return redirect()->route('superadmin.secret-gate')->with('error', 'Sesi konsol rahasia Anda telah habis. Silakan masukkan kode kembali.');
         }
 
+        $data = $this->getOptimizationMetrics();
+
+        return view('superadmin.optimization.index', $data);
+    }
+
+    public function getRealtimeApi()
+    {
+        if (!Auth::user()->hasRole('Super Admin')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $isVerified = session()->get('secret_console_verified') === true;
+        $expiresAt = session()->get('secret_console_verified_expires', 0);
+        if (!$isVerified || time() > $expiresAt) {
+            return response()->json(['error' => 'Session Expired'], 401);
+        }
+
+        $data = $this->getOptimizationMetrics();
+        return response()->json($data);
+    }
+
+    private function getOptimizationMetrics()
+    {
         // 1. Ambil data Maintenance Mode
         $maintenancePath = storage_path('app/maintenance_mode.json');
         $maintenance = ['is_active' => false, 'started_at' => null, 'reason' => '', 'token_hash' => null, 'token_expires_at' => null];
@@ -138,7 +161,7 @@ class OptimizationController extends Controller
         $isPrivilegedSessionActive = time() < session()->get('privileged_session_expires', 0);
         $privilegedSessionTimeRemaining = max(0, session()->get('privileged_session_expires', 0) - time());
 
-        return view('superadmin.optimization.index', compact(
+        return compact(
             'maintenance', 
             'defense', 
             'secretDefense',
@@ -148,7 +171,7 @@ class OptimizationController extends Controller
             'telemetry',
             'isPrivilegedSessionActive',
             'privilegedSessionTimeRemaining'
-        ));
+        );
     }
 
     /**

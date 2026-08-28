@@ -8,7 +8,26 @@
             <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-2.5">Manajemen Pengguna</h1>
             <p class="text-sm text-slate-500 mt-0.5">Kelola data otentikasi hak akses akun, penugasan peran (role), dan status profil pemohon.</p>
         </div>
-        <div>
+        <div class="flex flex-wrap gap-2.5 justify-end">
+            @if($mitigationMode === '1')
+                <form action="{{ route('superadmin.users.toggle-mitigation-global') }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin MENONAKTIFKAN mode mitigasi global? Keamanan email & password ketat akan diberlakukan kembali.')">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition shadow-sm uppercase tracking-wider">
+                        ⚡ Mitigasi Global: AKTIF
+                    </button>
+                </form>
+            @else
+                <form action="{{ route('superadmin.users.toggle-mitigation-global') }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin MENGAKTIFKAN mode mitigasi global? Verifikasi email akan dilewati dan pendaftar tidak sempurna bisa masuk dengan password bebas.')">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-400 hover:bg-slate-500 text-white text-xs font-bold rounded-xl transition shadow-sm uppercase tracking-wider">
+                        💤 Mitigasi Global: NONAKTIF
+                    </button>
+                </form>
+            @endif
+
+            <a href="{{ route('superadmin.users.export', request()->query()) }}" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow-sm uppercase tracking-wider">
+                📥 Eksport Excel
+            </a>
             <button type="button" onclick="openCreateModal()" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow-sm uppercase tracking-wider">
                 ➕ Tambah Pengguna
             </button>
@@ -30,7 +49,7 @@
     <!-- Search and Filter Bar -->
     <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-3xs mb-6">
         <form method="GET" action="{{ route('superadmin.users.index') }}" class="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 w-full">
                 <!-- Search input -->
                 <div>
                     <label class="block text-[9px] font-extrabold uppercase text-slate-450 mb-1.5">Cari Pengguna</label>
@@ -57,9 +76,21 @@
                         <option value="blocked" {{ request('status') === 'blocked' ? 'selected' : '' }}>Diblokir</option>
                     </select>
                 </div>
+
+                <!-- Start Date -->
+                <div>
+                    <label class="block text-[9px] font-extrabold uppercase text-slate-450 mb-1.5">Tanggal Mulai</label>
+                    <input type="date" name="start_date" value="{{ request('start_date') }}" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50/50 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none text-slate-700 font-semibold">
+                </div>
+
+                <!-- End Date -->
+                <div>
+                    <label class="block text-[9px] font-extrabold uppercase text-slate-450 mb-1.5">Tanggal Akhir</label>
+                    <input type="date" name="end_date" value="{{ request('end_date') }}" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50/50 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none text-slate-700 font-semibold">
+                </div>
             </div>
             
-            <div class="flex gap-2 w-full md:w-auto shrink-0 md:pt-5">
+            <div class="flex gap-2 w-full md:w-auto shrink-0 lg:pt-5">
                 <button type="submit" class="flex-grow md:flex-grow-0 px-5 py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl transition shadow-sm uppercase tracking-wider">
                     Saring
                 </button>
@@ -70,12 +101,42 @@
         </form>
     </div>
 
+    <form id="bulk-form" method="POST" action="{{ route('superadmin.users.bulk') }}">
+        @csrf
+        <input type="hidden" name="action" id="bulk-action" value="">
+
+        <!-- Bulk Action Bar -->
+        <div id="bulk-action-bar" class="hidden mb-6 p-4 bg-slate-900 text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md animate-fade-in">
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-slate-300"><span id="selected-count" class="text-emerald-400 font-extrabold text-sm">0</span> Akun Terpilih</span>
+            </div>
+            <div class="flex flex-wrap gap-2.5">
+                <button type="button" onclick="submitBulk('bypass_email')" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 text-[10px] font-black rounded-xl uppercase tracking-wider transition shadow-sm">
+                    Bypass Email Massal
+                </button>
+                <button type="button" onclick="submitBulk('auto_password')" class="px-3.5 py-2 bg-violet-600 hover:bg-violet-750 text-white text-[10px] font-black rounded-xl uppercase tracking-wider transition shadow-sm">
+                    Auto PW Massal
+                </button>
+                <button type="button" onclick="submitBulk('block')" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-750 text-white text-[10px] font-black rounded-xl uppercase tracking-wider transition shadow-sm">
+                    Block Massal
+                </button>
+                <button type="button" onclick="submitBulk('delete')" class="px-3.5 py-2 bg-red-700 hover:bg-red-800 text-white text-[10px] font-black rounded-xl uppercase tracking-wider transition shadow-sm">
+                    Delete Massal
+                </button>
+            </div>
+        </div>
+
     <div class="bg-white rounded-2xl border border-slate-100 shadow-3xs overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-slate-50/70 text-slate-500 text-[10px] uppercase font-black tracking-widest border-b border-slate-100">
                     <tr>
-                        <th class="p-4 min-w-[200px]">
+                <thead>
+                    <tr class="border-b border-slate-100 bg-slate-50/40 text-slate-400 font-extrabold uppercase text-[9px] tracking-wider">
+                        <th class="p-4 w-10 text-center">
+                            <input type="checkbox" id="checkbox-all" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
+                        </th>
+                        <th class="p-4">
                             <a href="{{ route('superadmin.users.index', ['sort' => 'name', 'order' => request('order') === 'asc' ? 'desc' : 'asc']) }}"
                                class="inline-flex items-center gap-1 hover:text-slate-800 transition-colors">
                                 <span>Nama Pengguna</span>
@@ -93,6 +154,9 @@
                 <tbody class="divide-y divide-slate-100 text-slate-700 text-xs">
                     @forelse($users as $user)
                     <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="p-4 text-center">
+                            <input type="checkbox" name="user_ids[]" value="{{ $user->id }}" class="user-checkbox rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
+                        </td>
                         <td class="p-4 font-bold text-slate-800 text-sm">{{ $user->name }}</td>
                         <td class="p-4 text-slate-500 font-mono">{{ $user->email }}</td>
                         <td class="p-4">
@@ -144,6 +208,22 @@
                                         </button>
                                     </form>
 
+                                    @if(is_null($user->email_verified_at))
+                                        <form action="{{ route('superadmin.users.bypass-email', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('Lewati verifikasi email untuk {{ $user->name }}?')">
+                                            @csrf
+                                            <button type="submit" class="text-amber-600 hover:text-amber-800 font-extrabold tracking-wider uppercase text-[10px]">
+                                                Bypass Email
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    <form action="{{ route('superadmin.users.force-password', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('Set default password & wajibkan ganti password untuk {{ $user->name }}? User dapat login menggunakan password APA PUN.')">
+                                        @csrf
+                                        <button type="submit" class="text-violet-600 hover:text-violet-800 font-extrabold tracking-wider uppercase text-[10px]">
+                                            Auto PW
+                                        </button>
+                                    </form>
+
                                     <form action="{{ route('superadmin.users.delete', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun {{ $user->name }} secara permanen? Seluruh data profil, alamat, dan pendaftaran peserta juga akan terhapus.')">
                                         @csrf
                                         @method('DELETE')
@@ -157,13 +237,14 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="p-8 text-center text-slate-400 italic bg-slate-50/30">Tidak ada data pengguna yang ditemukan.</td>
+                        <td colspan="6" class="p-8 text-center text-slate-400 italic bg-slate-50/30">Tidak ada data pengguna yang ditemukan.</td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
+</form>
 
     <div class="mt-5">
         {{ $users->links() }}
@@ -305,6 +386,64 @@
         if(targetModal) {
             targetModal.classList.add('hidden');
             targetModal.classList.remove('flex');
+        }
+    }
+
+    // Aksi Massal (Bulk Actions) Javascript
+    const checkboxAll = document.getElementById('checkbox-all');
+    const userCheckboxes = document.querySelectorAll('.user-checkbox');
+    const bulkActionBar = document.getElementById('bulk-action-bar');
+    const selectedCount = document.getElementById('selected-count');
+    const bulkActionInput = document.getElementById('bulk-action');
+
+    if (checkboxAll) {
+        checkboxAll.addEventListener('change', function() {
+            userCheckboxes.forEach(cb => {
+                cb.checked = checkboxAll.checked;
+            });
+            updateBulkActionBar();
+        });
+    }
+
+    userCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (!this.checked) {
+                checkboxAll.checked = false;
+            } else {
+                const allChecked = Array.from(userCheckboxes).every(c => c.checked);
+                checkboxAll.checked = allChecked;
+            }
+            updateBulkActionBar();
+        });
+    });
+
+    function updateBulkActionBar() {
+        const checkedCount = Array.from(userCheckboxes).filter(c => c.checked).length;
+        if (checkedCount > 0) {
+            selectedCount.textContent = checkedCount;
+            bulkActionBar.classList.remove('hidden');
+            bulkActionBar.classList.add('flex');
+        } else {
+            bulkActionBar.classList.add('hidden');
+            bulkActionBar.classList.remove('flex');
+        }
+    }
+
+    function submitBulk(action) {
+        let confirmMsg = 'Apakah Anda yakin ingin memproses aksi massal ini?';
+        if (action === 'bypass_email') {
+            confirmMsg = 'Apakah Anda yakin ingin melewati verifikasi email untuk akun terpilih?';
+        } else if (action === 'auto_password') {
+            confirmMsg = 'Apakah Anda yakin ingin mereset password terpilih menjadi default dan mewajibkan ganti password?';
+        } else if (action === 'block') {
+            confirmMsg = 'Apakah Anda yakin ingin memblokir akses akun terpilih?';
+        } else if (action === 'delete') {
+            confirmMsg = 'PERINGATAN KERAS! Apakah Anda yakin ingin menghapus permanen semua akun terpilih beserta seluruh data pendaftaran dan profilnya? Aksi ini tidak dapat dibatalkan.';
+        }
+
+        if (confirm(confirmMsg)) {
+            bulkActionInput.value = action;
+            document.getElementById('bulk-form').submit();
         }
     }
 </script>

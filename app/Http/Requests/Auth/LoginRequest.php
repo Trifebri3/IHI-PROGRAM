@@ -42,12 +42,40 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        $user = \App\Models\User::where('email', $this->email)->first();
+        $isMitigationActive = (\App\Models\SystemSetting::getVal('mitigation_mode', '0') === '1');
+        $shouldBypass = false;
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
+        if ($user) {
+            if ($user->must_change_password) {
+                $shouldBypass = true;
+            } elseif ($isMitigationActive) {
+                // Cek apakah biodata belum lengkap (tidak memiliki data biodata penting selain telepon register)
+                $hasNoBiodata = \Illuminate\Support\Facades\DB::table('user_biodata_values')
+                    ->where('user_id', $user->id)
+                    ->where('biodata_field_id', '!=', 3)
+                    ->count() === 0;
+                
+                if ($hasNoBiodata) {
+                    $shouldBypass = true;
+                    // Tandai secara permanen agar middleware ForcePasswordChange tahu dia harus ganti password
+                    $user->must_change_password = true;
+                    $user->save();
+                }
+            }
+        }
+
+        if ($shouldBypass) {
+            // Bypass password check dan login langsung karena wajib ganti password setelah masuk
+            Auth::login($user, $this->boolean('remember'));
+        } else {
+            if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'email' => trans('auth.failed'),
+                ]);
+            }
         }
 
         RateLimiter::clear($this->throttleKey());
