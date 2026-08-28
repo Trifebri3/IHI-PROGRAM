@@ -1324,7 +1324,7 @@
             // Polling telemetri realtime server-side
             startRealtimePolling() {
                 setInterval(() => {
-                    fetch('{{ route("system-intelligence.api") }}')
+                    fetch('{{ route("superadmin.system-intelligence.api") }}')
                         .then(res => res.json())
                         .then(data => {
                             if (data && !data.error) {

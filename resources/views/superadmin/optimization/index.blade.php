@@ -894,7 +894,7 @@
             },
             startRealtimePolling() {
                 setInterval(() => {
-                    fetch('{{ route("optimization.api") }}')
+                    fetch('{{ route("superadmin.optimization.api") }}')
                         .then(res => res.json())
                         .then(data => {
                             if (data && !data.error) {
