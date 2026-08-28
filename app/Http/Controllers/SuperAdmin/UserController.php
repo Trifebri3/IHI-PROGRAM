@@ -259,6 +259,7 @@ class UserController extends Controller
             $passwordChanged = false;
             if ($request->filled('password')) {
                 $updateData['password'] = bcrypt($request->password);
+                $updateData['must_change_password'] = false;
                 $passwordChanged = true;
             }
 
@@ -268,10 +269,9 @@ class UserController extends Controller
             // 2. Update Role (Spatie)
             $user->syncRoles([$request->role]);
 
-            // 3. Update Profil (Upsert)
-            UserProfile::updateOrCreate(
-                ['user_id' => $user->id],
-                ['biodata_lengkap' => $request->biodata]
+            // 3. Update Profil (Ensure Profile Exists)
+            UserProfile::firstOrCreate(
+                ['user_id' => $user->id]
             );
 
             // 4. Log Action
