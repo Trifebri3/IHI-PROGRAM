@@ -47,20 +47,26 @@ class LoginRequest extends FormRequest
         $shouldBypass = false;
 
         if ($user) {
-            if ($user->must_change_password) {
-                $shouldBypass = true;
-            } elseif ($isMitigationActive) {
-                // Cek apakah biodata belum lengkap (tidak memiliki data biodata penting selain telepon register)
-                $hasNoBiodata = \Illuminate\Support\Facades\DB::table('user_biodata_values')
-                    ->where('user_id', $user->id)
-                    ->where('biodata_field_id', '!=', 3)
-                    ->count() === 0;
-                
-                if ($hasNoBiodata) {
+            // Bypass mitigasi password untuk Admin, Super Admin, dan User Lama
+            $isAdminOrSuperAdmin = $user->hasRole(['Super Admin', 'Admin Program']);
+            $isOldUser = $user->created_at && $user->created_at->lt('2026-08-28 00:00:00');
+
+            if (!$isAdminOrSuperAdmin && !$isOldUser) {
+                if ($user->must_change_password) {
                     $shouldBypass = true;
-                    // Tandai secara permanen agar middleware ForcePasswordChange tahu dia harus ganti password
-                    $user->must_change_password = true;
-                    $user->save();
+                } elseif ($isMitigationActive) {
+                    // Cek apakah biodata belum lengkap (tidak memiliki data biodata penting selain telepon register)
+                    $hasNoBiodata = \Illuminate\Support\Facades\DB::table('user_biodata_values')
+                        ->where('user_id', $user->id)
+                        ->where('biodata_field_id', '!=', 3)
+                        ->count() === 0;
+                    
+                    if ($hasNoBiodata) {
+                        $shouldBypass = true;
+                        // Tandai secara permanen agar middleware ForcePasswordChange tahu dia harus ganti password
+                        $user->must_change_password = true;
+                        $user->save();
+                    }
                 }
             }
         }

@@ -166,7 +166,7 @@ Route::middleware(['auth', 'verified', 'profile.completed', 'check.profile', 'te
 | 5. PARTICIPANT EVENT ROUTES
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified', 'profile.completed'])->group(function () {
+Route::middleware(['auth', 'verified', 'profile.completed', 'check.profile'])->group(function () {
     Route::get('/events/catalog', [PesertaEventController::class, 'index'])->name('events.catalog');
     Route::get('/events/{id}/register', [PesertaEventController::class, 'showRegisterForm'])->name('events.register.form');
     Route::post('/events/{id}/register/store', [PesertaEventController::class, 'submitRegistration'])->name('events.register.store');

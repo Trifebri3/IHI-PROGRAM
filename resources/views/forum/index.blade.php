@@ -1,10 +1,11 @@
 @php
     // Logika pemilihan layout berdasarkan role
-    $layout = match(auth()->user()->role) {
-        'adminprogram' => 'adminprogram.layouts.app',
-        'superadmin'   => 'superadmin.layouts.app',
-        default        => 'pesertabiasa.layouts.app',
-    };
+    $layout = 'pesertabiasa.layouts.app';
+    if (auth()->user()->hasRole('Super Admin')) {
+        $layout = 'superadmin.layouts.app';
+    } elseif (auth()->user()->hasRole('Admin Program')) {
+        $layout = 'adminprogram.layouts.app';
+    }
 @endphp
 
 @extends($layout)

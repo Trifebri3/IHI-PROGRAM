@@ -285,9 +285,24 @@ class SystemIntelligenceController extends Controller
 
         // --- 10. LOAD ERROR LOG MONITORING DATA ---
         $aggregatedErrors = $this->getErrorLogs();
-        $errorsToday = 14;
-        $errorsYesterday = 18;
-        $errorTrendPct = -22.2; // 22% decrease compared to yesterday
+        $errorsToday = 0;
+        $errorsYesterday = 0;
+        $todayStr = date('Y-m-d');
+        $yesterdayStr = date('Y-m-d', strtotime('yesterday'));
+
+        foreach ($aggregatedErrors as $err) {
+            $errDate = date('Y-m-d', strtotime($err['time']));
+            if ($errDate === $todayStr) {
+                $errorsToday += $err['occurrences'];
+            } elseif ($errDate === $yesterdayStr) {
+                $errorsYesterday += $err['occurrences'];
+            }
+        }
+        
+        $errorTrendPct = 0;
+        if ($errorsYesterday > 0) {
+            $errorTrendPct = round((($errorsToday - $errorsYesterday) / $errorsYesterday) * 100, 1);
+        }
 
         // --- 11. LOAD APM / TELEMETRY CHART DATASETS ---
         $apmChartData = [
@@ -864,113 +879,122 @@ class SystemIntelligenceController extends Controller
             $savedStatuses = json_decode(file_get_contents($statusPath), true);
         }
 
-        // Kumpulan data log error representatif sistem
-        $baseErrors = [
-            [
-                'id' => 'ERR-20260824-001',
-                'severity' => 'CRITICAL',
-                'time' => '2026-08-24 00:26:45',
-                'service' => 'Database Service',
-                'environment' => 'Production',
-                'http_status' => '500',
-                'message' => 'PDOException: SQLSTATE[HY000] [2002] Connection timeout during parallel insert transactions.',
-                'endpoint' => '/api/participants/register',
-                'user' => 'User #1405 (budihartono@gmail.com)',
-                'device' => 'Chrome 128.0 (Windows 11) - Desktop',
-                'request_id' => 'req_8f92bd8c91a1',
-                'exception' => 'Illuminate\Database\QueryException',
-                'occurrences' => 1284,
-                'first_seen' => '2026-08-23 23:31:00',
-                'last_seen' => '2026-08-24 00:26:45',
-                'status' => 'INVESTIGATING',
-                'stack_trace' => "#0 vendor/laravel/framework/src/Illuminate/Database/Connection.php(712): Illuminate\Database\Connection->runQueryCallback()\n#1 vendor/laravel/framework/src/Illuminate/Database/Connection.php(672): Illuminate\Database\Connection->run()\n#2 app/Http/Controllers/AdminProgram/ParticipantProfileController.php(458): Illuminate\Database\DatabaseManager->table()",
-            ],
-            [
-                'id' => 'ERR-20260824-002',
-                'severity' => 'ERROR',
-                'time' => '2026-08-24 00:25:12',
-                'service' => 'Authentication Service',
-                'environment' => 'Production',
-                'http_status' => '429',
-                'message' => 'RateLimiterException: Too many login attempts exceeded safety threshold of 5 attempts per minute.',
-                'endpoint' => '/login',
-                'user' => 'Guest (IP: 182.253.14.89)',
-                'device' => 'Mobile Safari 17.4 (iPhone) - Mobile',
-                'request_id' => 'req_a2f8194b00c2',
-                'exception' => 'Illuminate\Http\Exceptions\ThrottleRequestsException',
-                'occurrences' => 142,
-                'first_seen' => '2026-08-24 00:05:00',
-                'last_seen' => '2026-08-24 00:25:12',
-                'status' => 'OPEN',
-                'stack_trace' => "#0 vendor/laravel/framework/src/Illuminate/Routing/Middleware/ThrottleRequests.php(64): Illuminate\Routing\Middleware\ThrottleRequests->buildResponse()\n#1 vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(167): Illuminate\Routing\Middleware\ThrottleRequests->handle()",
-            ],
-            [
-                'id' => 'ERR-20260824-003',
-                'severity' => 'WARNING',
-                'time' => '2026-08-24 00:22:04',
-                'service' => 'Program Registration',
-                'environment' => 'Production',
-                'http_status' => '419',
-                'message' => 'TokenMismatchException: CSRF token verification failed on transaction submit.',
-                'endpoint' => '/superadmin/form-builder',
-                'user' => 'User #1021 (trifebri@green.or.id)',
-                'device' => 'Firefox 125.0 (macOS 14) - Desktop',
-                'request_id' => 'req_f48d91a27e02',
-                'exception' => 'Illuminate\Session\TokenMismatchException',
-                'occurrences' => 58,
-                'first_seen' => '2026-08-23 22:15:10',
-                'last_seen' => '2026-08-24 00:22:04',
-                'status' => 'RESOLVED',
-                'stack_trace' => "#0 vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php(85): Illuminate\Foundation\Http\Middleware\VerifyCsrfToken->handle()\n#1 vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(167): Illuminate\Foundation\Http\Middleware\VerifyCsrfToken->handle()",
-            ],
-            [
-                'id' => 'ERR-20260824-004',
-                'severity' => 'ERROR',
-                'time' => '2026-08-24 00:20:15',
-                'service' => 'Queue Worker',
-                'environment' => 'Production',
-                'http_status' => '500',
-                'message' => 'JobFailedException: Max attempts exceeded while sending email notification: Trifebri3\IHI\Jobs\SendRegistrationEmail.',
-                'endpoint' => 'Queue System (Background Daemon)',
-                'user' => 'System Worker #2',
-                'device' => 'Linux CLI (Worker Instance)',
-                'request_id' => 'job_queue_982b',
-                'exception' => 'Symfony\Component\Mailer\Exception\TransportException',
-                'occurrences' => 12,
-                'first_seen' => '2026-08-24 00:10:00',
-                'last_seen' => '2026-08-24 00:20:15',
-                'status' => 'OPEN',
-                'stack_trace' => "#0 vendor/symfony/mailer/Transport/AbstractTransport.php(340): Symfony\Component\Mailer\Transport\AbstractTransport->send()\n#1 app/Jobs/SendRegistrationEmail.php(35): Illuminate\Support\Facades\Mail->send()",
-            ],
-            [
-                'id' => 'ERR-20260824-005',
-                'severity' => 'WARNING',
-                'time' => '2026-08-24 00:15:30',
-                'service' => 'Event Check-in',
-                'environment' => 'Production',
-                'http_status' => '404',
-                'message' => 'ModelNotFoundException: Ticket number not found during digital check-in scanning.',
-                'endpoint' => '/superadmin/events/scan-checkin/TKT-99999-ERR',
-                'user' => 'User #1405 (budihartono@gmail.com)',
-                'device' => 'Mobile Chrome 127.0 (Android 14) - Mobile',
-                'request_id' => 'req_29abf8c92ef4',
-                'exception' => 'Illuminate\Database\Eloquent\ModelNotFoundException',
-                'occurrences' => 4,
-                'first_seen' => '2026-08-24 00:15:30',
-                'last_seen' => '2026-08-24 00:15:30',
-                'status' => 'OPEN',
-                'stack_trace' => "#0 vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(520): Illuminate\Database\Eloquent\Builder->firstOrFail()\n#1 app/Http/Controllers/SuperAdmin/SuperEventController.php(330): App\Models\EventTicket::where()",
-            ]
-        ];
+        $logPath = storage_path('app/system_errors.json');
+        $errors = [];
+        if (file_exists($logPath)) {
+            $errors = json_decode(file_get_contents($logPath), true) ?: [];
+        }
+
+        // Jika kosong, sediakan beberapa error default agar dashboard terisi awal
+        if (empty($errors)) {
+            $errors = [
+                [
+                    'id' => 'ERR-20260824-001',
+                    'severity' => 'CRITICAL',
+                    'time' => '2026-08-24 00:26:45',
+                    'service' => 'Database Service',
+                    'environment' => 'Production',
+                    'http_status' => '500',
+                    'message' => 'PDOException: SQLSTATE[HY000] [2002] Connection timeout during parallel insert transactions.',
+                    'endpoint' => '/api/participants/register',
+                    'user' => 'User #1405 (budihartono@gmail.com)',
+                    'device' => 'Chrome 128.0 (Windows 11) - Desktop',
+                    'request_id' => 'req_8f92bd8c91a1',
+                    'exception' => 'Illuminate\Database\QueryException',
+                    'occurrences' => 1284,
+                    'first_seen' => '2026-08-23 23:31:00',
+                    'last_seen' => '2026-08-24 00:26:45',
+                    'status' => 'INVESTIGATING',
+                    'stack_trace' => "#0 vendor/laravel/framework/src/Illuminate/Database/Connection.php(712): Illuminate\Database\Connection->runQueryCallback()\n#1 vendor/laravel/framework/src/Illuminate/Database/Connection.php(672): Illuminate\Database\Connection->run()\n#2 app/Http/Controllers/AdminProgram/ParticipantProfileController.php(458): Illuminate\Database\DatabaseManager->table()",
+                ],
+                [
+                    'id' => 'ERR-20260824-002',
+                    'severity' => 'ERROR',
+                    'time' => '2026-08-24 00:25:12',
+                    'service' => 'Authentication Service',
+                    'environment' => 'Production',
+                    'http_status' => '429',
+                    'message' => 'RateLimiterException: Too many login attempts exceeded safety threshold of 5 attempts per minute.',
+                    'endpoint' => '/login',
+                    'user' => 'Guest (IP: 182.253.14.89)',
+                    'device' => 'Mobile Safari 17.4 (iPhone) - Mobile',
+                    'request_id' => 'req_a2f8194b00c2',
+                    'exception' => 'Illuminate\Http\Exceptions\ThrottleRequestsException',
+                    'occurrences' => 142,
+                    'first_seen' => '2026-08-24 00:05:00',
+                    'last_seen' => '2026-08-24 00:25:12',
+                    'status' => 'OPEN',
+                    'stack_trace' => "#0 vendor/laravel/framework/src/Illuminate/Routing/Middleware/ThrottleRequests.php(64): Illuminate\Routing\Middleware\ThrottleRequests->buildResponse()\n#1 vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(167): Illuminate\Routing\Middleware\ThrottleRequests->handle()",
+                ],
+                [
+                    'id' => 'ERR-20260824-003',
+                    'severity' => 'WARNING',
+                    'time' => '2026-08-24 00:22:04',
+                    'service' => 'Program Registration',
+                    'environment' => 'Production',
+                    'http_status' => '419',
+                    'message' => 'TokenMismatchException: CSRF token verification failed on transaction submit.',
+                    'endpoint' => '/superadmin/form-builder',
+                    'user' => 'User #1021 (trifebri@green.or.id)',
+                    'device' => 'Firefox 125.0 (macOS 14) - Desktop',
+                    'request_id' => 'req_f48d91a27e02',
+                    'exception' => 'Illuminate\Session\TokenMismatchException',
+                    'occurrences' => 58,
+                    'first_seen' => '2026-08-23 22:15:10',
+                    'last_seen' => '2026-08-24 00:22:04',
+                    'status' => 'RESOLVED',
+                    'stack_trace' => "#0 vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php(85): Illuminate\Foundation\Http\Middleware\VerifyCsrfToken->handle()\n#1 vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(167): Illuminate\Foundation\Http\Middleware\VerifyCsrfToken->handle()",
+                ],
+                [
+                    'id' => 'ERR-20260824-004',
+                    'severity' => 'ERROR',
+                    'time' => '2026-08-24 00:20:15',
+                    'service' => 'Queue Worker',
+                    'environment' => 'Production',
+                    'http_status' => '500',
+                    'message' => 'JobFailedException: Max attempts exceeded while sending email notification: Trifebri3\IHI\Jobs\SendRegistrationEmail.',
+                    'endpoint' => 'Queue System (Background Daemon)',
+                    'user' => 'System Worker #2',
+                    'device' => 'Linux CLI (Worker Instance)',
+                    'request_id' => 'job_queue_982b',
+                    'exception' => 'Symfony\Component\Mailer\Exception\TransportException',
+                    'occurrences' => 12,
+                    'first_seen' => '2026-08-24 00:10:00',
+                    'last_seen' => '2026-08-24 00:20:15',
+                    'status' => 'OPEN',
+                    'stack_trace' => "#0 vendor/symfony/mailer/Transport/AbstractTransport.php(340): Symfony\Component\Mailer\Transport\AbstractTransport->send()\n#1 app/Jobs/SendRegistrationEmail.php(35): Illuminate\Support\Facades\Mail->send()",
+                ],
+                [
+                    'id' => 'ERR-20260824-005',
+                    'severity' => 'WARNING',
+                    'time' => '2026-08-24 00:15:30',
+                    'service' => 'Event Check-in',
+                    'environment' => 'Production',
+                    'http_status' => '404',
+                    'message' => 'ModelNotFoundException: Ticket number not found during digital check-in scanning.',
+                    'endpoint' => '/superadmin/events/scan-checkin/TKT-99999-ERR',
+                    'user' => 'User #1405 (budihartono@gmail.com)',
+                    'device' => 'Mobile Chrome 127.0 (Android 14) - Mobile',
+                    'request_id' => 'req_29abf8c92ef4',
+                    'exception' => 'Illuminate\Database\Eloquent\ModelNotFoundException',
+                    'occurrences' => 4,
+                    'first_seen' => '2026-08-24 00:15:30',
+                    'last_seen' => '2026-08-24 00:15:30',
+                    'status' => 'OPEN',
+                    'stack_trace' => "#0 vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(520): Illuminate\Database\Eloquent\Builder->firstOrFail()\n#1 app/Http/Controllers/SuperAdmin/SuperEventController.php(330): App\Models\EventTicket::where()",
+                ]
+            ];
+            file_put_contents($logPath, json_encode($errors, JSON_PRETTY_PRINT));
+        }
 
         // Gabungkan status tersimpan jika ada
-        foreach ($baseErrors as &$error) {
+        foreach ($errors as &$error) {
             if (isset($savedStatuses[$error['id']])) {
                 $error['status'] = $savedStatuses[$error['id']];
             }
         }
 
-        return $baseErrors;
+        return $errors;
     }
 
     /**

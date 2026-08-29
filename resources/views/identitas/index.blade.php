@@ -1,10 +1,11 @@
 @php
     // Deteksi Layout Otomatis Berdasarkan Role
-    $layout = match(auth()->user()->getRoleNames()->first()) {
-        'adminprogram' => 'adminprogram.layouts.app',
-        'superadmin'   => 'superadmin.layouts.app',
-        default        => 'pesertabiasa.layouts.app',
-    };
+    $layout = 'pesertabiasa.layouts.app';
+    if (auth()->user()->hasRole('Super Admin')) {
+        $layout = 'superadmin.layouts.app';
+    } elseif (auth()->user()->hasRole('Admin Program')) {
+        $layout = 'adminprogram.layouts.app';
+    }
 @endphp
 
 @extends($layout)
@@ -22,6 +23,16 @@
     @if(session('success'))
         <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 text-sm font-bold shadow-sm rounded-r-xl">
             {{ session('success') }}
+        </div>
+    @endif
+    @if(session('warning'))
+        <div class="mb-6 p-4 bg-amber-50 border-l-4 border-amber-500 text-amber-700 text-sm font-bold shadow-sm rounded-r-xl">
+            {{ session('warning') }}
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="mb-6 p-4 bg-rose-50 border-l-4 border-rose-500 text-rose-700 text-sm font-bold shadow-sm rounded-r-xl">
+            {{ session('error') }}
         </div>
     @endif
 
