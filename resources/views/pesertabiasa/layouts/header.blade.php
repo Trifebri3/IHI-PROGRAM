@@ -8,7 +8,10 @@
                 </a>
             </div>
 
-            <div class="flex items-center">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Lonceng Notifikasi & Pengumuman Lengkap -->
+                @include('components.notification-bell')
+
                 <div class="relative">
                     <button @click="profileMenuOpen = !profileMenuOpen"
                             class="flex items-center space-x-2.5 text-sm font-bold text-slate-700 hover:text-emerald-700 transition-colors focus:outline-none p-1.5 rounded-xl hover:bg-slate-50">

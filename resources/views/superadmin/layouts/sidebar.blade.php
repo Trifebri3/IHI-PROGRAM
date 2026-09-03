@@ -76,6 +76,26 @@
                         </span>
                     </a>
                 </li>
+
+                <li>
+                    <a href="{{ route('superadmin.forum.index') }}"
+                       class="flex items-center justify-between px-3.5 py-2.5 text-sm font-semibold rounded-xl transition-all group {{ request()->routeIs('superadmin.forum.*') ? 'bg-gradient-to-r from-emerald-50 to-emerald-100/30 text-emerald-900 border-l-4 border-emerald-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-800' }}">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 transition-colors {{ request()->routeIs('superadmin.forum.*') ? 'text-emerald-700' : 'text-slate-400 group-hover:text-emerald-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <span>Green Forum Desk</span>
+                        </div>
+                        @php
+                            $pendingReportsCount = \App\Models\DiscussionReport::where('status', 'pending')->count();
+                        @endphp
+                        @if($pendingReportsCount > 0)
+                            <span class="px-2 py-0.5 text-[10px] font-black bg-rose-500 text-white rounded-full animate-pulse">
+                                {{ $pendingReportsCount }}
+                            </span>
+                        @endif
+                    </a>
+                </li>
             </ul>
         </div>
 

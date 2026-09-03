@@ -21,7 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var list<string>
      */
 protected $fillable = [
-    'name', 'email', 'is_dummy', 'password', 'avatar', 'google_id', 'sso_token', 'sso_token_expires_at', 'must_change_password', 'is_blocked'
+    'name', 'email', 'is_dummy', 'password', 'avatar', 'google_id', 'sso_token', 'sso_token_expires_at', 'must_change_password', 'is_blocked', 'is_forum_restricted'
 ];
 
     /**
@@ -46,6 +46,7 @@ protected $fillable = [
             'password' => 'hashed',
             'must_change_password' => 'boolean',
             'is_blocked' => 'boolean',
+            'is_forum_restricted' => 'boolean',
         ];
     }
 
@@ -79,7 +80,26 @@ protected $fillable = [
     // Helper untuk cek status centang biru di Blade / Controller
     public function isVerifiedAccount(): bool
     {
-        return $this->verification?->status === 'verified';
+        return $this->verification?->status === 'verified'
+            || $this->hasRole('Super Admin')
+            || $this->hasRole('Admin Program');
+    }
+
+    // Helper cek apakah akun dibatasi di Green Forum
+    public function isForumRestricted(): bool
+    {
+        return (bool) $this->is_forum_restricted;
+    }
+
+    // Relasi notifikasi pengguna
+    public function notifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserNotification::class, 'user_id');
+    }
+
+    public function unreadNotificationsCount(): int
+    {
+        return $this->notifications()->whereNull('read_at')->count();
     }
 
     // Relasi ke Program yang dikelola oleh Admin ini

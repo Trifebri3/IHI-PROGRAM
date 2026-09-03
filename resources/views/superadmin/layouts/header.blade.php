@@ -8,8 +8,11 @@
                 </a>
             </div>
 
-            <div class="hidden sm:flex sm:items-center">
-                <div class="relative">
+            <div class="flex items-center gap-2 sm:gap-3">
+                @include('components.notification-bell')
+
+                <div class="hidden sm:flex sm:items-center">
+                    <div class="relative">
                     <button @click="profileMenuOpen = !profileMenuOpen"
                             @click.away="profileMenuOpen = false"
                             class="flex items-center space-x-2.5 text-sm font-bold text-slate-700 hover:text-emerald-700 transition-colors focus:outline-none p-1.5 rounded-xl hover:bg-slate-50">
@@ -53,6 +56,7 @@
                         </form>
                     </div>
                 </div>
+            </div>
             </div>
 
             <div class="flex items-center -mr-2 sm:hidden">

@@ -32,13 +32,27 @@
                 </div>
 
                 <div class="hidden md:flex items-center gap-3">
-                    <a href="{{ route('login') }}" class="text-sm font-bold text-slate-700 hover:text-emerald-700 px-4 py-2 rounded-xl transition-colors">
-                        Masuk
-                    </a>
-                    <a href="https://e-learning.instituthijauindonesia.or.id/" target="_blank" class="text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-5 py-2.5 rounded-xl shadow-xs hover:shadow-md transition-all flex items-center gap-2">
-                        <span>E-Learning</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                    </a>
+                    @auth
+                        <a href="{{ route('forum.index') }}" class="text-xs font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                            <span>Green Forum</span>
+                        </a>
+
+                        <!-- Lonceng Notifikasi di Halaman Utama -->
+                        @include('components.notification-bell')
+
+                        <a href="{{ route('dashboard') }}" class="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl shadow-xs hover:shadow-md transition-all">
+                            My Program
+                        </a>
+                    @else
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-slate-700 hover:text-emerald-700 px-4 py-2 rounded-xl transition-colors">
+                            Masuk
+                        </a>
+                        <a href="https://e-learning.instituthijauindonesia.or.id/" target="_blank" class="text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-5 py-2.5 rounded-xl shadow-xs hover:shadow-md transition-all flex items-center gap-2">
+                            <span>E-Learning</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        </a>
+                    @endauth
                 </div>
 
                 <div class="flex items-center md:hidden">
@@ -82,17 +96,32 @@
 </a> 
 
             <div class="pt-4 border-t border-slate-100 flex flex-col gap-2">
-                <div class="grid grid-cols-2 gap-2">
-                    <a href="{{ route('login') }}" class="block text-center py-2.5 rounded-xl text-sm font-extrabold text-slate-750 bg-slate-100 hover:bg-slate-200">
-                        Masuk
+                @auth
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <span class="text-xs font-bold text-slate-800">{{ auth()->user()->name }}</span>
+                        @include('components.notification-bell')
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="{{ route('forum.index') }}" class="block text-center py-2.5 rounded-xl text-xs font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200">
+                            Green Forum
+                        </a>
+                        <a href="{{ route('dashboard') }}" class="block text-center py-2.5 rounded-xl text-xs font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm">
+                            My Program
+                        </a>
+                    </div>
+                @else
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="{{ route('login') }}" class="block text-center py-2.5 rounded-xl text-sm font-extrabold text-slate-750 bg-slate-100 hover:bg-slate-200">
+                            Masuk
+                        </a>
+                        <a href="{{ route('register') }}" class="block text-center py-2.5 rounded-xl text-sm font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm">
+                            Daftar
+                        </a>
+                    </div>
+                    <a href="https://e-learning.instituthijauindonesia.or.id/" target="_blank" class="block text-center py-2.5 rounded-xl text-sm font-extrabold text-white bg-amber-500 hover:bg-amber-600 shadow-sm">
+                        Akses E-Learning 🎓
                     </a>
-                    <a href="{{ route('register') }}" class="block text-center py-2.5 rounded-xl text-sm font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm">
-                        Daftar
-                    </a>
-                </div>
-                <a href="https://e-learning.instituthijauindonesia.or.id/" target="_blank" class="block text-center py-2.5 rounded-xl text-sm font-extrabold text-white bg-amber-500 hover:bg-amber-600 shadow-sm">
-                    Akses E-Learning 🎓
-                </a>
+                @endauth
             </div>
         </div>
     </nav>

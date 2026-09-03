@@ -84,14 +84,14 @@ Route::get('/highlights/{id}/click', function ($id) {
     return redirect()->away($highlight->link_url);
 })->name('public.highlights.click');
 
-Route::get('/events/{id}', [\App\Http\Controllers\Public\PublicEventController::class, 'show'])->name('public.events.show');
-Route::post('/events/{id}/register', [\App\Http\Controllers\Public\PublicEventController::class, 'register'])->name('public.events.register');
+Route::get('/events/{id}', [\App\Http\Controllers\Public\PublicEventController::class, 'show'])->name('public.events.show')->whereNumber('id');
+Route::post('/events/{id}/register', [\App\Http\Controllers\Public\PublicEventController::class, 'register'])->name('public.events.register')->whereNumber('id');
 Route::get('/events/ticket/{ticket_number}', [\App\Http\Controllers\Public\PublicEventController::class, 'showTicket'])->name('public.events.ticket');
-Route::post('/events/{id}/register-fast', [\App\Http\Controllers\Public\PublicEventController::class, 'registerFast'])->name('public.events.register_fast');
+Route::post('/events/{id}/register-fast', [\App\Http\Controllers\Public\PublicEventController::class, 'registerFast'])->name('public.events.register_fast')->whereNumber('id');
 Route::post('/events/autofill-account', [\App\Http\Controllers\Public\PublicEventController::class, 'autofillAccount'])->name('public.events.autofill_account');
-Route::get('/events/{id}/attendance', [\App\Http\Controllers\Public\PublicEventController::class, 'showAttendance'])->name('public.events.attendance');
-Route::post('/events/{id}/attendance/verify-ticket', [\App\Http\Controllers\Public\PublicEventController::class, 'verifyTicketForAttendance'])->name('public.events.attendance.verify');
-Route::post('/events/{id}/attendance/submit', [\App\Http\Controllers\Public\PublicEventController::class, 'submitAttendance'])->name('public.events.attendance.submit');
+Route::get('/events/{id}/attendance', [\App\Http\Controllers\Public\PublicEventController::class, 'showAttendance'])->name('public.events.attendance')->whereNumber('id');
+Route::post('/events/{id}/attendance/verify-ticket', [\App\Http\Controllers\Public\PublicEventController::class, 'verifyTicketForAttendance'])->name('public.events.attendance.verify')->whereNumber('id');
+Route::post('/events/{id}/attendance/submit', [\App\Http\Controllers\Public\PublicEventController::class, 'submitAttendance'])->name('public.events.attendance.submit')->whereNumber('id');
 
 
 
@@ -391,6 +391,13 @@ Route::middleware(['auth', 'verified'])->prefix('superadmin')->group(function ()
     Route::delete('/programs/{id}', [AdminProgramController::class, 'destroy'])->name('superadmin.programs.destroy');
     Route::post('/programs/{id}/pin', [AdminProgramController::class, 'togglePin'])->name('superadmin.programs.pin');
     
+    // Green Forum Moderation & Analytics Desk
+    Route::get('/forum', [\App\Http\Controllers\SuperAdmin\SuperForumController::class, 'index'])->name('superadmin.forum.index');
+    Route::post('/forum/report/{id}/resolve', [\App\Http\Controllers\SuperAdmin\SuperForumController::class, 'resolveReport'])->name('superadmin.forum.report.resolve');
+    Route::delete('/forum/discussion/{id}/takedown', [\App\Http\Controllers\SuperAdmin\SuperForumController::class, 'takedownDiscussion'])->name('superadmin.forum.discussion.takedown');
+    Route::delete('/forum/comment/{id}/takedown', [\App\Http\Controllers\SuperAdmin\SuperForumController::class, 'takedownComment'])->name('superadmin.forum.comment.takedown');
+    Route::post('/forum/user/{id}/restrict', [\App\Http\Controllers\SuperAdmin\SuperForumController::class, 'toggleRestrictUser'])->name('superadmin.forum.user.restrict');
+    Route::post('/forum/user/{id}/block', [\App\Http\Controllers\SuperAdmin\SuperForumController::class, 'toggleBlockUser'])->name('superadmin.forum.user.block');
 
 });
 
@@ -399,10 +406,26 @@ Route::middleware(['auth', 'verified'])->prefix('superadmin')->group(function ()
 | 8. FORUM ROUTES
 |--------------------------------------------------------------------------
 */
+
+// Public View-Only Topic Route (Dapat diakses siapapun tanpa login)
+Route::get('/forum/topic/{id}', [ForumController::class, 'showPublicTopic'])->name('forum.public.show');
+Route::post('/forum/discussion/{id}/share', [ForumController::class, 'recordShare'])->name('forum.discussion.share');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/forum', [ForumController::class, 'index'])->name('forum.index');
     Route::post('/forum/discussion', [ForumController::class, 'storeDiscussion'])->name('forum.discussion.store');
     Route::post('/forum/comment/{id}', [ForumController::class, 'storeComment'])->name('forum.comment.store');
+    Route::post('/forum/discussion/{id}/reaction', [ForumController::class, 'toggleReaction'])->name('forum.discussion.reaction');
+    Route::post('/forum/discussion/{id}/repost', [ForumController::class, 'repostDiscussion'])->name('forum.discussion.repost');
+    Route::post('/forum/discussion/{id}/favorite', [ForumController::class, 'toggleFavorite'])->name('forum.discussion.favorite');
+    Route::post('/forum/discussion/{id}/report', [ForumController::class, 'reportDiscussion'])->name('forum.discussion.report');
+    Route::delete('/forum/discussion/{id}', [ForumController::class, 'destroyDiscussion'])->name('forum.discussion.destroy');
+
+    // Notifikasi Pengguna (Green Forum & Portal)
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+    Route::get('/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
 });
 
 /*
