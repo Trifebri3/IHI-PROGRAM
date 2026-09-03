@@ -21,7 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var list<string>
      */
 protected $fillable = [
-    'name', 'email', 'is_dummy', 'password', 'avatar', 'google_id', 'sso_token', 'sso_token_expires_at'
+    'name', 'email', 'is_dummy', 'password', 'avatar', 'google_id', 'sso_token', 'sso_token_expires_at', 'must_change_password', 'is_blocked'
 ];
 
     /**
@@ -44,6 +44,8 @@ protected $fillable = [
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'must_change_password' => 'boolean',
+            'is_blocked' => 'boolean',
         ];
     }
 

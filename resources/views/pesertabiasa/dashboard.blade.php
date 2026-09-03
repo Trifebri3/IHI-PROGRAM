@@ -4,6 +4,32 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Notifikasi Global -->
+    @if(session('success'))
+        <div class="mb-8 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 text-sm font-semibold shadow-sm rounded-r-2xl flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span>✅</span>
+                <span>{{ session('success') }}</span>
+            </div>
+        </div>
+    @endif
+    @if(session('warning'))
+        <div class="mb-8 p-4 bg-amber-50 border-l-4 border-amber-500 text-amber-800 text-sm font-semibold shadow-sm rounded-r-2xl flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span>⚠️</span>
+                <span>{{ session('warning') }}</span>
+            </div>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="mb-8 p-4 bg-rose-50 border-l-4 border-rose-500 text-rose-800 text-sm font-semibold shadow-sm rounded-r-2xl flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span>❌</span>
+                <span>{{ session('error') }}</span>
+            </div>
+        </div>
+    @endif
+
     <div class="mb-16">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-8 border-b border-slate-100 pb-4">
             <div>

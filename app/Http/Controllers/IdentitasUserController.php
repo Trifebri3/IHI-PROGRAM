@@ -197,14 +197,14 @@ class IdentitasUserController extends Controller
             ], [
                 'password.required' => 'Password baru wajib diisi.',
                 'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+                'password.min' => 'Password baru minimal terdiri dari 8 karakter.',
             ]);
 
-            $user->update([
-                'password' => Hash::make($request->password),
-                'must_change_password' => false,
-            ]);
+            $user->password = Hash::make($request->password);
+            $user->must_change_password = false;
+            $user->save();
 
-            return redirect()->route('dashboard')->with('success', 'Password Anda berhasil diperbarui! Silakan lanjutkan mengakses dashboard.');
+            return redirect()->route('dashboard')->with('success', 'Password Anda berhasil diperbarui! Silakan lanjutkan mengakses layanan.');
         }
 
         // Validasi input password biasa
@@ -215,6 +215,7 @@ class IdentitasUserController extends Controller
             'current_password.required' => 'Password saat ini wajib diisi.',
             'password.required' => 'Password baru wajib diisi.',
             'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+            'password.min' => 'Password baru minimal terdiri dari 8 karakter.',
         ]);
 
         // Cek apakah password lama yang dimasukkan sesuai dengan yang ada di database
@@ -223,11 +224,11 @@ class IdentitasUserController extends Controller
         }
 
         // Update password baru
-        $user->update([
-            'password' => Hash::make($request->password),
-        ]);
+        $user->password = Hash::make($request->password);
+        $user->must_change_password = false;
+        $user->save();
 
-        return redirect()->back()->with('success_password', 'Password Anda berhasil diperbarui!');
+        return redirect()->back()->with('success', 'Password Anda berhasil diperbarui!');
     }
 
 }

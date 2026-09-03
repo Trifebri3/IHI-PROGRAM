@@ -25,6 +25,11 @@
             {{ session('success') }}
         </div>
     @endif
+    @if(session('success_password'))
+        <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 text-sm font-bold shadow-sm rounded-r-xl">
+            {{ session('success_password') }}
+        </div>
+    @endif
     @if(session('warning'))
         <div class="mb-6 p-4 bg-amber-50 border-l-4 border-amber-500 text-amber-700 text-sm font-bold shadow-sm rounded-r-xl">
             {{ session('warning') }}
@@ -33,6 +38,16 @@
     @if(session('error'))
         <div class="mb-6 p-4 bg-rose-50 border-l-4 border-rose-500 text-rose-700 text-sm font-bold shadow-sm rounded-r-xl">
             {{ session('error') }}
+        </div>
+    @endif
+    @if($errors->any())
+        <div class="mb-6 p-4 bg-rose-50 border-l-4 border-rose-500 text-rose-700 text-sm shadow-sm rounded-r-xl">
+            <p class="font-bold mb-1">Perhatian: Terjadi kesalahan pengisian formulir</p>
+            <ul class="list-disc list-inside text-xs space-y-0.5">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
@@ -155,14 +170,59 @@
     </form>
 
     <!-- Bagian 4: Password (Form Terpisah) -->
-    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mt-8">
-        <h2 class="text-sm font-black text-slate-800 mb-6 uppercase tracking-wider">Keamanan Akun</h2>
+    <div id="keamanan-akun" class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mt-8">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-black text-slate-800 uppercase tracking-wider">Keamanan Akun</h2>
+            @if($user->must_change_password)
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800">
+                    Wajib Ganti Password
+                </span>
+            @endif
+        </div>
+
+        @if($user->must_change_password)
+            <div class="mb-5 p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2.5">
+                <span class="text-base leading-none">⚠️</span>
+                <div>
+                    <span class="font-bold block">Perbarui Password Baru Anda</span>
+                    <p class="mt-0.5 text-amber-700">Untuk keamanan akun Anda, silakan buat password baru di bawah ini (minimal 8 karakter). Anda tidak perlu memasukkan password lama.</p>
+                </div>
+            </div>
+        @endif
+
         <form action="{{ route('identitas.password') }}" method="POST" class="space-y-4">
-            @csrf @method('PUT')
-            <input type="password" name="current_password" placeholder="Password Saat Ini" class="w-full p-2 border rounded-xl text-sm" required>
-            <input type="password" name="password" placeholder="Password Baru" class="w-full p-2 border rounded-xl text-sm" required>
-            <input type="password" name="password_confirmation" placeholder="Konfirmasi Password" class="w-full p-2 border rounded-xl text-sm" required>
-            <button type="submit" class="w-full py-2 bg-slate-800 text-white font-bold rounded-xl text-xs">Perbarui Password</button>
+            @csrf
+            @method('PUT')
+
+            @if(!$user->must_change_password)
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Password Saat Ini</label>
+                    <input type="password" name="current_password" placeholder="Masukkan password saat ini" class="w-full p-2.5 border @error('current_password') border-rose-400 bg-rose-50/30 @else border-slate-200 @enderror rounded-xl text-sm outline-none focus:ring-1 focus:ring-slate-900" required>
+                    @error('current_password')
+                        <span class="text-[11px] text-rose-500 font-bold block mt-1">{{ $message }}</span>
+                    @enderror
+                </div>
+            @endif
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Password Baru</label>
+                <input type="password" name="password" placeholder="Minimal 8 karakter" class="w-full p-2.5 border @error('password') border-rose-400 bg-rose-50/30 @else border-slate-200 @enderror rounded-xl text-sm outline-none focus:ring-1 focus:ring-slate-900" required>
+                @error('password')
+                    <span class="text-[11px] text-rose-500 font-bold block mt-1">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Konfirmasi Password Baru</label>
+                <input type="password" name="password_confirmation" placeholder="Ketik ulang password baru" class="w-full p-2.5 border @error('password_confirmation') border-rose-400 bg-rose-50/30 @else border-slate-200 @enderror rounded-xl text-sm outline-none focus:ring-1 focus:ring-slate-900" required>
+                @error('password_confirmation')
+                    <span class="text-[11px] text-rose-500 font-bold block mt-1">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <button type="submit" class="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs hover:bg-slate-800 transition-colors shadow-sm">
+                {{ $user->must_change_password ? 'Simpan Password Baru & Lanjutkan' : 'Perbarui Password' }}
+            </button>
         </form>
     </div>
 </div>

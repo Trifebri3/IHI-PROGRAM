@@ -265,6 +265,10 @@ class UserController extends Controller
 
             // 1. Update User
             $user->update($updateData);
+            if ($passwordChanged) {
+                $user->must_change_password = false;
+                $user->save();
+            }
 
             // 2. Update Role (Spatie)
             $user->syncRoles([$request->role]);
