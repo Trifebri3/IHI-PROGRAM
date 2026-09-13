@@ -397,7 +397,49 @@ Route::middleware(['auth', 'verified'])->prefix('superadmin')->group(function ()
     Route::delete('/forum/discussion/{id}/takedown', [\App\Http\Controllers\SuperAdmin\SuperForumController::class, 'takedownDiscussion'])->name('superadmin.forum.discussion.takedown');
     Route::delete('/forum/comment/{id}/takedown', [\App\Http\Controllers\SuperAdmin\SuperForumController::class, 'takedownComment'])->name('superadmin.forum.comment.takedown');
     Route::post('/forum/user/{id}/restrict', [\App\Http\Controllers\SuperAdmin\SuperForumController::class, 'toggleRestrictUser'])->name('superadmin.forum.user.restrict');
-    Route::post('/forum/user/{id}/block', [\App\Http\Controllers\SuperAdmin\SuperForumController::class, 'toggleBlockUser'])->name('superadmin.forum.user.block');
+    // Modul Partisipan Program (Super Admin)
+    Route::get('/program-participants', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'index'])->name('superadmin.program-participants.index');
+    Route::get('/program-participants/{programId}/export-excel', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'exportExcel'])->name('superadmin.program-participants.export-excel');
+    Route::get('/program-participants/{registrationId}/detail', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'applicantDetail'])->name('superadmin.program-participants.detail');
+    Route::post('/program-participants/{registrationId}/update-status', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'updateStatus'])->name('superadmin.program-participants.update-status');
+    Route::post('/program-participants/{registrationId}/update-ni', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'updateNi'])->name('superadmin.program-participants.update-ni');
+    
+    // Fitur Tambahan Excel & Aksi Massal
+    Route::post('/program-participants/bulk-reset-password', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'bulkResetPassword'])->name('superadmin.program-participants.bulk-reset-password');
+    Route::get('/program-participants/{programId}/template-ni', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'downloadNiTemplate'])->name('superadmin.program-participants.template-ni');
+    Route::post('/program-participants/{programId}/import-ni', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'importNi'])->name('superadmin.program-participants.import-ni');
+    Route::get('/program-participants/{programId}/template-fill-blanks', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'downloadFillBlanksTemplate'])->name('superadmin.program-participants.template-fill-blanks');
+    Route::post('/program-participants/{programId}/import-fill-blanks', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'importFillBlanks'])->name('superadmin.program-participants.import-fill-blanks');
+    Route::get('/program-participants/{programId}/template-import-users', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'downloadImportTemplate'])->name('superadmin.program-participants.template-import-users');
+    Route::post('/program-participants/{programId}/import-new-users', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'importNewParticipants'])->name('superadmin.program-participants.import-new-users');
+    
+    // Fitur Komparasi & Rekonsiliasi Data Sheet vs Database
+    Route::get('/program-participants/{programId}/reconciliation', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'showReconciliation'])->name('superadmin.program-participants.reconciliation');
+    Route::post('/program-participants/{programId}/reconciliation/process', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'processReconciliation'])->name('superadmin.program-participants.reconciliation.process');
+    Route::post('/program-participants/{programId}/reconciliation/sync-single', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'syncSingleParticipant'])->name('superadmin.program-participants.reconciliation.sync-single');
+    Route::post('/program-participants/{programId}/reconciliation/sync-all', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'syncAllMissing'])->name('superadmin.program-participants.reconciliation.sync-all');
+    Route::post('/program-participants/{programId}/reconciliation/export', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'exportReconciliationReport'])->name('superadmin.program-participants.reconciliation.export');
+
+    // Fitur Verifikasi Email Massal & Satuan di Program
+    Route::post('/program-participants/{programId}/verify-all-emails', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'verifyAllEmails'])->name('superadmin.program-participants.verify-all-emails');
+    Route::post('/program-participants/{userId}/verify-single-email', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'verifySingleEmail'])->name('superadmin.program-participants.verify-single-email');
+
+    // Fitur Tagging / Kategori Peserta Program (Pokja, Peserta Biasa, dll.)
+    Route::post('/program-participants/{programId}/bulk-tag', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'bulkTagParticipants'])->name('superadmin.program-participants.bulk-tag');
+    Route::post('/program-participants/{registrationId}/update-tag', [\App\Http\Controllers\SuperAdmin\ProgramParticipantController::class, 'updateSingleTag'])->name('superadmin.program-participants.update-tag');
+
+    // Alias route untuk /program-users
+    Route::get('/program-users', function () {
+        return redirect()->route('superadmin.program-participants.index', request()->query());
+    })->name('superadmin.program-users.index');
+
+    // Modul Backup Database & Auto-Backup
+    Route::get('/database-backups', [\App\Http\Controllers\SuperAdmin\DatabaseBackupController::class, 'index'])->name('superadmin.database-backups.index');
+    Route::post('/database-backups/create', [\App\Http\Controllers\SuperAdmin\DatabaseBackupController::class, 'create'])->name('superadmin.database-backups.create');
+    Route::get('/database-backups/download/{filename}', [\App\Http\Controllers\SuperAdmin\DatabaseBackupController::class, 'download'])->name('superadmin.database-backups.download');
+    Route::delete('/database-backups/{filename}', [\App\Http\Controllers\SuperAdmin\DatabaseBackupController::class, 'destroy'])->name('superadmin.database-backups.destroy');
+    Route::post('/database-backups/settings', [\App\Http\Controllers\SuperAdmin\DatabaseBackupController::class, 'updateSettings'])->name('superadmin.database-backups.settings');
+    Route::post('/database-backups/run-auto', [\App\Http\Controllers\SuperAdmin\DatabaseBackupController::class, 'runAutoBackupNow'])->name('superadmin.database-backups.run-auto');
 
 });
 

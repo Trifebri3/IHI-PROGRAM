@@ -77,7 +77,7 @@ class UserController extends Controller
         $startDate = $request->query('start_date');
         $endDate = $request->query('end_date');
 
-        $query = User::with(['roles', 'profile', 'address', 'biodataValues']);
+        $query = User::with(['roles', 'profile', 'address', 'biodataValues', 'registrations']);
 
         // Search name or email
         if ($request->filled('search')) {
@@ -136,11 +136,15 @@ class UserController extends Controller
 
             // Bangun CSV Header
             $csvHeaders = [
-                'ID User',
+                'No',
+                'Nomor Induk (NI)',
                 'Nama Lengkap',
                 'Email',
+                'ID User',
                 'Role / Hak Akses',
                 'Status Akun',
+                'Status Verifikasi Email',
+                'Status Password',
                 'Tanggal Registrasi'
             ];
 
@@ -161,35 +165,63 @@ class UserController extends Controller
 
             fputcsv($file, $csvHeaders);
 
+            $formatExcelText = function ($value): string {
+                $str = trim((string)$value);
+                if ($str === '' || $str === '-') return '-';
+                // Jika numeric atau diawali tanda +, format sebagai ="..." agar Excel tidak mengubah jadi scientific notation
+                if (preg_match('/^(\+?[0-9\s\-]+)$/', $str)) {
+                    $clean = preg_replace('/[\r\n\t]+/', '', $str);
+                    return '="' . $clean . '"';
+                }
+                return $str;
+            };
+
+            $num = 1;
             foreach ($users as $user) {
                 $roles = $user->roles->pluck('name')->implode(', ') ?: 'Tidak ada role';
                 $status = $user->is_blocked ? 'Diblokir' : 'Aktif';
-                $photoPath = $user->profile?->profile_photo_path ? asset('storage/' . $user->profile->profile_photo_path) : 'Belum unggah';
-                
+                $photoPath = $user->avatar ?: ($user->profile?->profile_photo_path ? asset('storage/' . $user->profile->profile_photo_path) : 'Belum unggah');
+                $latestNi = $user->registrations->sortByDesc('id')->first(fn($r) => !empty($r->final_id_number) && $r->final_id_number !== '-')?->final_id_number ?: '-';
+                $emailStatus = $user->email_verified_at ? 'Terverifikasi' : 'Belum Verifikasi';
+                $pwdStatus = $user->must_change_password ? 'Belum Ganti (Wajib Ganti)' : 'Sudah Ganti (Aktif)';
+
                 $row = [
-                    $user->id,
+                    $num++,
+                    $formatExcelText($latestNi),
                     $user->name,
                     $user->email,
+                    $user->id,
                     $roles,
                     $status,
+                    $emailStatus,
+                    $pwdStatus,
                     $user->created_at ? $user->created_at->format('Y-m-d H:i:s') : '-'
                 ];
 
                 // Ambil nilai biodata dinamis untuk masing-masing kolom
                 foreach ($biodataFields as $field) {
-                    $val = $user->biodataValues->where('biodata_field_id', $field->id)->first()?->value ?? '-';
-                    $row[] = $val;
+                    $rawVal = $user->biodataValues->where('biodata_field_id', $field->id)->first()?->value ?? '-';
+                    $val = is_array($rawVal) ? implode(', ', $rawVal) : (string)$rawVal;
+                    // Jika kolom kontak atau nomor telepon, format sebagai teks Excel
+                    $fNameLower = strtolower($field->name);
+                    if (str_contains($fNameLower, 'whatsapp') || str_contains($fNameLower, 'telepon') || str_contains($fNameLower, 'hp') || str_contains($fNameLower, 'kontak')) {
+                        $row[] = $formatExcelText($val);
+                    } else {
+                        $row[] = str_replace(["\r\n", "\r", "\n"], " ", $val !== '' ? $val : '-');
+                    }
                 }
+
+                $detailAlamat = str_replace(["\r\n", "\r", "\n"], " ", trim((string)($user->address?->detail_alamat ?? '')));
 
                 $row = array_merge($row, [
                     $photoPath,
-                    $user->address?->negara ?? '-',
+                    $user->address?->negara ?? 'Indonesia',
                     $user->address?->provinsi ?? '-',
                     $user->address?->kabupaten ?? '-',
                     $user->address?->kecamatan ?? '-',
                     $user->address?->desa ?? '-',
                     $user->address?->kampung ?? '-',
-                    $user->address?->detail_alamat ?? '-'
+                    $detailAlamat !== '' ? $detailAlamat : '-'
                 ]);
 
                 fputcsv($file, $row);

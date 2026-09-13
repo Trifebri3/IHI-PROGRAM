@@ -13,12 +13,21 @@ class Registration extends Model
 {
     protected $fillable = [
         'user_id', 'program_id', 'current_stage_id', 'status', 'final_id_number', 'final_scores', 'motivation',
-        'batch', 'location', 'region', 'participant_status'
+        'batch', 'location', 'region', 'participant_status', 'tags'
     ];
 
     protected $casts = [
         'final_scores' => 'array'
     ];
+
+    /**
+     * Mengambil daftar tags sebagai array
+     */
+    public function getTagsArrayAttribute(): array
+    {
+        if (empty($this->tags)) return [];
+        return array_values(array_filter(array_map('trim', explode(',', $this->tags))));
+    }
 
     public function user(): BelongsTo { return $this->belongsTo(User::class); }
     public function program(): BelongsTo { return $this->belongsTo(Program::class); }
@@ -71,14 +80,19 @@ public function currentStage(): BelongsTo
                 ]
             ];
 
+            $syncUrl = Config::get('services.lms.sync_url');
+            if (empty($syncUrl)) {
+                return;
+            }
+
             try {
-                $response = Http::timeout(5)
-                    ->retry(2, 500)
+                $response = Http::timeout(2)
+                    ->withoutVerifying()
                     ->withHeaders([
                         'X-INTEGRATION-KEY' => Config::get('services.lms.integration_key'),
                         'Accept'            => 'application/json'
                     ])
-                    ->post(Config::get('services.lms.sync_url'), $payload);
+                    ->post($syncUrl, $payload);
 
                 if (!$response->successful()) {
                     Log::error('LMS Sync Failed', [
