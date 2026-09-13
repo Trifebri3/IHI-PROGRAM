@@ -628,9 +628,27 @@ Route::middleware(['auth', 'throttle:6,1'])->group(function () {
 use Illuminate\Support\Facades\Artisan;
 
 Route::get('/clear-view-darurat', function () {
-    // Menjalankan perintah php artisan view:clear lewat kode
-    Artisan::call('view:clear');
-    return 'Cache view berhasil dibersihkan! Silakan cek kembali HP Anda.';
+    // Menjalankan perintah pembersihan seluruh cache darurat via browser
+    try {
+        Artisan::call('optimize:clear');
+        Artisan::call('route:clear');
+        Artisan::call('view:clear');
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
+    } catch (\Throwable $e) {
+        return 'Sebagian cache dibersihkan dengan catatan: ' . $e->getMessage();
+    }
+    return 'Cache sistem (Route, View, Config, Optimize) berhasil dibersihkan! Silakan muat ulang dashboard Anda.';
+});
+
+Route::get('/clear-route-darurat', function () {
+    try {
+        Artisan::call('optimize:clear');
+        Artisan::call('route:clear');
+    } catch (\Throwable $e) {
+        return 'Error: ' . $e->getMessage();
+    }
+    return 'Cache route berhasil dibersihkan!';
 });
 
 
