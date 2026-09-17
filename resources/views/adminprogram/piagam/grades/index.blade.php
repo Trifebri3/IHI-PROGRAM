@@ -15,6 +15,18 @@
                     <option value="newest" {{ request('sort') === 'newest' ? 'selected' : '' }}>Terbaru</option>
                 </select>
             </form>
+            <form action="{{ route('adminprogram.piagam.grades.upload_template', $program->id) }}" method="POST" enctype="multipart/form-data" class="hidden" id="uploadForm">
+                @csrf
+                <input type="file" name="file" id="fileInput" accept=".csv" onchange="document.getElementById('uploadForm').submit()">
+            </form>
+            <button type="button" onclick="document.getElementById('fileInput').click()" class="px-5 py-2.5 bg-amber-600 text-white font-medium rounded-xl hover:bg-amber-700 shadow-sm flex items-center gap-2 transition-colors" title="Upload Template CSV">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                Upload CSV
+            </button>
+            <a href="{{ route('adminprogram.piagam.grades.download_template', $program->id) }}" class="px-5 py-2.5 bg-sky-600 text-white font-medium rounded-xl hover:bg-sky-700 shadow-sm flex items-center gap-2 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
+                Download Template CSV
+            </a>
             <button type="button" onclick="document.getElementById('gradesForm').submit()" class="px-5 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 shadow-sm flex items-center gap-2 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                 Simpan Halaman Ini

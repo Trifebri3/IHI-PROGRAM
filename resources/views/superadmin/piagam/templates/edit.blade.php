@@ -203,8 +203,7 @@
             pdfDoc: null,
             currentPage: 1,
             totalPages: 1,
-            zoomLevel: 1.0,
-            baseScale: 1.25,
+            zoomLevel: 1.25,
             pdfWidthMM: 0,
             pdfHeightMM: 0,
             scaleFactor: 1,
@@ -267,43 +266,24 @@
 
             zoomIn() {
                 if (this.zoomLevel < 3.0) {
+                    this.savePageToMemory();
                     this.zoomLevel += 0.25;
-                    this.applyZoom();
+                    this.renderPage(this.currentPage);
                 }
             },
             zoomOut() {
                 if (this.zoomLevel > 0.25) {
+                    this.savePageToMemory();
                     this.zoomLevel -= 0.25;
-                    this.applyZoom();
+                    this.renderPage(this.currentPage);
                 }
             },
             resetZoom() {
-                if (this.zoomLevel !== 1.0) {
-                    this.zoomLevel = 1.0;
-                    this.applyZoom();
+                if (this.zoomLevel !== 1.25) {
+                    this.savePageToMemory();
+                    this.zoomLevel = 1.25;
+                    this.renderPage(this.currentPage);
                 }
-            },
-
-            applyZoom() {
-                if (!this.pdfDoc || !this.canvas) return;
-                const doc = Alpine.raw(this.pdfDoc);
-                doc.getPage(this.currentPage).then(page => {
-                    const originalViewport = page.getViewport({ scale: 1.0 });
-                    const visualWidth = originalViewport.width * this.zoomLevel;
-                    const visualHeight = originalViewport.height * this.zoomLevel;
-                    
-                    const c = Alpine.raw(this.canvas);
-                    c.setWidth(visualWidth);
-                    c.setHeight(visualHeight);
-                    c.setZoom(this.zoomLevel / this.baseScale);
-                    
-                    const wrapper = document.getElementById('canvas-wrapper-id');
-                    if(wrapper) {
-                        wrapper.style.width = visualWidth + 'px';
-                        wrapper.style.height = visualHeight + 'px';
-                    }
-                    c.renderAll();
-                });
             },
 
             async renderPage(pageNum) {
@@ -317,42 +297,44 @@
                 
                 // Render dalam ukuran yang proporsional
                 const originalViewport = page.getViewport({ scale: 1.0 });
-                // Gunakan baseScale tetap untuk resolusi PDF
-                const baseViewport = page.getViewport({ scale: this.baseScale });
+                // Gunakan scale sesuai zoomLevel
+                const viewport = page.getViewport({ scale: this.zoomLevel });
                 
                 this.pdfWidthMM = (originalViewport.width / 72) * 25.4;
                 this.pdfHeightMM = (originalViewport.height / 72) * 25.4;
 
                 const pdfCanvas = document.getElementById('pdf-canvas');
                 const ctx = pdfCanvas.getContext('2d');
-                pdfCanvas.width = baseViewport.width;
-                pdfCanvas.height = baseViewport.height;
-
-                await page.render({ canvasContext: ctx, viewport: baseViewport }).promise;
-
-                const visualWidth = originalViewport.width * this.zoomLevel;
-                const visualHeight = originalViewport.height * this.zoomLevel;
-
-                if(!this.canvas) {
-                    this.initFabric(visualWidth, visualHeight);
-                } else {
-                    const c = Alpine.raw(this.canvas);
-                    c.setWidth(visualWidth);
-                    c.setHeight(visualHeight);
-                }
                 
-                const c = Alpine.raw(this.canvas);
-                c.setZoom(this.zoomLevel / this.baseScale);
+                // Reset transform to avoid upside-down rendering on same-size canvas reuse
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
                 
+                pdfCanvas.width = viewport.width;
+                pdfCanvas.height = viewport.height;
+                ctx.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height);
+
                 // Set ukuran div wrapper menggunakan ID agar lebih tangguh (jika refs gagal)
                 const wrapper = document.getElementById('canvas-wrapper-id');
                 if(wrapper) {
-                    wrapper.style.width = visualWidth + 'px';
-                    wrapper.style.height = visualHeight + 'px';
+                    wrapper.style.width = viewport.width + 'px';
+                    wrapper.style.height = viewport.height + 'px';
                 }
 
-                // scaleFactor tetap menggunakan baseViewport agar kompatibel
-                this.scaleFactor = this.pdfWidthMM / baseViewport.width;
+                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+                if(!this.canvas) {
+                    this.initFabric(viewport.width, viewport.height);
+                } else {
+                    const c = Alpine.raw(this.canvas);
+                    c.setWidth(viewport.width);
+                    c.setHeight(viewport.height);
+                    this.scaleFactor = this.pdfWidthMM / viewport.width;
+                    const wrapper = document.getElementById('canvas-wrapper-id');
+                    if(wrapper) {
+                        wrapper.style.width = viewport.width + 'px';
+                        wrapper.style.height = viewport.height + 'px';
+                    }
+                }
                 
                 // Set PDF sebagai background Fabric
                 const bgImage = new fabric.Image(pdfCanvas);
@@ -442,7 +424,7 @@
                         });
                     } else {
                         // Text element
-                        let fontPx = el.font_size; 
+                        let fontPx = el.font_size * this.zoomLevel; 
                         let textObj = new fabric.IText(el.content || '', {
                             left: leftPx,
                             top: topPx,
@@ -471,6 +453,9 @@
                     let font_pt = obj.fontSize || 12; 
                     if(obj.scaleX && obj.type === 'i-text') { 
                         font_pt = font_pt * obj.scaleX; 
+                    }
+                    if (obj.type === 'i-text') {
+                        font_pt = font_pt / this.zoomLevel;
                     }
                     // For images, store the scaled width (in mm) in font_size column
                     if (obj.type === 'image') {
@@ -502,7 +487,7 @@
                     left: 50,
                     top: 50,
                     fontFamily: 'Arial',
-                    fontSize: 24, // pixel
+                    fontSize: 24 * this.zoomLevel, // pixel
                     fill: '#000000',
                     originX: 'left',
                     originY: 'top',
@@ -625,7 +610,7 @@
                 if (obj.type === 'i-text') {
                     this.objText = obj.text;
                     this.objFontFamily = obj.fontFamily;
-                    this.objFontSize = Math.round(obj.fontSize);
+                    this.objFontSize = Math.round(obj.fontSize / this.zoomLevel);
                     this.objColor = obj.fill;
                     this.objTextAlign = obj.textAlign;
                 }
@@ -635,6 +620,10 @@
                 if (!this.activeObject) return;
                 const obj = Alpine.raw(this.activeObject);
                 const c = Alpine.raw(this.canvas);
+                
+                if (key === 'fontSize') {
+                    value = value * this.zoomLevel;
+                }
                 
                 obj.set(key, value);
                 c.renderAll();

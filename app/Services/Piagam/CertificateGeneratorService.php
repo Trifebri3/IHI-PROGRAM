@@ -107,7 +107,16 @@ class CertificateGeneratorService {
                         $align = strtoupper(substr($element->text_align ?? 'left', 0, 1));
                         if(!in_array($align, ['L', 'C', 'R'])) $align = 'L';
                         
-                        $pdf->Cell(0, 0, utf8_decode($text), 0, 0, $align);
+                        if ($align === 'C') {
+                            $pdf->SetXY(0, $element->y_pos);
+                            $pdf->Cell($size['width'], 0, utf8_decode($text), 0, 0, 'C');
+                        } else if ($align === 'R') {
+                            $pdf->SetXY(0, $element->y_pos);
+                            $pdf->Cell($size['width'], 0, utf8_decode($text), 0, 0, 'R');
+                        } else {
+                            $pdf->SetXY($element->x_pos, $element->y_pos);
+                            $pdf->Cell(0, 0, utf8_decode($text), 0, 0, 'L');
+                        }
                     }
                 }
             }

@@ -32,7 +32,7 @@
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">No. Kredensial Utama Global</label>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">No. Kredensial Utama </label>
                     <div class="text-sm font-semibold text-slate-700">{{ $certificate->certificate_number ?? 'N/A' }}</div>
                 </div>
                 <div>

@@ -62,15 +62,6 @@
                         <span>Database Peserta</span>
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('adminprogram.certificates.index') }}"
-                       class="flex items-center px-3.5 py-2.5 text-sm font-semibold rounded-xl transition-all group {{ request()->routeIs('adminprogram.certificates.*') ? 'bg-gradient-to-r from-emerald-50 to-emerald-100/30 text-emerald-900 border-l-4 border-emerald-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-800' }}">
-                        <svg class="w-5 h-5 mr-3 transition-colors {{ request()->routeIs('adminprogram.certificates.*') ? 'text-emerald-700' : 'text-slate-400 group-hover:text-emerald-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        <span>Sertifikat &amp; Piagam</span>
-                    </a>
-                </li>
             </ul>
         </div>
 
