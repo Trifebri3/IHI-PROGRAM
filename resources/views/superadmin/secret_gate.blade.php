@@ -31,7 +31,7 @@
                 <div class="text-[9px] text-slate-500 font-extrabold uppercase tracking-wider">Status Proteksi</div>
                 <div class="space-y-3">
                     <div class="flex items-center gap-2.5">
-                        
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
                         <span class="text-xs font-bold text-emerald-400">KONSOL TERKUNCI</span>
                     </div>
                     <p class="text-[11px] text-slate-400 leading-relaxed">

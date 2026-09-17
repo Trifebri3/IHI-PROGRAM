@@ -112,7 +112,7 @@
         <!-- PANEL KANAN: Daftar Rangkaian Alur / Timeline -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2 space-y-4">
             <h4 class="text-sm font-bold text-slate-800 flex items-center">
-                
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2"></span>
                 Struktur Urutan Rangkaian Program
             </h4>
 

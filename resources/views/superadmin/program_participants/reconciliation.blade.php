@@ -243,7 +243,7 @@ document.addEventListener('alpine:init', () => {
          class="p-4 rounded-2xl flex items-center justify-between shadow-md"
          :class="toast.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'">
         <div class="flex items-center gap-3">
-            
+            <span class="text-lg font-bold" x-text="toast.type === 'success' ? '✓' : '!'"></span>
             <p class="text-sm font-bold" x-text="toast.message"></p>
         </div>
         <button type="button" @click="toast.show = false" class="text-white hover:text-slate-200 font-bold text-lg">&times;</button>
@@ -374,7 +374,7 @@ document.addEventListener('alpine:init', () => {
              class="p-4 bg-amber-50 border border-amber-300 text-amber-900 rounded-2xl text-xs space-y-2">
             <div class="flex items-center gap-2 font-bold text-amber-800">
                 <span class="p-1.5 bg-amber-500 text-white rounded-lg text-xs">️</span>
-                <span>Perhatian: Ditemukan  baris pada spreadsheet yang dilewati karena tidak memiliki format email yang valid:</span>
+                <span>Perhatian: Ditemukan <span x-text="results.skipped_rows.length"></span> baris pada spreadsheet yang dilewati karena tidak memiliki format email yang valid:</span>
             </div>
             <div class="overflow-x-auto max-h-36 overflow-y-auto">
                 <table class="w-full text-left text-[11px]">
@@ -402,7 +402,7 @@ document.addEventListener('alpine:init', () => {
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                 <div>
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total di Sheet</span>
-                    
+                    <span class="text-2xl font-black text-slate-900" x-text="results ? results.stats.total_sheet : 0"></span>
                 </div>
                 
             </div>
@@ -411,7 +411,7 @@ document.addEventListener('alpine:init', () => {
             <div class="bg-white p-4 rounded-2xl border border-emerald-200 shadow-sm flex items-center justify-between">
                 <div>
                     <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">Sudah Lolos</span>
-                    
+                    <span class="text-2xl font-black text-emerald-700" x-text="results ? results.stats.already_passed : 0"></span>
                 </div>
                 
             </div>
@@ -420,7 +420,7 @@ document.addEventListener('alpine:init', () => {
             <div class="bg-white p-4 rounded-2xl border border-amber-200 shadow-sm flex items-center justify-between">
                 <div>
                     <span class="text-[10px] font-bold text-amber-600 uppercase tracking-wider block">Tahap Proses</span>
-                    
+                    <span class="text-2xl font-black text-amber-700" x-text="results ? results.stats.registered_not_passed : 0"></span>
                 </div>
                 
             </div>
@@ -429,7 +429,7 @@ document.addEventListener('alpine:init', () => {
             <div class="bg-white p-4 rounded-2xl border border-indigo-200 shadow-sm flex items-center justify-between">
                 <div>
                     <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block">Akun Ada (Di Luar)</span>
-                    
+                    <span class="text-2xl font-black text-indigo-700" x-text="results ? results.stats.user_exists_not_in_prog : 0"></span>
                 </div>
                 <span class="p-3 rounded-xl bg-indigo-50 text-indigo-600 text-xl">🟡</span>
             </div>
@@ -438,7 +438,7 @@ document.addEventListener('alpine:init', () => {
             <div class="bg-white p-4 rounded-2xl border border-rose-200 shadow-sm flex items-center justify-between">
                 <div>
                     <span class="text-[10px] font-bold text-rose-600 uppercase tracking-wider block">Akun Belum Ada</span>
-                    
+                    <span class="text-2xl font-black text-rose-700" x-text="results ? results.stats.not_registered : 0"></span>
                 </div>
                 
             </div>
@@ -453,7 +453,7 @@ document.addEventListener('alpine:init', () => {
                             @click="filterTab = 'all'"
                             :class="filterTab === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
                             class="px-3.5 py-2 rounded-xl transition-all cursor-pointer">
-                        Semua ()
+                        Semua (<span x-text="results ? results.items.length : 0"></span>)
                     </button>
 
                     <button type="button"
@@ -462,35 +462,35 @@ document.addEventListener('alpine:init', () => {
                             class="px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer">
                         <span>️</span>
                         <span>Perlu Dimasukkan / Belum Lolos</span>
-                        
+                        <span class="px-1.5 py-0.2 bg-white/20 rounded-full font-black text-[10px]" x-text="getMissingCount()"></span>
                     </button>
 
                     <button type="button"
                             @click="filterTab = 'registered_not_passed'"
                             :class="filterTab === 'registered_not_passed' ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200'"
                             class="px-3.5 py-2 rounded-xl transition-all cursor-pointer">
-                        Status Proses ()
+                        Status Proses (<span x-text="results ? results.stats.registered_not_passed : 0"></span>)
                     </button>
 
                     <button type="button"
                             @click="filterTab = 'user_exists_not_in_prog'"
                             :class="filterTab === 'user_exists_not_in_prog' ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-900 hover:bg-indigo-100 border border-indigo-200'"
                             class="px-3.5 py-2 rounded-xl transition-all cursor-pointer">
-                        Akun Ada di Web ()
+                        Akun Ada di Web (<span x-text="results ? results.stats.user_exists_not_in_prog : 0"></span>)
                     </button>
 
                     <button type="button"
                             @click="filterTab = 'not_registered'"
                             :class="filterTab === 'not_registered' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-900 hover:bg-rose-100 border border-rose-200'"
                             class="px-3.5 py-2 rounded-xl transition-all cursor-pointer">
-                        Akun Belum Ada ()
+                        Akun Belum Ada (<span x-text="results ? results.stats.not_registered : 0"></span>)
                     </button>
 
                     <button type="button"
                             @click="filterTab = 'already_passed'"
                             :class="filterTab === 'already_passed' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100 border border-emerald-200'"
                             class="px-3.5 py-2 rounded-xl transition-all cursor-pointer">
-                        Sudah Lolos ()
+                        Sudah Lolos (<span x-text="results ? results.stats.already_passed : 0"></span>)
                     </button>
                 </div>
 
@@ -502,7 +502,7 @@ document.addEventListener('alpine:init', () => {
                                 @click.prevent.stop="syncAllMissing()"
                                 :disabled="isSyncingAll"
                                 class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all shadow-md disabled:opacity-50 cursor-pointer">
-                            <span x-show="!isSyncingAll"> Masukkan Semua () ke Program</span>
+                            <span x-show="!isSyncingAll"> Masukkan Semua (<span x-text="getMissingCount()"></span>) ke Program</span>
                             <span x-show="isSyncingAll" class="flex items-center gap-1.5" style="display:none;">
                                 <svg class="animate-spin -ml-1 mr-1 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -565,7 +565,9 @@ document.addEventListener('alpine:init', () => {
 
                                 {{-- NI di Sheet --}}
                                 <td class="py-2.5 px-3 align-middle font-mono font-bold">
-                                    
+                                    <span x-show="item.ni && item.ni !== '-'"
+                                          class="inline-block px-2 py-0.5 bg-slate-100 text-slate-900 border border-slate-300 rounded text-[11px]"
+                                          x-text="item.ni"></span>
                                     <span x-show="!item.ni || item.ni === '-'" class="text-slate-300 italic">-</span>
                                 </td>
 
@@ -573,28 +575,34 @@ document.addEventListener('alpine:init', () => {
                                 <td class="py-2.5 px-3 align-middle whitespace-nowrap">
                                     <span x-show="item.status === 'already_passed'"
                                           class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                                        
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                         Sudah Lolos di Program
                                     </span>
 
                                     <span x-show="item.status === 'user_exists_not_in_prog'"
                                           class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-100 text-indigo-900 border border-indigo-300">
-                                        
+                                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
                                         Akun Ada di Web (Belum Masuk Program)
                                     </span>
 
-                                    
+                                    <span x-show="item.status === 'registered_not_passed'"
+                                          class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300"
+                                          x-text="item.status_label">
+                                    </span>
 
                                     <span x-show="item.status === 'not_registered'"
                                           class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-900 border border-rose-300">
-                                        
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                                         Akun Belum Ada di Web
                                     </span>
                                 </td>
 
                                 {{-- Nomor Induk di Web --}}
                                 <td class="py-2.5 px-3 align-middle font-mono">
-                                    
+                                    <span x-show="item.db_ni"
+                                          class="text-[11px] font-bold"
+                                          :class="item.ni_different ? 'text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200' : 'text-slate-800'"
+                                          x-text="item.db_ni"></span>
                                     <span x-show="!item.db_ni" class="text-slate-300 italic text-[11px]">Belum Ada</span>
                                 </td>
 

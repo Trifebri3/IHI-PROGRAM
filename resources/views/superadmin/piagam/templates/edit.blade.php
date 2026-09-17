@@ -29,6 +29,16 @@
         </div>
 
         <div class="flex items-center gap-3">
+            <!-- Zoom Controls -->
+            <div class="flex items-center bg-slate-100 rounded-lg p-1">
+                <button @click="zoomOut()" class="p-1.5 rounded-md hover:bg-white hover:shadow-sm transition-all text-slate-600" title="Perkecil (Zoom Out)">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                </button>
+                <button @click="resetZoom()" class="px-3 text-xs font-bold text-slate-700 hover:text-emerald-600" title="Reset Zoom" x-text="Math.round(zoomLevel * 100 / 1.25) + '%'"></button>
+                <button @click="zoomIn()" class="p-1.5 rounded-md hover:bg-white hover:shadow-sm transition-all text-slate-600" title="Perbesar (Zoom In)">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                </button>
+            </div>
             
             <button @click="saveLayout()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
@@ -55,7 +65,7 @@
                 <div class="space-y-2">
                     <template x-for="v in variables" :key="v.code">
                         <button @click="addText(v.code, 'variable')" class="w-full px-3 py-2 text-left bg-white hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 text-xs font-semibold border border-slate-200 hover:border-emerald-200 rounded-lg transition-colors flex items-center justify-between group">
-                            
+                            <span x-text="v.label"></span>
                             <svg class="w-3 h-3 text-slate-300 group-hover:text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         </button>
                     </template>
@@ -193,6 +203,7 @@
             pdfDoc: null,
             currentPage: 1,
             totalPages: 1,
+            zoomLevel: 1.25,
             pdfWidthMM: 0,
             pdfHeightMM: 0,
             scaleFactor: 1,
@@ -200,7 +211,7 @@
             activeObject: null,
             statusText: 'Memuat PDF...',
             pageLayouts: {}, // Store elements per page
-
+            
             
             // Properties
             objText: '',
@@ -253,6 +264,28 @@
                 }
             },
 
+            zoomIn() {
+                if (this.zoomLevel < 3.0) {
+                    this.savePageToMemory();
+                    this.zoomLevel += 0.25;
+                    this.renderPage(this.currentPage);
+                }
+            },
+            zoomOut() {
+                if (this.zoomLevel > 0.5) {
+                    this.savePageToMemory();
+                    this.zoomLevel -= 0.25;
+                    this.renderPage(this.currentPage);
+                }
+            },
+            resetZoom() {
+                if (this.zoomLevel !== 1.25) {
+                    this.savePageToMemory();
+                    this.zoomLevel = 1.25;
+                    this.renderPage(this.currentPage);
+                }
+            },
+
             async renderPage(pageNum) {
                 this.statusText = 'Memuat halaman ' + pageNum + '...';
                 if(this.canvas) {
@@ -264,9 +297,8 @@
                 
                 // Render dalam ukuran yang proporsional
                 const originalViewport = page.getViewport({ scale: 1.0 });
-                // Gunakan scale tetap yang cukup bagus untuk editing (misalnya 1.25)
-                // CSS overflow-auto akan menangani scrollbar jika terlalu besar
-                const viewport = page.getViewport({ scale: 1.25 });
+                // Gunakan scale sesuai zoomLevel
+                const viewport = page.getViewport({ scale: this.zoomLevel });
                 
                 this.pdfWidthMM = (originalViewport.width / 72) * 25.4;
                 this.pdfHeightMM = (originalViewport.height / 72) * 25.4;
@@ -387,7 +419,7 @@
                         });
                     } else {
                         // Text element
-                        let fontPx = el.font_size; 
+                        let fontPx = el.font_size * (this.zoomLevel / 1.25); 
                         let textObj = new fabric.IText(el.content || '', {
                             left: leftPx,
                             top: topPx,
@@ -416,6 +448,9 @@
                     let font_pt = obj.fontSize || 12; 
                     if(obj.scaleX && obj.type === 'i-text') { 
                         font_pt = font_pt * obj.scaleX; 
+                    }
+                    if (obj.type === 'i-text') {
+                        font_pt = font_pt * (1.25 / this.zoomLevel);
                     }
                     // For images, store the scaled width (in mm) in font_size column
                     if (obj.type === 'image') {
@@ -447,7 +482,7 @@
                     left: 50,
                     top: 50,
                     fontFamily: 'Arial',
-                    fontSize: 24, // pixel
+                    fontSize: 24 * (this.zoomLevel / 1.25), // pixel
                     fill: '#000000',
                     originX: 'left',
                     originY: 'top',
@@ -570,7 +605,7 @@
                 if (obj.type === 'i-text') {
                     this.objText = obj.text;
                     this.objFontFamily = obj.fontFamily;
-                    this.objFontSize = obj.fontSize;
+                    this.objFontSize = Math.round(obj.fontSize * (1.25 / this.zoomLevel));
                     this.objColor = obj.fill;
                     this.objTextAlign = obj.textAlign;
                 }
@@ -580,6 +615,11 @@
                 if (!this.activeObject) return;
                 const obj = Alpine.raw(this.activeObject);
                 const c = Alpine.raw(this.canvas);
+                
+                if (key === 'fontSize') {
+                    value = value * (this.zoomLevel / 1.25);
+                }
+                
                 obj.set(key, value);
                 c.renderAll();
             },

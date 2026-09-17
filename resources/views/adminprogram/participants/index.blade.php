@@ -322,7 +322,7 @@
         <!-- Selected Count Panel & Bulk Action Buttons -->
         <div id="bulkActionsPanel" class="hidden bg-slate-800 text-white p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 shadow-md transition-all duration-200">
             <div class="flex items-center gap-2">
-                
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span class="text-xs font-bold"><span id="selectedCount">0</span> Peserta Dipilih</span>
             </div>
             
@@ -526,7 +526,7 @@
                                 <td class="px-6 py-4">
                                     @if($isAlumniActive)
                                         <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full uppercase">
-                                            
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
                                             Alumni Aktif
                                         </span>
                                     @else

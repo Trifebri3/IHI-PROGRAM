@@ -85,7 +85,7 @@
                                         <span class="text-xs font-bold text-emerald-700">Orang Lolos</span>
                                     </div>
                                     <div class="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full mt-1 border border-emerald-300">
-                                        
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                         Status: PASSED / Diterima
                                     </div>
                                 </div>
@@ -133,7 +133,7 @@
                             {{ $selectedProgram->is_open ? 'Pendaftaran Dibuka' : 'Pendaftaran Ditutup' }}
                         </span>
                         <span class="text-xs font-black text-emerald-800 bg-emerald-100/90 px-3 py-1 rounded-md border border-emerald-300 flex items-center gap-1.5">
-                            
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             Khusus Peserta Lolos (Status: PASSED)
                         </span>
                     </div>
@@ -470,7 +470,7 @@
                                             <div class="flex items-center gap-1">
                                                 <span class="font-bold text-slate-900 whitespace-nowrap">{{ $user?->name ?? 'Akun Terhapus' }}</span>
                                                 @if($user?->verification?->status === 'verified')
-                                                    
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                                 @endif
                                             </div>
                                         </div>
@@ -482,14 +482,14 @@
                                          @if($user)
                                              @if($user->email_verified_at)
                                                  <span class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 mt-0.5" title="Email terverifikasi pada {{ $user->email_verified_at->format('d/m/Y H:i') }}">
-                                                     
+                                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                                                      <span>Terverifikasi</span>
                                                  </span>
                                              @else
                                                  <form method="POST" action="{{ route('superadmin.program-participants.verify-single-email', $user->id) }}" class="inline-block mt-0.5" onsubmit="return confirm('Verifikasi email untuk {{ $user->name }} sekarang?')">
                                                      @csrf
                                                      <button type="submit" title="Klik untuk verifikasi akun ini sekarang" class="inline-flex items-center gap-1 text-[9px] font-black text-amber-800 bg-amber-100 hover:bg-amber-200 px-1.5 py-0.5 rounded border border-amber-300 transition-colors cursor-pointer">
-                                                         
+                                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                                          <span>Belum Verif (Klik Verif)</span>
                                                      </button>
                                                  </form>
@@ -501,12 +501,14 @@
                                     <td class="py-2.5 px-3 align-middle text-center whitespace-nowrap">
                                         @if($hasChangedPassword)
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300" title="Pengguna telah mengganti password atau menggunakan password permanen">
-                                                
+                                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"
+                                                  :class="sData.status === 'passed' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'"
+                                                  x-text="sData.status"></span>
                                                 Sudah Ganti
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300" title="Password default/sementara dari admin, wajib diganti saat login">
-                                                
+                                                <span class="text-[10px] text-slate-400 font-bold block" x-text="key"></span>
                                                 Belum Ganti
                                             </span>
                                         @endif
@@ -564,7 +566,7 @@
                                     {{-- Status Pendaftaran (Khusus Lolos) --}}
                                     <td class="py-2.5 px-3 align-middle text-center whitespace-nowrap">
                                         <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm">
-                                            
+                                            <span class="text-slate-800 font-medium" x-text="typeof val === 'object' ? JSON.stringify(val) : val"></span>
                                             Lolos (Passed)
                                         </span>
                                     </td>
@@ -626,7 +628,7 @@
                  x-transition:leave-end="translate-y-8 opacity-0"
                  class="fixed bottom-6 inset-x-0 mx-auto max-w-xl z-40 bg-slate-900/95 backdrop-blur-md text-white px-6 py-3.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center justify-between gap-4">
                 <div class="flex items-center gap-2 text-xs font-bold">
-                    
+                    <span class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-xs font-black" x-text="selectedUserIds.length"></span>
                     <span>Akun Peserta Dipilih</span>
                 </div>
 
@@ -1130,11 +1132,13 @@
                             </div>
                             <div>
                                 <span class="text-slate-500 block">Nomor Induk (NI):</span>
-                                
+                                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono font-bold" x-text="detailData?.registration?.final_id_number || 'Belum Ada'"></span>
                             </div>
                             <div>
                                 <span class="text-slate-500 block">Status Ganti Password:</span>
-                                
+                                <span class="px-2 py-0.5 rounded font-bold"
+                                      :class="detailData?.user?.must_change_password ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-800'"
+                                      x-text="detailData?.user?.must_change_password ? 'Belum Ganti Password (Wajib)' : 'Sudah Ganti Password (Aktif)'"></span>
                             </div>
                         </div>
                     </div>
@@ -1311,7 +1315,7 @@
                 {{-- Jika ada akun dicentang dari tabel --}}
                 <div x-show="selectedUserIds.length > 0" class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900 flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        
+                        <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold" x-text="selectedUserIds.length"></span>
                         <span class="font-bold text-[11px]">Akun peserta sedang dicentang dari tabel</span>
                     </div>
                     <span class="text-[10px] text-emerald-700 font-medium">Akan ikut ditandai bersama daftar email</span>

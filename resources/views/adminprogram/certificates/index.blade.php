@@ -138,12 +138,12 @@
                                 <td class="p-4">
                                     @if($certificate)
                                         <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full uppercase">
-                                            
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                             Terbit
                                         </span>
                                     @else
                                         <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-extrabold text-slate-500 bg-slate-50 border border-slate-200 rounded-full uppercase">
-                                            
+                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
                                             Belum Ada
                                         </span>
                                     @endif

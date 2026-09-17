@@ -34,7 +34,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2 space-y-5 h-fit">
             <div>
                 <h3 class="text-sm font-bold text-slate-800 flex items-center">
-                    
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2"></span>
                     Rakit Formulir Kustom Pendaftaran (Ala Google Form)
                 </h3>
                 <p class="text-xs text-slate-400 mt-0.5">Pasang kolom isian wajib suplemen tambahan yang wajib dijawab peserta saat mengklaim tiket masuk acara.</p>
@@ -96,7 +96,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2 space-y-5 h-fit mt-6">
             <div>
                 <h3 class="text-sm font-bold text-slate-800 flex items-center">
-                    
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500 mr-2"></span>
                     Rakit Formulir Absensi & Evaluasi Acara (Kustom)
                 </h3>
                 <p class="text-xs text-slate-400 mt-0.5">Pasang kolom isian kuesioner, evaluasi, atau feedback yang wajib dijawab peserta saat melakukan absensi seminar/event.</p>
@@ -293,7 +293,7 @@
         <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 pb-3 border-b gap-2">
             <div>
                 <h3 class="text-sm font-bold text-slate-800 flex items-center">
-                    
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2"></span>
                     Live Rekapitulasi Dokumen & Manifes Kehadiran ({{ count($recapSubmissions) }} Peserta)
                 </h3>
             </div>

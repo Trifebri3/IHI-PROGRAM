@@ -82,7 +82,7 @@
                         </svg>
                         <span class="flex items-center gap-1.5">
                             System Intelligence
-                            
+                            <span class="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                         </span>
                     </a>
                 </li>

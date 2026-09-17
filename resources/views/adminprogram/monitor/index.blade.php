@@ -12,7 +12,7 @@
             <p class="text-xs sm:text-sm text-slate-400 mt-1 font-medium">Pemantauan global, rekapan kelulusan, statistik, dan log aktivitas real-time seluruh program kerja.</p>
         </div>
         <div class="flex items-center gap-2">
-            
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Sistem Aktif</span>
         </div>
     </div>
@@ -88,7 +88,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2 space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-slate-50">
                 <h2 class="text-sm font-extrabold uppercase tracking-wider text-slate-700 flex items-center">
-                    
+                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2"></span>
                     Daftar Program Kerja &amp; Statistik
                 </h2>
                 <span class="text-[10px] font-bold text-slate-400 uppercase">{{ $programs->count() }} Program Terdaftar</span>
@@ -158,7 +158,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-slate-50">
                 <h2 class="text-sm font-extrabold uppercase tracking-wider text-slate-700 flex items-center">
-                    
+                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
                     Log Aktivitas Global
                 </h2>
                 <span class="text-[10px] font-bold text-slate-400 uppercase">Live Timeline</span>

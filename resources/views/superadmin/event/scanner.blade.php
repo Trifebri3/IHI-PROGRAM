@@ -25,7 +25,7 @@
         <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
             <div class="flex justify-between items-center pb-3 border-b border-slate-100">
                 <h3 class="text-sm font-bold text-slate-800 flex items-center">
-                    
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-ping"></span>
                     Kamera Aktif
                 </h3>
                 <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-bold uppercase tracking-wider">Status: Ready</span>

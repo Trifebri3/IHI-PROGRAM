@@ -16,7 +16,7 @@
         <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
             <div>
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold mb-3">
-                    
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>Database Resilience & Security</span>
                 </div>
                 <h1 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
@@ -102,10 +102,10 @@
                 <span class="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">Auto-Backup</span>
                 <div class="flex items-center gap-1.5 mt-0.5">
                     @if($autoSettings['enabled'])
-                        
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
                         <span class="text-base font-black text-emerald-700">AKTIF</span>
                     @else
-                        
+                        <span class="inline-block w-2 h-2 rounded-full bg-slate-400"></span>
                         <span class="text-base font-black text-slate-500">NONAKTIF</span>
                     @endif
                 </div>
@@ -337,12 +337,12 @@
                             <td class="py-3.5 px-5">
                                 @if($file['type'] === 'auto')
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                         <span>Otomatis</span>
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200">
-                                        
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                                         <span>Manual</span>
                                     </span>
                                 @endif
