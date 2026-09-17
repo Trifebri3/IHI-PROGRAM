@@ -125,5 +125,8 @@ public function currentStage(): BelongsTo
             }
             */
         });
+    }    public function piagamCertificate() {
+        return $this->hasOne(PiagamCertificate::class, 'participant_id');
     }
 }
+

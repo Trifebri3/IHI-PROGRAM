@@ -16,7 +16,7 @@
             <form action="{{ route('superadmin.power-panel.toggle-mitigation') }}" method="POST">
                 @csrf
                 <button type="submit" class="inline-flex items-center px-4 py-2 text-xs font-extrabold rounded-xl transition border shadow-3xs uppercase tracking-wider {{ $mitigationMode === '1' ? 'bg-amber-500 text-white border-amber-500 hover:bg-amber-600' : 'bg-slate-50 text-slate-650 hover:bg-slate-100' }}">
-                    🚨 Tombol Mitigasi: {{ $mitigationMode === '1' ? 'AKTIF' : 'NON-AKTIF' }}
+                     Tombol Mitigasi: {{ $mitigationMode === '1' ? 'AKTIF' : 'NON-AKTIF' }}
                 </button>
             </form>
             <a href="{{ route('dashboard') }}" class="inline-flex items-center px-4 py-2 bg-slate-105 text-slate-700 hover:bg-slate-200 text-xs font-bold rounded-xl transition border shadow-3xs">
@@ -28,19 +28,19 @@
     <!-- Alert Notifications -->
     @if(session('success'))
         <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-sm font-semibold shadow-3xs flex items-center">
-            <span>✨ {{ session('success') }}</span>
+            <span> {{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-sm font-semibold shadow-3xs flex items-center">
-            <span>⚠️ {{ session('error') }}</span>
+            <span>️ {{ session('error') }}</span>
         </div>
     @endif
 
     @if($errors->any())
         <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-medium space-y-1 shadow-3xs">
-            <span class="font-bold block mb-1">⚠️ Terjadi kendala input data:</span>
+            <span class="font-bold block mb-1">️ Terjadi kendala input data:</span>
             <ul class="list-disc pl-4 space-y-0.5">
                 @foreach($errors->all() as $err) <li>{{ $err }}</li> @endforeach
             </ul>
@@ -55,7 +55,7 @@
             <div class="space-y-3">
                 <div class="flex items-center justify-between pb-3 border-b border-slate-50">
                     <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center">
-                        <span class="text-lg mr-2">⚡</span> Generator Akun Dummy
+                         Generator Akun Dummy
                     </h3>
                     <span class="text-[10px] font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 uppercase">
                         {{ $dummyUsersCount }} Dummy Active
@@ -81,7 +81,7 @@
                     </div>
 
                     <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-650 text-white font-extrabold text-xs rounded-xl shadow-xs hover:from-amber-600 transition uppercase tracking-wider">
-                        ⚡ Generate Akun Dummy
+                         Generate Akun Dummy
                     </button>
                 </form>
             </div>
@@ -91,7 +91,7 @@
                 <form action="{{ route('superadmin.power-panel.delete-dummy') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus seluruh akun dummy dari database? Aksi ini akan membersihkan data pendaftaran dan file lampiran milik akun dummy secara permanen.');">
                     @csrf
                     <button type="submit" class="w-full py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 font-extrabold text-xs rounded-xl border border-rose-200 transition uppercase tracking-wider">
-                        ✕ Hapus Semua Akun Dummy
+                         Hapus Semua Akun Dummy
                     </button>
                 </form>
             </div>
@@ -101,10 +101,10 @@
         <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-3">
             <div class="flex items-center justify-between pb-3 border-b border-slate-50">
                 <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center">
-                    <span class="text-lg mr-2">📥</span> Impor Akun Spreadsheet
+                     Impor Akun Spreadsheet
                 </h3>
                 <a href="{{ route('superadmin.power-panel.download-template') }}" class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 hover:bg-emerald-100 transition shadow-3xs uppercase">
-                    📥 Template CSV
+                     Template CSV
                 </a>
             </div>
             <p class="text-xs text-slate-400 leading-relaxed font-medium">Impor akun dalam jumlah banyak sekaligus. Bypass verifikasi email secara otomatis agar akun langsung aktif.</p>
@@ -123,7 +123,7 @@
                 </div>
 
                 <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-green-700 text-white font-extrabold text-xs rounded-xl shadow-xs hover:from-emerald-700 transition uppercase tracking-wider">
-                    📥 Mulai Impor Data Akun
+                     Mulai Impor Data Akun
                 </button>
             </form>
         </div>
@@ -132,7 +132,7 @@
         <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-3">
             <div class="flex items-center justify-between pb-3 border-b border-slate-50">
                 <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center">
-                    <span class="text-lg mr-2">🔗</span> Pendaftaran Paksa Program
+                     Pendaftaran Paksa Program
                 </h3>
                 <span class="text-[9px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 uppercase">
                     Force Register
@@ -159,7 +159,7 @@
                 </div>
 
                 <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-xs hover:from-blue-750 transition uppercase tracking-wider">
-                    🔗 Hubungkan &amp; Daftarkan Paksa
+                     Hubungkan &amp; Daftarkan Paksa
                 </button>
             </form>
         </div>
@@ -170,7 +170,7 @@
     <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
         <div class="flex items-center justify-between pb-4 border-b border-slate-50 mb-4">
             <h2 class="text-base font-extrabold text-slate-800 flex items-center">
-                <span class="text-lg mr-2">🆘</span> Tiket Bantuan &amp; Aduan Peserta
+                 Tiket Bantuan &amp; Aduan Peserta
             </h2>
             <span class="text-xs font-bold text-slate-400">
                 {{ $pendingTickets->count() }} Tiket Tertunda

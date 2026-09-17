@@ -86,10 +86,10 @@
     <!-- Tabs Switcher -->
     <div class="flex border-b border-slate-200">
         <button id="tab-alumni-btn" onclick="switchTab('alumni')" class="px-5 py-3 text-sm font-bold border-b-2 border-emerald-600 text-emerald-600 focus:outline-none transition-all">
-            🎓 Alumni Terdaftar ({{ $alumni->total() }})
+             Alumni Terdaftar ({{ $alumni->total() }})
         </button>
         <button id="tab-candidates-btn" onclick="switchTab('candidates')" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 focus:outline-none transition-all">
-            📝 Peserta Aktif / Calon Alumni ({{ $candidates->total() }})
+             Peserta Aktif / Calon Alumni ({{ $candidates->total() }})
         </button>
     </div>
 
@@ -215,7 +215,7 @@
         <!-- Quick Register and Pass Form -->
         <div class="bg-gradient-to-br from-emerald-50/20 to-white p-5 rounded-2xl border border-emerald-100 shadow-2xs mb-4">
             <h4 class="text-xs font-black text-emerald-900 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                ⚡ Loloskan Peserta Baru ke Program (Pilih dari User Terdaftar)
+                 Loloskan Peserta Baru ke Program (Pilih dari User Terdaftar)
             </h4>
             <form action="{{ route('adminprogram.alumni.register-and-pass') }}" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                 @csrf
@@ -236,7 +236,7 @@
                 </div>
                 <div>
                     <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white font-extrabold rounded-xl transition shadow-md text-xs uppercase tracking-wider">
-                        ⚡ Loloskan & Terbit Piagam
+                         Loloskan & Terbit Piagam
                     </button>
                 </div>
             </form>
@@ -275,7 +275,7 @@
                                     <form action="{{ route('adminprogram.programs.applicant.instant-pass', [$c->program_id, $c->id]) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin MELOLOSKAN INSTAN peserta {{ $c->user->name ?? '' }}? Proses ini akan langsung mengubah status menjadi lulus, memberikan NIA, dan menerbitkan piagam kelulusan otomatis.')" class="inline">
                                         @csrf
                                         <button type="submit" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all uppercase tracking-wider whitespace-nowrap">
-                                            ✅ Loloskan Instan
+                                             Loloskan Instan
                                         </button>
                                     </form>
                                 </td>

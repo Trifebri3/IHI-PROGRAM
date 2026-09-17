@@ -27,7 +27,7 @@
             </div>
             <div class="no-print">
                 <button onclick="window.print()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">
-                    🖨️ Cetak / Simpan PDF
+                    ️ Cetak / Simpan PDF
                 </button>
             </div>
         </div>
@@ -97,12 +97,12 @@
                                         <p class="text-xs text-slate-400 italic">Kosong / Tidak diisi</p>
                                     @elseif($val['type'] === 'file')
                                         <a href="{{ asset('storage/' . $val['value']) }}" target="_blank" class="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg hover:bg-emerald-100 transition shadow-3xs mt-1">
-                                            📥 Download Lampiran Berkas
+                                             Download Lampiran Berkas
                                         </a>
                                     @elseif($val['type'] === 'image')
                                         <div class="space-y-1.5 pt-1">
                                             <a href="{{ asset('storage/' . $val['value']) }}" target="_blank" class="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg hover:bg-emerald-100 transition shadow-3xs">
-                                                🔍 Lihat Gambar Ukuran Penuh
+                                                 Lihat Gambar Ukuran Penuh
                                             </a>
                                             <img src="{{ asset('storage/' . $val['value']) }}" class="max-w-xs max-h-32 rounded-lg border shadow-3xs object-cover mt-1" alt="preview">
                                         </div>

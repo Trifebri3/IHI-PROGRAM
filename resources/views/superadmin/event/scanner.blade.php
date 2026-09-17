@@ -25,7 +25,7 @@
         <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
             <div class="flex justify-between items-center pb-3 border-b border-slate-100">
                 <h3 class="text-sm font-bold text-slate-800 flex items-center">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-ping"></span>
+                    
                     Kamera Aktif
                 </h3>
                 <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-bold uppercase tracking-wider">Status: Ready</span>
@@ -44,7 +44,7 @@
                     Jika kamera tidak terbuka, silakan izinkan akses kamera pada peramban Anda.
                 </div>
                 <button onclick="restartScanner()" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border text-xs">
-                    🔄 Restart Scanner
+                     Restart Scanner
                 </button>
             </div>
         </div>
@@ -53,14 +53,14 @@
         <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6 flex flex-col justify-between">
             <div class="space-y-4">
                 <div class="pb-3 border-b border-slate-100">
-                    <h3 class="text-sm font-bold text-slate-800">📋 Hasil Pindaian Terakhir</h3>
+                    <h3 class="text-sm font-bold text-slate-800"> Hasil Pindaian Terakhir</h3>
                     <p class="text-xs text-slate-400 mt-0.5">Log absensi check-in langsung pada halaman ini.</p>
                 </div>
 
                 <!-- Alert Overlay for Dynamic Feedback -->
                 <div id="scan-feedback" class="hidden p-4 rounded-xl border flex flex-col items-center justify-center text-center space-y-1.5 transition-all duration-300">
-                    <span id="feedback-icon" class="text-2xl"></span>
-                    <span id="feedback-status" class="text-xs font-bold uppercase tracking-wider"></span>
+                    
+                    
                     <p id="feedback-message" class="text-sm font-bold text-slate-700"></p>
                 </div>
 
@@ -74,7 +74,7 @@
 
             <div class="pt-4 border-t border-slate-100">
                 <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider text-center">
-                    🎵 Efek Suara Presensi Aktif (Web Audio API)
+                     Efek Suara Presensi Aktif (Web Audio API)
                 </div>
             </div>
         </div>
@@ -203,14 +203,14 @@
                 // Warning / Already checked in
                 playBeep(false);
                 fbElement.className = "p-4 rounded-xl border bg-amber-50 border-amber-250 text-amber-800 flex flex-col items-center justify-center text-center space-y-1.5";
-                iconElement.innerText = "⚠️";
+                iconElement.innerText = "️";
                 statusElement.innerText = "Sudah Absen";
                 msgElement.innerText = data.message;
             } else {
                 // Perfect success
                 playBeep(true);
                 fbElement.className = "p-4 rounded-xl border bg-emerald-50 border-emerald-250 text-emerald-800 flex flex-col items-center justify-center text-center space-y-1.5";
-                iconElement.innerText = "✅";
+                iconElement.innerText = "";
                 statusElement.innerText = "Hadir";
                 msgElement.innerText = data.message;
             }
@@ -247,7 +247,7 @@
             // Failure
             playBeep(false);
             fbElement.className = "p-4 rounded-xl border bg-rose-50 border-rose-250 text-rose-800 flex flex-col items-center justify-center text-center space-y-1.5";
-            iconElement.innerText = "❌";
+            iconElement.innerText = "";
             statusElement.innerText = "Gagal";
             msgElement.innerText = data.message;
         }

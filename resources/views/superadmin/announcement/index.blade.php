@@ -15,7 +15,7 @@
 
     @if(session('success'))
         <div class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold shadow-sm">
-            ✨ {{ session('success') }}
+             {{ session('success') }}
         </div>
     @endif
 
@@ -26,9 +26,9 @@
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500">Cakupan Ruang Target</label>
                     <select name="target" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-white text-slate-700 font-bold">
-                        <option value="global" class="text-emerald-700 font-bold">🌍 GLOBAL BROADCAST (Semua User Aplikasi)</option>
+                        <option value="global" class="text-emerald-700 font-bold"> GLOBAL BROADCAST (Semua User Aplikasi)</option>
                         @foreach($programs as $prog)
-                            <option value="{{ $prog->id }}">📦 PROGRAM: {{ $prog->name }}</option>
+                            <option value="{{ $prog->id }}"> PROGRAM: {{ $prog->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -55,7 +55,7 @@
                 </div>
 
                 <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-green-700 text-white font-bold text-xs rounded-xl hover:from-emerald-700 transition uppercase tracking-wider shadow-md shadow-emerald-50">
-                    📣 Siarkan &amp; Eksekusi Email
+                     Siarkan &amp; Eksekusi Email
                 </button>
             </form>
         </div>
@@ -68,11 +68,11 @@
                     <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-start text-xs shadow-3xs">
                         <div class="space-y-1.5 flex-1 pr-4">
                             <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                <span class="font-bold text-slate-800 text-sm">📣 {{ $ann->title }}</span>
+                                <span class="font-bold text-slate-800 text-sm"> {{ $ann->title }}</span>
                                 @if($ann->program_id)
-                                    <span class="text-[8px] bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded font-black uppercase">📦 PROGRAM: {{ $ann->program->name }}</span>
+                                    <span class="text-[8px] bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded font-black uppercase"> PROGRAM: {{ $ann->program->name }}</span>
                                 @else
-                                    <span class="text-[8px] bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded font-black uppercase">🌍 GLOBAL ALL USER</span>
+                                    <span class="text-[8px] bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded font-black uppercase"> GLOBAL ALL USER</span>
                                 @endif
                                 <span class="text-[8px] bg-white text-slate-400 border px-1.5 py-0.5 rounded font-bold uppercase">{{ $ann->type }}</span>
                             </div>
@@ -80,7 +80,7 @@
                         </div>
                         <form action="{{ route('superadmin.announcements.delete', $ann->id) }}" method="POST" onsubmit="return confirm('Hapus arsip siaran ini?')">
                             @csrf @method('DELETE')
-                            <button type="submit" class="text-rose-500 font-bold hover:bg-rose-50 px-2 py-1 rounded transition-colors text-xs">✕</button>
+                            <button type="submit" class="text-rose-500 font-bold hover:bg-rose-50 px-2 py-1 rounded transition-colors text-xs"></button>
                         </form>
                     </div>
                 @empty

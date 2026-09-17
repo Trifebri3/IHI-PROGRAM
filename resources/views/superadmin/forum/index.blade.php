@@ -15,7 +15,7 @@
                 <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md uppercase tracking-wide">Community Governance</span>
                 @if($pendingReports > 0)
                     <span class="text-xs font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-md uppercase tracking-wide animate-pulse">
-                        🚨 {{ $pendingReports }} Laporan Menunggu
+                         {{ $pendingReports }} Laporan Menunggu
                     </span>
                 @endif
             </div>
@@ -87,7 +87,7 @@
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                    <span>🔥 Top 5 Topik Paling Hangat (Trending)</span>
+                    <span> Top 5 Topik Paling Hangat (Trending)</span>
                 </h2>
                 <p class="text-xs text-slate-400">Peringkat keterlibatan dihitung berdasarkan volume reaksi, komentar, posting ulang, dan share.</p>
             </div>
@@ -104,7 +104,7 @@
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <span class="font-bold text-slate-900">{{ $trend->user->name }}</span>
                                 @if($trend->user->isVerifiedAccount())
-                                    <span class="text-sky-500">✓</span>
+                                    
                                 @endif
                                 <span class="text-slate-400 text-[11px]">• {{ $trend->created_at->diffForHumans(null, true) }}</span>
                             </div>
@@ -156,7 +156,7 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
             <div>
                 <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                    <span>🚩 Laporan Masuk dari Komunitas</span>
+                    <span> Laporan Masuk dari Komunitas</span>
                 </h2>
                 <p class="text-xs text-slate-400">Tinjau laporan pelanggaran, lakukan takedown konten, batasi atau blokir akun pelaku pelanggaran.</p>
             </div>

@@ -147,7 +147,7 @@
                             <strong>{{ $sub->guest_name }}</strong><br>
                             <span style="font-size: 10px; color: #64748b;">{{ $sub->guest_email }} (Umum/Tamu)</span>
                             @if($sub->guest_phone)
-                                <div style="font-size: 9px; color: #64748b; margin-top: 1px;">📞 {{ $sub->guest_phone }}</div>
+                                <div style="font-size: 9px; color: #64748b; margin-top: 1px;"> {{ $sub->guest_phone }}</div>
                             @endif
                         @endif
                     </td>

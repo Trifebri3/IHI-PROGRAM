@@ -13,7 +13,7 @@
         <form action="{{ route('adminprogram.programs.applicant.reset-answers', [$program->id, $registration->id]) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus / mengosongkan seluruh jawaban berkas kuesioner dari peserta ini? Seluruh berkas lampiran fisik juga akan terhapus secara permanen dari server dan status pengisian akan di-reset menjadi kosong.')">
             @csrf
             <button type="submit" class="inline-flex items-center text-xs bg-red-50 hover:bg-red-100 text-red-700 px-3.5 py-2 rounded-xl border border-red-200 transition font-bold shadow-3xs cursor-pointer">
-                🗑️ Hapus & Kosongkan Jawaban Peserta
+                ️ Hapus & Kosongkan Jawaban Peserta
             </button>
         </form>
     </div>
@@ -77,23 +77,23 @@
                                 <span class="text-slate-400 font-medium">Status Verifikasi:</span>
                                 <div>
                                     @if($registration->user->verification->status === 'verified')
-                                        <span class="inline-block px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200/50">TERVERIFIKASI ✔️</span>
+                                        <span class="inline-block px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200/50">TERVERIFIKASI ️</span>
                                     @elseif($registration->user->verification->status === 'rejected')
-                                        <span class="inline-block px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-rose-50 text-rose-700 border border-rose-200/50">DITOLAK ❌</span>
+                                        <span class="inline-block px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-rose-50 text-rose-700 border border-rose-200/50">DITOLAK </span>
                                     @else
-                                        <span class="inline-block px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-amber-50 text-amber-700 border border-amber-200/50">PENDING ⏳</span>
+                                        <span class="inline-block px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-amber-50 text-amber-700 border border-amber-200/50">PENDING </span>
                                     @endif
                                 </div>
                             </div>
                             <div class="pt-1 flex flex-col gap-1.5">
                                 @if($registration->user->verification->ktp_path)
                                     <a href="{{ asset('storage/' . $registration->user->verification->ktp_path) }}" target="_blank" class="inline-flex items-center text-[10px] font-bold text-emerald-700 hover:underline">
-                                        📄 Lihat Foto KTP/Identitas
+                                         Lihat Foto KTP/Identitas
                                     </a>
                                 @endif
                                 @if($registration->user->verification->photo_path)
                                     <a href="{{ asset('storage/' . $registration->user->verification->photo_path) }}" target="_blank" class="inline-flex items-center text-[10px] font-bold text-emerald-700 hover:underline">
-                                        📷 Lihat Foto Selfie / Pendukung
+                                         Lihat Foto Selfie / Pendukung
                                     </a>
                                 @endif
                             </div>
@@ -134,7 +134,7 @@
                                 <div class="bg-white p-2.5 rounded-lg border border-slate-100 shadow-3xs flex flex-col justify-between">
                                     <span class="text-[9px] font-bold uppercase text-slate-400 block mb-0.5">{{ $val->biodataField->name }}</span>
                                     @if($val->biodataField->type === 'file')
-                                        <a href="{{ asset('storage/' . $val->value) }}" target="_blank" class="text-[10px] font-bold text-emerald-700 hover:underline mt-1 block">📄 Unduh Dokumen</a>
+                                        <a href="{{ asset('storage/' . $val->value) }}" target="_blank" class="text-[10px] font-bold text-emerald-700 hover:underline mt-1 block"> Unduh Dokumen</a>
                                     @else
                                         <span class="text-xs font-semibold text-slate-800 break-all">{{ $val->value ?? '—' }}</span>
                                     @endif
@@ -156,7 +156,7 @@
                                 @if(is_array($ansValue))
                                     <span class="text-xs font-semibold text-slate-800">{{ implode(', ', $ansValue) }}</span>
                                 @elseif(is_string($ansValue) && (str_ends_with(strtolower($ansValue), '.jpg') || str_ends_with(strtolower($ansValue), '.png') || str_ends_with(strtolower($ansValue), '.jpeg') || str_ends_with(strtolower($ansValue), '.pdf')))
-                                    <a href="{{ asset('storage/' . $ansValue) }}" target="_blank" class="text-[10px] font-bold text-emerald-700 hover:underline mt-1 block">📄 Unduh Dokumen</a>
+                                    <a href="{{ asset('storage/' . $ansValue) }}" target="_blank" class="text-[10px] font-bold text-emerald-700 hover:underline mt-1 block"> Unduh Dokumen</a>
                                 @else
                                     <span class="text-xs font-semibold text-slate-800 break-all">{{ $ansValue ?? '—' }}</span>
                                 @endif
@@ -193,7 +193,7 @@
                                 @csrf
                                 <input type="hidden" name="field_name" value="{{ $form['field_name'] }}">
                                 <button type="submit" class="text-rose-600 hover:text-rose-800 transition text-[10px] font-extrabold flex items-center gap-0.5 cursor-pointer">
-                                    🗑️ Hapus
+                                    ️ Hapus
                                 </button>
                             </form>
                         @endif
@@ -205,34 +205,34 @@
                         @if(!empty($form['value']))
                             <div class="pt-1">
                                 <a href="{{ asset('storage/' . $form['value']) }}" target="_blank" class="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition shadow-3xs">
-                                    📥 Unduh / Lihat Berkas Fisik Lampiran
+                                     Unduh / Lihat Berkas Fisik Lampiran
                                 </a>
                             </div>
                         @else
-                            <p class="text-xs text-rose-500 font-bold italic">⚠️ Berkas wajib tidak diunggah peserta!</p>
+                            <p class="text-xs text-rose-500 font-bold italic">️ Berkas wajib tidak diunggah peserta!</p>
                         @endif
                     @elseif($form['type'] === 'image')
                         @if(!empty($form['value']))
                             <div class="pt-1 space-y-2">
                                 <a href="{{ asset('storage/' . $form['value']) }}" target="_blank" class="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition shadow-3xs">
-                                    🔍 Buka Gambar Ukuran Penuh
+                                     Buka Gambar Ukuran Penuh
                                 </a>
                                 <div class="mt-2">
                                     <img src="{{ asset('storage/' . $form['value']) }}" class="max-w-md max-h-64 rounded-xl border border-slate-200 shadow-sm object-cover" alt="Lampiran Gambar">
                                 </div>
                             </div>
                         @else
-                            <p class="text-xs text-rose-500 font-bold italic">⚠️ Gambar wajib tidak diunggah peserta!</p>
+                            <p class="text-xs text-rose-500 font-bold italic">️ Gambar wajib tidak diunggah peserta!</p>
                         @endif
                     @elseif($form['type'] === 'url')
                         @if(!empty($form['value']))
                             <div class="pt-1">
                                 <a href="{{ $form['value'] }}" target="_blank" class="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition shadow-3xs">
-                                    🔗 Buka Tautan Link ({{ $form['value'] }})
+                                     Buka Tautan Link ({{ $form['value'] }})
                                 </a>
                             </div>
                         @else
-                            <p class="text-xs text-rose-500 font-bold italic">⚠️ Tautan link wajib tidak diisi peserta!</p>
+                            <p class="text-xs text-rose-500 font-bold italic">️ Tautan link wajib tidak diisi peserta!</p>
                         @endif
                     @else
                         <p class="text-sm font-semibold text-slate-800 leading-relaxed whitespace-pre-wrap">{{ $form['value'] ?? '— (Kosong)' }}</p>
@@ -274,15 +274,15 @@
                 <label class="block text-xs font-bold uppercase text-slate-600 mb-1.5">Keputusan Kelayakan Berkas</label>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <label class="flex items-center justify-between bg-white border border-slate-200 p-3 rounded-xl cursor-pointer hover:border-emerald-500 shadow-3xs select-none">
-                        <span class="text-xs font-bold text-slate-700">Loloskan Ke Tahap Berikutnya 👍</span>
+                        <span class="text-xs font-bold text-slate-700">Loloskan Ke Tahap Berikutnya </span>
                         <input type="radio" name="action" value="pass" x-model="action" class="text-emerald-600 focus:ring-emerald-500 w-4 h-4">
                     </label>
                     <label class="flex items-center justify-between bg-white border border-slate-200 p-3 rounded-xl cursor-pointer hover:border-amber-500 shadow-3xs select-none">
-                        <span class="text-xs font-bold text-slate-700">Kembalikan untuk Revisi 📝</span>
+                        <span class="text-xs font-bold text-slate-700">Kembalikan untuk Revisi </span>
                         <input type="radio" name="action" value="revision" x-model="action" class="text-amber-600 focus:ring-amber-500 w-4 h-4">
                     </label>
                     <label class="flex items-center justify-between bg-white border border-slate-200 p-3 rounded-xl cursor-pointer hover:border-rose-500 shadow-3xs select-none">
-                        <span class="text-xs font-bold text-slate-700">Gagalkan & Gugurkan Berkas 👎</span>
+                        <span class="text-xs font-bold text-slate-700">Gagalkan & Gugurkan Berkas </span>
                         <input type="radio" name="action" value="fail" x-model="action" class="text-rose-600 focus:ring-rose-500 w-4 h-4">
                     </label>
                 </div>
@@ -291,7 +291,7 @@
             {{-- PANEL TAMBAHAN KELULUSAN FINAL: Hanya muncul jika peserta berada di tahapan akhir program dan diloloskan --}}
             @if($isLastStage)
                 <div class="p-4 bg-amber-50/50 border border-amber-200 rounded-xl space-y-3 shadow-inner" x-show="action === 'pass'" x-data="{ mode: 'auto' }">
-                    <span class="block text-xs font-bold text-amber-900 uppercase tracking-wide">⚡ PENENTUAN ID INDUK PROGRAM (FINAL STAGE DETECTED)</span>
+                    <span class="block text-xs font-bold text-amber-900 uppercase tracking-wide"> PENENTUAN ID INDUK PROGRAM (FINAL STAGE DETECTED)</span>
 
                     <div class="flex items-center space-x-4 bg-white p-2 rounded-lg border border-amber-200 w-fit">
                         <label class="flex items-center text-xs font-bold text-slate-600 cursor-pointer">
@@ -315,7 +315,7 @@
 
             <div class="pt-4 border-t flex justify-end gap-3">
                 <button type="submit" form="mark-checked-form" class="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-green-700 text-white font-bold rounded-xl shadow-md hover:from-emerald-700 transition-all text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer">
-                    ✓ Tandai Sudah Diperiksa
+                     Tandai Sudah Diperiksa
                 </button>
                 <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-black text-white font-bold rounded-xl shadow-md transition-all text-xs uppercase tracking-wider">
                     Eksekusi & Kirim Pengumuman
@@ -325,7 +325,7 @@
     </div>
 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-3xs mb-4">
             <div class="border-b pb-2 mb-3">
-                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">📝 Pengisian Transkrip Nilai E-Raport Anggota (Beban {{ $program->total_hours ?? 32 }} JP)</h4>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500"> Pengisian Transkrip Nilai E-Raport Anggota (Beban {{ $program->total_hours ?? 32 }} JP)</h4>
             </div>
 
             @if(empty($program->score_schema))
@@ -340,7 +340,7 @@
                         @endphp
                         @foreach($program->score_schema as $index => $criteriaName)
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1 truncate" title="{{ $criteriaName }}">⭐ {{ $criteriaName }}</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1 truncate" title="{{ $criteriaName }}"> {{ $criteriaName }}</label>
                                 <input type="text"
                                        name="criterion_{{ $index }}"
                                        value="{{ $existingScores->has($criteriaName) ? $existingScores->get($criteriaName)['score'] : '' }}"
@@ -351,7 +351,7 @@
                     </div>
                     <div class="flex justify-end">
                         <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl uppercase tracking-wider shadow-xs">
-                            💾 Simpan & Update Transkrip Raport
+                             Simpan & Update Transkrip Raport
                         </button>
                     </div>
                 </form>

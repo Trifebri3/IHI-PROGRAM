@@ -44,13 +44,13 @@
     <!-- Master Session Alert Handle -->
     @if(session('success'))
         <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-sm font-semibold shadow-sm flex items-center">
-            <span>✨ {{ session('success') }}</span>
+            <span> {{ session('success') }}</span>
         </div>
     @endif
 
     @if($errors->any())
         <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-medium space-y-1 shadow-sm">
-            <span class="font-bold block mb-1">⚠️ Terjadi Kendala Input Data:</span>
+            <span class="font-bold block mb-1">️ Terjadi Kendala Input Data:</span>
             <ul class="list-disc pl-4 space-y-0.5">
                 @foreach($errors->all() as $err) <li>{{ $err }}</li> @endforeach
             </ul>
@@ -112,7 +112,7 @@
         <!-- PANEL KANAN: Daftar Rangkaian Alur / Timeline -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2 space-y-4">
             <h4 class="text-sm font-bold text-slate-800 flex items-center">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2"></span>
+                
                 Struktur Urutan Rangkaian Program
             </h4>
 
@@ -131,7 +131,7 @@
                                     {{ $stg->name }}
                                     @if($stg->is_locked)
                                         <span class="px-1.5 py-0.5 text-[8px] font-bold bg-rose-50 text-rose-600 border border-rose-200 rounded uppercase tracking-wider flex items-center gap-0.5">
-                                            🔒 Terkunci
+                                             Terkunci
                                         </span>
                                     @endif
                                 </h5>
@@ -142,7 +142,7 @@
 
                             <div class="flex items-center space-x-1.5">
                                 <a href="{{ route('adminprogram.programs.workspace', [$program->id, 'manage_stage_id' => $stg->id]) }}#form-builder-workspace" class="px-3 py-1.5 bg-gradient-to-r {{ ($managingStage && $managingStage->id === $stg->id) ? 'from-slate-700 to-slate-800' : 'from-emerald-600 to-emerald-700' }} text-white text-xs font-bold rounded-xl transition flex items-center shadow-xs">
-                                    🛠️ Kelola Form ({{ count($stg->form_schema ?? []) }})
+                                    ️ Kelola Form ({{ count($stg->form_schema ?? []) }})
                                 </a>
 
                                 <form action="{{ route('adminprogram.workspace.stage.toggle_lock', [$program->id, $stg->id]) }}" method="POST" class="inline">
@@ -187,15 +187,15 @@
             <div class="flex bg-slate-100 p-1 rounded-xl w-fit">
                 <a href="{{ request()->fullUrlWithQuery(['tab' => 'pending', 'page' => null]) }}" 
                    class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all uppercase tracking-wider {{ request('tab', 'pending') === 'pending' ? 'bg-white text-slate-800 shadow-2xs' : 'text-slate-400 hover:text-slate-650' }}">
-                   ⏳ Sedang Proses ({{ $pendingCount }})
+                    Sedang Proses ({{ $pendingCount }})
                 </a>
                 <a href="{{ request()->fullUrlWithQuery(['tab' => 'draft', 'page' => null]) }}" 
                    class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all uppercase tracking-wider {{ request('tab') === 'draft' ? 'bg-white text-slate-800 shadow-2xs' : 'text-slate-400 hover:text-slate-650' }}">
-                   ✍️ Draf Pengisian ({{ $draftCount }})
+                   ️ Draf Pengisian ({{ $draftCount }})
                 </a>
                 <a href="{{ request()->fullUrlWithQuery(['tab' => 'reviewed', 'page' => null]) }}" 
                    class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all uppercase tracking-wider {{ request('tab') === 'reviewed' ? 'bg-white text-slate-800 shadow-2xs' : 'text-slate-400 hover:text-slate-650' }}">
-                   ✅ Sudah Di-Review ({{ $reviewedCount }})
+                    Sudah Di-Review ({{ $reviewedCount }})
                 </a>
             </div>
         </div>
@@ -308,19 +308,19 @@
                                 @if(request('tab') === 'draft')
                                     <div class="flex items-center justify-center gap-2">
                                         <a href="{{ route('adminprogram.programs.applicant.show', [$program->id, $app->id]) }}" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl border whitespace-nowrap">
-                                            👁️ Lihat Draf Sementara
+                                            ️ Lihat Draf Sementara
                                         </a>
                                         <span class="text-xs text-amber-600 font-bold bg-amber-50 px-2.5 py-1 rounded border border-amber-200 uppercase tracking-wide">Belum Dikirim</span>
                                     </div>
                                 @elseif($app->status === 'process' && $app->current_stage_id)
                                     <div class="flex items-center justify-center gap-2">
                                         <a href="{{ route('adminprogram.programs.applicant.show', [$program->id, $app->id]) }}" class="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-green-700 text-white text-xs font-bold rounded-xl hover:from-emerald-700 shadow-xs whitespace-nowrap">
-                                            🔍 Periksa Berkas
+                                             Periksa Berkas
                                         </a>
                                         <form action="{{ route('adminprogram.programs.applicant.instant-pass', [$program->id, $app->id]) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin MELOLOSKAN INSTAN peserta {{ $app->user->name ?? '' }}? Proses ini akan langsung mengubah status menjadi lulus, memberikan NIA, dan menerbitkan piagam kelulusan otomatis.')" class="inline">
                                             @csrf
                                             <button type="submit" class="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-bold rounded-xl shadow-xs whitespace-nowrap">
-                                                ✅ Loloskan Instan
+                                                 Loloskan Instan
                                             </button>
                                         </form>
                                     </div>
@@ -354,7 +354,7 @@
     <div id="form-builder-workspace" class="pt-2">
         @if(!$managingStage)
             <div class="bg-white p-8 text-center text-slate-400 italic rounded-2xl border border-dashed border-slate-200 text-xs shadow-2xs">
-                💡 Silakan klik tombol <span class="font-bold text-emerald-700">"🛠️ Kelola Form"</span> pada salah satu susunan rangkaian alur di atas untuk mulai merakit isi kuesioner kustom pendaftaran.
+                 Silakan klik tombol <span class="font-bold text-emerald-700">"️ Kelola Form"</span> pada salah satu susunan rangkaian alur di atas untuk mulai merakit isi kuesioner kustom pendaftaran.
             </div>
         @else
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6" x-data="{
@@ -395,7 +395,7 @@
                         <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded uppercase font-mono">Stage Form Builder Workspace</span>
                         <h4 class="text-sm font-bold text-slate-800 mt-1">Form Desainer Tahap: <span class="text-emerald-700 font-extrabold">{{ $managingStage->name }}</span></h4>
                     </div>
-                    <a href="{{ route('adminprogram.programs.workspace', $program->id) }}" class="text-xs text-slate-400 hover:text-slate-600 font-bold">✕ Sembunyikan Workspace</a>
+                    <a href="{{ route('adminprogram.programs.workspace', $program->id) }}" class="text-xs text-slate-400 hover:text-slate-600 font-bold"> Sembunyikan Workspace</a>
                 </div>
 
                 <!-- List Field Terpasang -->
@@ -436,14 +436,14 @@
 
                                             <!-- Edit Button -->
                                             <button type="button" @click="openEditModal({{ $index }}, {{ json_encode($item) }})" class="text-slate-450 hover:text-emerald-600 font-bold text-xs p-1 transition-colors" title="Ubah Bidang">
-                                                ✏️
+                                                ️
                                             </button>
 
                                             <!-- Delete Button -->
                                             <form action="{{ route('adminprogram.workspace.field.delete', [$program->id, $managingStage->id, $index]) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin mencabut atribut formulir ini?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-slate-350 hover:text-rose-600 font-bold text-xs p-1 transition-colors">✕</button>
+                                                <button type="submit" class="text-slate-350 hover:text-rose-600 font-bold text-xs p-1 transition-colors"></button>
                                             </form>
                                         </div>
                                     </div>
@@ -475,7 +475,7 @@
                                 <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded uppercase font-mono">Edit Field Component</span>
                                 <h3 class="text-sm font-bold text-slate-800 mt-1">Ubah Kolom Kuesioner</h3>
                             </div>
-                            <button type="button" @click="editOpen = false" class="text-slate-450 hover:text-slate-650 text-xs font-bold bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition">✕ Tutup</button>
+                            <button type="button" @click="editOpen = false" class="text-slate-450 hover:text-slate-650 text-xs font-bold bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition"> Tutup</button>
                         </div>
 
                         <!-- Form -->
@@ -550,7 +550,7 @@
                 <!-- Form Pembuat/Pemasang Field Baru (Google Form Builder Style) -->
                 <form action="{{ route('adminprogram.workspace.field.store', [$program->id, $managingStage->id]) }}" method="POST" id="create-field-form" class="p-5 bg-gradient-to-br from-emerald-50/20 to-white border border-emerald-100 rounded-2xl space-y-4 pt-4">
                     @csrf
-                    <span class="block text-xs font-bold uppercase text-emerald-950">🛠️ Pasang Atribut Input Komponen Baru (Google Form Style)</span>
+                    <span class="block text-xs font-bold uppercase text-emerald-950">️ Pasang Atribut Input Komponen Baru (Google Form Style)</span>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
@@ -624,14 +624,14 @@
     <!-- MENU KONTROL & KONFIGURASI PROGRAM -->
     <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mt-6">
         <div class="flex items-center space-x-2 mb-4 pb-2 border-b">
-            <span class="text-emerald-600 text-lg">⚙️</span>
+            <span class="text-emerald-600 text-lg">️</span>
             <h3 class="text-sm font-bold text-slate-800">Menu Kontrol &amp; Konfigurasi Program</h3>
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
             <!-- Card 1: Gatekeeper -->
             <button type="button" id="btn-gatekeeper" onclick="toggleProgramPanel('gatekeeper')" class="p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 hover:border-emerald-200 transition text-left flex items-start space-x-3 group cursor-pointer focus:outline-none w-full">
-                <span class="text-2xl p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition">🛡️</span>
+                <span class="text-2xl p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition">️</span>
                 <div>
                     <h5 class="text-xs font-bold text-slate-800">Form Biodata Wajib</h5>
                     <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Konfigurasi biodata &amp; gatekeeper peserta.</p>
@@ -640,7 +640,7 @@
 
             <!-- Card 2: Academic Transcripts -->
             <button type="button" id="btn-academic" onclick="toggleProgramPanel('academic')" class="p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 hover:border-emerald-200 transition text-left flex items-start space-x-3 group cursor-pointer focus:outline-none w-full">
-                <span class="text-2xl p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition">🎓</span>
+                
                 <div>
                     <h5 class="text-xs font-bold text-slate-800">Rancangan E-Raport</h5>
                     <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Beban JP &amp; kriteria penilaian raport.</p>
@@ -649,7 +649,7 @@
 
             <!-- Card 3: Broadcasting Engine -->
             <button type="button" id="btn-broadcasting" onclick="toggleProgramPanel('broadcasting')" class="p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 hover:border-emerald-200 transition text-left flex items-start space-x-3 group cursor-pointer focus:outline-none w-full">
-                <span class="text-2xl p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition">📣</span>
+                
                 <div>
                     <h5 class="text-xs font-bold text-slate-800">Broadcasting Engine</h5>
                     <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Siarkan pengumuman &amp; broadcast email.</p>
@@ -658,7 +658,7 @@
 
             <!-- Card 4: Pos Pelayanan GTU -->
             <button type="button" id="btn-gtu" onclick="toggleProgramPanel('gtu')" class="p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 hover:border-emerald-200 transition text-left flex items-start space-x-3 group cursor-pointer focus:outline-none w-full">
-                <span class="text-2xl p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition">📞</span>
+                
                 <div>
                     <h5 class="text-xs font-bold text-slate-800">Pos Pelayanan GTU</h5>
                     <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Kelola pertanyaan &amp; email GTU.</p>
@@ -667,7 +667,7 @@
 
             <!-- Card 5: Rekapan & Ekspor -->
             <button type="button" id="btn-recap" onclick="toggleProgramPanel('recap')" class="p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 hover:border-emerald-200 transition text-left flex items-start space-x-3 group cursor-pointer focus:outline-none w-full">
-                <span class="text-2xl p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition">📊</span>
+                
                 <div>
                     <h5 class="text-xs font-bold text-slate-800">Rekapan &amp; Ekspor</h5>
                     <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Rekap tahap/peserta, cetak PDF &amp; Excel.</p>
@@ -676,12 +676,21 @@
 
             <!-- Card 6: Pemeriksaan & Kelompok -->
             <button type="button" id="btn-checking" onclick="toggleProgramPanel('checking')" class="p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 hover:border-emerald-200 transition text-left flex items-start space-x-3 group cursor-pointer focus:outline-none w-full">
-                <span class="text-2xl p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition">📋</span>
+                
                 <div>
                     <h5 class="text-xs font-bold text-slate-800">Pemeriksaan &amp; Kelompok</h5>
                     <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Batch pemeriksaan, kelompok peserta, &amp; summary.</p>
                 </div>
             </button>
+
+            <!-- Card 7: Sertifikat Piagam -->
+            <a href="{{ route('adminprogram.piagam.grades.index', $program->id) }}" class="p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 hover:border-emerald-200 transition text-left flex items-start space-x-3 group cursor-pointer w-full">
+                
+                <div>
+                    <h5 class="text-xs font-bold text-slate-800">Piagam &amp; Sertifikat</h5>
+                    <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Penilaian &amp; Generator PDF Piagam.</p>
+                </div>
+            </a>
         </div>
     </div>
 
@@ -727,12 +736,12 @@
                 @forelse($biodataSchemas as $schema)
                     <div class="p-2 bg-white rounded-lg border border-slate-100 flex justify-between items-center text-xs shadow-3xs">
                         <div class="font-semibold text-slate-700 truncate max-w-[150px]">
-                            📌 {{ $schema->field_name }} <span class="text-[9px] text-slate-400 uppercase">({{ $schema->field_type }})</span>
+                             {{ $schema->field_name }} <span class="text-[9px] text-slate-400 uppercase">({{ $schema->field_type }})</span>
                         </div>
                         <form action="{{ route('adminprogram.workspace.biodata.delete', [$program->id, $schema->id]) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="text-rose-500 font-bold hover:bg-rose-50 px-1.5 py-0.5 rounded">✕</button>
+                            <button type="submit" class="text-rose-500 font-bold hover:bg-rose-50 px-1.5 py-0.5 rounded"></button>
                         </form>
                     </div>
                 @empty
@@ -768,14 +777,14 @@
                     <div class="flex justify-between items-center border-t pt-2 border-slate-200/60">
                         <div class="text-[10px] text-slate-400 font-medium">Judul Aktif: <span class="text-slate-700 font-bold">{{ !empty($program->score_schema) ? count($program->score_schema) : 0 }} Kriteria</span></div>
                         <button type="submit" class="px-4 py-1.5 bg-slate-800 hover:bg-black text-white font-bold text-xs rounded-xl uppercase tracking-wider shadow-sm">
-                            🔒 Kunci Format Raport
+                             Kunci Format Raport
                         </button>
                     </div>
                 </form>
 
                 <form action="{{ route('adminprogram.workspace.certificate.upload', $program->id) }}" method="POST" enctype="multipart/form-data" class="pt-3 border-t border-dashed grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
                     @csrf
-                    <div class="text-xs font-bold text-slate-700">🖼️ Base PNG Piagam Program:</div>
+                    <div class="text-xs font-bold text-slate-700">️ Base PNG Piagam Program:</div>
                     <input type="file" name="program_certificate" class="p-1 border rounded-lg text-xs bg-white cursor-pointer w-full sm:col-span-1" accept="image/png" required>
                     <button type="submit" class="py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg uppercase tracking-wide">Upload PNG</button>
                 </form>
@@ -817,7 +826,7 @@
                     </div>
                     <div class="flex justify-end">
                         <button type="submit" class="px-5 py-2 bg-slate-800 hover:bg-black text-white font-bold text-xs rounded-xl transition shadow-sm uppercase tracking-wider">
-                            📣 Kirim &amp; Broadcast Email
+                             Kirim &amp; Broadcast Email
                         </button>
                     </div>
                 </form>
@@ -892,7 +901,7 @@
                                         <div class="flex items-center justify-center gap-2">
                                             {{-- Tombol Edit --}}
                                             <button type="button" @click="openEditAnnModal({ id: {{ $ann->id }}, title: '{{ addslashes($ann->title) }}', type: '{{ $ann->type }}', content: `{{ addslashes($ann->content) }}` })" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-[10px] transition cursor-pointer">
-                                                ✏️ Edit
+                                                ️ Edit
                                             </button>
 
                                             {{-- Tombol Hapus --}}
@@ -900,7 +909,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg text-[10px] transition cursor-pointer">
-                                                    🗑️ Hapus
+                                                    ️ Hapus
                                                 </button>
                                             </form>
                                         </div>
@@ -921,7 +930,7 @@
                             <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded uppercase font-mono">Edit Broadcast Announcement</span>
                             <h3 class="text-sm font-bold text-slate-800 mt-1">Ubah Pengumuman / Instruksi</h3>
                         </div>
-                        <button type="button" @click="editAnnOpen = false" class="text-slate-450 hover:text-slate-650 text-xs font-bold bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition">✕ Tutup</button>
+                        <button type="button" @click="editAnnOpen = false" class="text-slate-450 hover:text-slate-650 text-xs font-bold bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition"> Tutup</button>
                     </div>
 
                     <!-- Form -->
@@ -977,7 +986,7 @@
                         <input type="email" name="gtu_email" value="{{ $program->gtu_email }}" placeholder="Cth: admin.gtu@instituthijau.or.id" class="w-full p-2 border border-slate-200 bg-white rounded-xl text-xs text-slate-800 focus:ring-1 focus:ring-emerald-500 shadow-3xs" required>
                     </div>
                     <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition shadow-sm uppercase tracking-wider">
-                        💾 Simpan Email GTU
+                         Simpan Email GTU
                     </button>
                 </form>
             </div>
@@ -1016,7 +1025,7 @@
                                 {{-- Form to Reply or Edit Reply --}}
                                 <details class="group">
                                     <summary class="text-xs text-emerald-700 hover:text-emerald-800 font-bold cursor-pointer list-none flex items-center gap-1 select-none">
-                                        <span>{{ $cons->reply ? '📝 Ubah Jawaban' : '💬 Berikan Jawaban' }}</span>
+                                        <span>{{ $cons->reply ? ' Ubah Jawaban' : ' Berikan Jawaban' }}</span>
                                         <svg class="w-3.5 h-3.5 transform group-open:rotate-180 transition text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                                     </summary>
                                     <form action="{{ route('adminprogram.workspace.gtu.reply', [$program->id, $cons->id]) }}" method="POST" class="mt-3 space-y-2 pt-2 border-t border-slate-200/50">
@@ -1059,14 +1068,14 @@
                     
                     <div class="flex flex-col gap-2 pt-2">
                         <button type="button" onclick="viewStageOnScreen()" class="w-full py-2 bg-slate-800 hover:bg-black text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
-                            <span>👁️ Tampilkan Jawaban di Layar (10 Per Halaman)</span>
+                            <span>️ Tampilkan Jawaban di Layar (10 Per Halaman)</span>
                         </button>
                         <div class="flex gap-2">
                             <button type="button" onclick="exportStage('excel')" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
-                                <span>📥 Ekspor Excel (CSV)</span>
+                                <span> Ekspor Excel (CSV)</span>
                             </button>
                             <button type="button" onclick="exportStage('pdf')" class="flex-1 py-2 bg-slate-800 hover:bg-black text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
-                                <span>📄 Cetak / PDF</span>
+                                <span> Cetak / PDF</span>
                             </button>
                         </div>
                     </div>
@@ -1095,10 +1104,10 @@
                     
                     <div class="flex gap-2 pt-2">
                         <button type="button" onclick="exportUser('excel')" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5" @if($allApplicants->isEmpty()) disabled @endif>
-                            <span>📥 Ekspor Excel (CSV)</span>
+                            <span> Ekspor Excel (CSV)</span>
                         </button>
                         <button type="button" onclick="exportUser('pdf')" class="flex-1 py-2 bg-slate-800 hover:bg-black text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5" @if($allApplicants->isEmpty()) disabled @endif>
-                            <span>📄 Cetak / PDF</span>
+                            <span> Cetak / PDF</span>
                         </button>
                     </div>
                 </div>
@@ -1107,7 +1116,7 @@
             <!-- Danger Zone: Reset Pendaftar Program -->
             <div class="md:col-span-2 mt-4 p-6 bg-rose-50/40 rounded-2xl border border-rose-100 space-y-4 shadow-3xs">
                 <div class="flex items-center space-x-2 text-rose-800 font-black text-xs uppercase tracking-wider pb-2 border-b border-rose-100">
-                    <span>🚨</span>
+                    
                     <span>DANGER ZONE: PEMBERSIHAN DATA PENDAFTAR</span>
                 </div>
                 
@@ -1132,7 +1141,7 @@
                                 </select>
                             </div>
                             <button type="submit" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all uppercase tracking-wider whitespace-nowrap">
-                                🗑️ Hapus Peserta
+                                ️ Hapus Peserta
                             </button>
                         </form>
                     </div>
@@ -1147,7 +1156,7 @@
                         <form action="{{ route('adminprogram.workspace.reset_all_applicants', $program->id) }}" method="POST" onsubmit="return confirm('PERINGATAN KERAS! Apakah Anda yakin ingin menghapus SELURUH pendaftar program ini? Semua data pendaftaran, biodata wajib, berkas jawaban, kelulusan, dan file fisik lampiran akan dihilangkan secara permanen dari server dan tidak dapat dikembalikan.');">
                             @csrf
                             <button type="submit" class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all uppercase tracking-wider text-center">
-                                🔥 Reset Semua Pendaftar
+                                 Reset Semua Pendaftar
                             </button>
                         </form>
                     </div>
@@ -1165,7 +1174,7 @@
                             <h4 class="text-sm font-bold text-slate-800 mt-1">Daftar Kiriman Jawaban Peserta per Tahapan</h4>
                             <p class="text-xs text-slate-400 mt-0.5">Pilih tahapan di bawah ini untuk menyaring kiriman secara otomatis.</p>
                         </div>
-                        <a href="{{ route('adminprogram.programs.workspace', [$program->id, 'active_panel' => 'recap']) }}" class="text-xs text-emerald-700 hover:text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1.5 rounded-xl transition">✕ Bersihkan Saringan</a>
+                        <a href="{{ route('adminprogram.programs.workspace', [$program->id, 'active_panel' => 'recap']) }}" class="text-xs text-emerald-700 hover:text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1.5 rounded-xl transition"> Bersihkan Saringan</a>
                     </div>
 
                     <!-- Tombol Filter Otomatis Per Tahapan -->
@@ -1176,7 +1185,7 @@
                                {{ $viewStage->id == $stg->id 
                                   ? 'bg-emerald-600 border-emerald-600 text-white hover:bg-emerald-700' 
                                   : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50' }}">
-                                <span>📍</span>
+                                
                                 <span>Tahap {{ $stg->sequence }}: {{ $stg->name }}</span>
                             </a>
                         @endforeach
@@ -1208,7 +1217,7 @@
                                         
                                         <a href="{{ route('adminprogram.programs.workspace', [$program->id, 'view_stage_id' => $viewStage->id, 'view_submission_id' => $sub->id, 'active_panel' => 'recap']) }}" 
                                            class="px-3.5 py-2 bg-slate-800 hover:bg-black text-white font-extrabold text-[11px] rounded-xl shadow-xs transition-all flex items-center gap-1">
-                                            <span>👁️</span> Lihat Jawaban
+                                            <span>️</span> Lihat Jawaban
                                         </a>
                                     </div>
                                 @endif
@@ -1242,14 +1251,14 @@
                                 <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded uppercase font-mono">Submission Details</span>
                                 <h3 class="text-sm font-bold text-slate-800 mt-1">Jawaban Kuesioner Tahap: <span class="text-emerald-700 font-extrabold">{{ $viewStage->name }}</span></h3>
                             </div>
-                            <a href="{{ route('adminprogram.programs.workspace', [$program->id, 'view_stage_id' => $viewStage->id, 'active_panel' => 'recap']) }}" class="text-slate-400 hover:text-slate-600 text-xs font-bold bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition">✕ Tutup</a>
+                            <a href="{{ route('adminprogram.programs.workspace', [$program->id, 'view_stage_id' => $viewStage->id, 'active_panel' => 'recap']) }}" class="text-slate-400 hover:text-slate-600 text-xs font-bold bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition"> Tutup</a>
                         </div>
                         
                         <!-- Content -->
                         <div class="p-6 max-h-[70vh] overflow-y-auto space-y-5">
                             <!-- Profile -->
                             <div class="flex items-center space-x-3 p-3.5 bg-slate-50/60 rounded-xl border border-slate-100">
-                                <span class="text-2xl">👤</span>
+                                
                                 <div>
                                     <h4 class="text-xs font-bold text-slate-800">{{ $viewSubmission->registration->user->name }}</h4>
                                     <p class="text-[10px] text-slate-400 mt-0.5">{{ $viewSubmission->registration->user->email }} | Dikirim pada: {{ $viewSubmission->updated_at ? $viewSubmission->updated_at->format('d M Y H:i') : '-' }}</p>
@@ -1266,34 +1275,34 @@
                                             @if(!empty($form['value']))
                                                 <div class="pt-1">
                                                     <a href="{{ asset('storage/' . $form['value']) }}" target="_blank" class="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition shadow-3xs">
-                                                        📥 Unduh Berkas Lampiran
+                                                         Unduh Berkas Lampiran
                                                     </a>
                                                 </div>
                                             @else
-                                                <p class="text-xs text-rose-500 font-bold italic">⚠️ Berkas wajib tidak diunggah peserta!</p>
+                                                <p class="text-xs text-rose-500 font-bold italic">️ Berkas wajib tidak diunggah peserta!</p>
                                             @endif
                                         @elseif($form['type'] === 'image')
                                             @if(!empty($form['value']))
                                                 <div class="pt-1 space-y-2">
                                                     <a href="{{ asset('storage/' . $form['value']) }}" target="_blank" class="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition shadow-3xs">
-                                                        🔍 Buka Gambar Ukuran Penuh
+                                                         Buka Gambar Ukuran Penuh
                                                     </a>
                                                     <div class="mt-2">
                                                         <img src="{{ asset('storage/' . $form['value']) }}" class="max-w-md max-h-60 rounded-xl border border-slate-200 shadow-sm object-cover" alt="Lampiran Gambar">
                                                     </div>
                                                 </div>
                                             @else
-                                                <p class="text-xs text-rose-500 font-bold italic">⚠️ Gambar wajib tidak diunggah peserta!</p>
+                                                <p class="text-xs text-rose-500 font-bold italic">️ Gambar wajib tidak diunggah peserta!</p>
                                             @endif
                                         @elseif($form['type'] === 'url')
                                             @if(!empty($form['value']))
                                                 <div class="pt-1">
                                                     <a href="{{ $form['value'] }}" target="_blank" class="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition shadow-3xs">
-                                                        🔗 Buka Tautan Link ({{ $form['value'] }})
+                                                         Buka Tautan Link ({{ $form['value'] }})
                                                     </a>
                                                 </div>
                                             @else
-                                                <p class="text-xs text-rose-500 font-bold italic">⚠️ Tautan link wajib tidak diisi peserta!</p>
+                                                <p class="text-xs text-rose-500 font-bold italic">️ Tautan link wajib tidak diisi peserta!</p>
                                             @endif
                                         @else
                                             <p class="text-xs font-semibold text-slate-800 leading-relaxed whitespace-pre-wrap">{{ $form['value'] ?? '— (Kosong)' }}</p>
@@ -1310,7 +1319,7 @@
                             <form action="{{ route('adminprogram.workspace.submission.reset', [$program->id, $viewSubmission->id]) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin me-reset seluruh jawaban peserta ini? Semua jawaban dan file berkas yang diunggah untuk tahapan ini akan dihapus permanen.');">
                                 @csrf
                                 <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl transition shadow-sm">
-                                    ⚠️ Reset Jawaban (Nol Kembali)
+                                    ️ Reset Jawaban (Nol Kembali)
                                 </button>
                             </form>
 
@@ -1361,7 +1370,7 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <!-- Card 1: Total Pendaftar -->
                 <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl flex items-center space-x-3.5 shadow-3xs">
-                    <span class="text-2xl">👥</span>
+                    
                     <div>
                         <span class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Pendaftar</span>
                         <span class="text-sm font-black text-slate-800">{{ count($allApplicants) }} orang</span>
@@ -1370,7 +1379,7 @@
 
                 <!-- Card 2: Sudah Diperiksa -->
                 <div class="p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl flex items-center space-x-3.5 shadow-3xs">
-                    <span class="text-2xl">✅</span>
+                    
                     <div>
                         <span class="block text-[10px] text-emerald-700 font-bold uppercase tracking-wider">Sudah Diperiksa</span>
                         <span class="text-sm font-black text-emerald-800">{{ $checkedCount }} orang</span>
@@ -1379,7 +1388,7 @@
 
                 <!-- Card 3: Belum Diperiksa -->
                 <div class="p-4 bg-amber-50/50 border border-amber-100 rounded-xl flex items-center space-x-3.5 shadow-3xs">
-                    <span class="text-2xl">⏳</span>
+                    
                     <div>
                         <span class="block text-[10px] text-amber-700 font-bold uppercase tracking-wider">Belum Diperiksa</span>
                         <span class="text-sm font-black text-emerald-800">{{ $uncheckedCount }} orang</span>
@@ -1388,7 +1397,7 @@
 
                 <!-- Card 4: Distribusi Kelompok/Batch -->
                 <div class="p-4 bg-indigo-50/30 border border-indigo-100 rounded-xl flex items-center space-x-3.5 shadow-3xs">
-                    <span class="text-2xl">📦</span>
+                    
                     <div class="overflow-hidden">
                         <span class="block text-[10px] text-indigo-700 font-bold uppercase tracking-wider">Daftar Kelompok</span>
                         <div class="text-[9px] font-bold text-slate-600 mt-1 max-h-12 overflow-y-auto space-y-0.5 leading-tight">
@@ -1419,12 +1428,12 @@
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Status Periksa:</label>
                         <select id="chk_filter_status" onchange="filterCheckingTable()" class="w-full p-2 border border-slate-200 bg-white rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 text-slate-700 shadow-3xs">
                             <option value="all">Semua</option>
-                            <option value="unopened">⏳ Belum Dibuka</option>
-                            <option value="opened">📖 Sudah Dibuka</option>
-                            <option value="checked">✅ Sudah Diperiksa</option>
-                            <option value="passed">🎉 Lolos Tahap</option>
-                            <option value="failed">❌ Gugur</option>
-                            <option value="revision">⚠️ Butuh Revisi</option>
+                            <option value="unopened"> Belum Dibuka</option>
+                            <option value="opened"> Sudah Dibuka</option>
+                            <option value="checked"> Sudah Diperiksa</option>
+                            <option value="passed"> Lolos Tahap</option>
+                            <option value="failed"> Gugur</option>
+                            <option value="revision">️ Butuh Revisi</option>
                         </select>
                     </div>
 
@@ -1458,7 +1467,7 @@
                 <form id="bulk_checking_form" action="{{ route('adminprogram.workspace.update_checking', $program->id) }}" method="POST" onsubmit="return validateBulkForm();" class="space-y-3.5">
                     @csrf
                     <div class="flex items-center space-x-2 text-slate-700 font-extrabold text-[11px] uppercase tracking-wide">
-                        <span>⚡</span>
+                        
                         <span>Aksi Massal Untuk Peserta Terpilih (Centang Kolom Tabel):</span>
                     </div>
 
@@ -1467,12 +1476,12 @@
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tandai Status:</label>
                             <select name="is_checked" class="w-full p-2 border border-slate-200 bg-white rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 text-slate-700 shadow-3xs" required>
-                                <option value="checked">✅ Sudah Diperiksa</option>
-                                <option value="unopened">⏳ Belum Dibuka</option>
-                                <option value="opened">📖 Sudah Dibuka</option>
-                                <option value="passed">🎉 Lolos Tahap</option>
-                                <option value="failed">❌ Gugur</option>
-                                <option value="revision">⚠️ Butuh Revisi</option>
+                                <option value="checked"> Sudah Diperiksa</option>
+                                <option value="unopened"> Belum Dibuka</option>
+                                <option value="opened"> Sudah Dibuka</option>
+                                <option value="passed"> Lolos Tahap</option>
+                                <option value="failed"> Gugur</option>
+                                <option value="revision">️ Butuh Revisi</option>
                             </select>
                         </div>
 
@@ -1491,7 +1500,7 @@
                         <!-- Apply Button -->
                         <div>
                             <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer">
-                                <span>🚀 Terapkan ke (<span id="checked_count_badge">0</span>) Peserta</span>
+                                <span> Terapkan ke (<span id="checked_count_badge">0</span>) Peserta</span>
                             </button>
                         </div>
                     </div>
@@ -1544,7 +1553,7 @@
                                 
                                 <td class="p-4">
                                     <div class="flex items-center space-x-2.5">
-                                        <span class="text-lg">👤</span>
+                                        
                                         <div>
                                             <span class="font-bold text-slate-800 block text-xs">{{ $app->user->name ?? '—' }}</span>
                                             <span class="text-[10px] text-slate-400 block mt-0.5">{{ $app->user->email ?? '—' }}</span>
@@ -1938,3 +1947,4 @@
 
 
 @endsection
+

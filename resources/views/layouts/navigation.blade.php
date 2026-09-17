@@ -18,6 +18,9 @@
                     <x-nav-link :href="route('peserta.alumni.index')" :active="request()->routeIs('peserta.alumni.*')">
                         {{ __('Portal Alumni') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('peserta.piagam.index')" :active="request()->routeIs('peserta.piagam.*')">
+                        {{ __('Piagam & Sertifikat') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -76,6 +79,9 @@
             <x-responsive-nav-link :href="route('peserta.alumni.index')" :active="request()->routeIs('peserta.alumni.*')">
                 {{ __('Portal Alumni') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('peserta.piagam.index')" :active="request()->routeIs('peserta.piagam.*')">
+                {{ __('Piagam & Sertifikat') }}
+            </x-responsive-nav-link>
         </div>
 
         <!-- Responsive Settings Options -->
@@ -104,3 +110,4 @@
         </div>
     </div>
 </nav>
+

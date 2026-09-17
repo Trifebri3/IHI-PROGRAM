@@ -56,7 +56,7 @@
                         <button type="button" 
                                 onclick="openAnalyticsModal({{ $item->id }})" 
                                 class="mt-1 inline-flex items-center text-blue-600 hover:text-blue-800 font-extrabold uppercase text-[10px] tracking-wider">
-                            🔎 Lihat Detail Pembaca
+                             Lihat Detail Pembaca
                         </button>
                     </td>
                     <td class="p-4 text-center align-middle">
@@ -131,7 +131,7 @@
     <div class="bg-white p-8 rounded-3xl w-full max-w-2xl shadow-2xl">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-lg font-black text-slate-800 flex items-center gap-2">
-                <span>📊</span> Analitik Pembaca Banner
+                 Analitik Pembaca Banner
             </h2>
             <button onclick="closeAnalyticsModal()" class="text-slate-400 hover:text-slate-600 text-xs font-bold uppercase tracking-widest">&times; Tutup</button>
         </div>

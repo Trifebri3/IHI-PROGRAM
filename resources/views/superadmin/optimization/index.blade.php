@@ -20,7 +20,7 @@
                 </div>
                 <template x-if="isPrivilegedSessionActive">
                     <div class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-[10px] font-mono px-2.5 py-1 rounded-md border border-emerald-100 font-bold">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                        
                         GATE OPEN (Sesi Aktif)
                     </div>
                 </template>
@@ -89,7 +89,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
                             Maintenance Mode
                         </span>
-                        <span class="h-2 w-2 rounded-full bg-rose-500 animate-pulse" x-show="maintenance.is_active"></span>
+                        
                     </button>
                     <button @click="activeTab = 'sec_dashboard'" :class="activeTab === 'sec_dashboard' ? 'bg-white text-emerald-700 shadow-2xs border-slate-200 font-extrabold' : 'text-slate-650 hover:bg-slate-50 border-transparent'" class="w-full text-left px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 border transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
@@ -127,14 +127,14 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                             Defense Mode
                         </span>
-                        <span class="h-2 w-2 rounded-full bg-rose-500 animate-pulse" x-show="defense.is_active"></span>
+                        
                     </button>
                     <button @click="activeTab = 'secret_defense_mode'" :class="activeTab === 'secret_defense_mode' ? 'bg-white text-emerald-700 shadow-2xs border-slate-200 font-extrabold' : 'text-slate-650 hover:bg-slate-50 border-transparent'" class="w-full text-left px-4 py-2.5 rounded-xl text-xs flex items-center justify-between border transition">
                         <span class="flex items-center gap-2">
                             <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
                             SECRET DEFENSE MODE
                         </span>
-                        <span class="h-2 w-2 rounded-full bg-rose-600 animate-pulse" x-show="secretDefense.is_active"></span>
+                        
                     </button>
                 </nav>
             </div>
@@ -175,7 +175,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             Authentication History
                         </span>
-                        <span class="text-[9px] font-mono font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md border border-slate-200" x-text="securityGateLogs.length"></span>
+                        
                     </button>
                     <button @click="activeTab = 'system_tests'" :class="activeTab === 'system_tests' ? 'bg-white text-emerald-700 shadow-2xs border-slate-200 font-extrabold' : 'text-slate-650 hover:bg-slate-50 border-transparent'" class="w-full text-left px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 border transition">
                         <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
@@ -196,7 +196,7 @@
                     <div class="bg-white border border-slate-200 p-6 rounded-3xl space-y-3.5 shadow-xs">
                         <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">System Performance Score</span>
                         <div class="flex items-baseline gap-2">
-                            <span class="text-3xl font-black text-slate-800" x-text="diagnostic ? diagnostic.score + '/100' : '91/100'"></span>
+                            
                             <span class="text-[10px] text-emerald-600 font-bold">OPTIMAL</span>
                         </div>
                         <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200">
@@ -208,8 +208,8 @@
                     <div class="bg-white border border-slate-200 p-6 rounded-3xl space-y-3.5 shadow-xs">
                         <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Security Operations Risk Score</span>
                         <div class="flex items-baseline gap-2">
-                            <span class="text-3xl font-black" :class="defense.is_active ? 'text-rose-600' : 'text-slate-800'" x-text="defense.is_active ? '91/100' : '41/100'"></span>
-                            <span class="text-[10px] font-bold" :class="defense.is_active ? 'text-rose-600' : 'text-emerald-600'" x-text="defense.is_active ? 'CRITICAL RISK' : 'NORMAL'"></span>
+                            
+                            
                         </div>
                         <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200">
                             <div class="h-full rounded-full transition-all duration-500" :class="defense.is_active ? 'bg-rose-600' : 'bg-emerald-500'" :style="defense.is_active ? 'width: 91%' : 'width: 41%'"></div>
@@ -220,11 +220,11 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div class="bg-white border border-slate-200 p-5 rounded-3xl shadow-xs">
                         <span class="text-[9px] text-slate-400 font-bold uppercase block">Website Status</span>
-                        <span class="text-xs font-black block mt-1" :class="maintenance.is_active ? 'text-rose-600' : 'text-emerald-700'" x-text="maintenance.is_active ? 'MAINTENANCE' : 'ONLINE'"></span>
+                        
                     </div>
                     <div class="bg-white border border-slate-200 p-5 rounded-3xl shadow-xs">
                         <span class="text-[9px] text-slate-400 font-bold uppercase block">Resilience Posture</span>
-                        <span class="text-xs font-black block mt-1" :class="defense.is_active ? 'text-rose-600' : 'text-slate-800'" x-text="defense.is_active ? 'DEFENSE ACTIVE' : 'NORMAL'"></span>
+                        
                     </div>
                     <div class="bg-white border border-slate-200 p-5 rounded-3xl shadow-xs">
                         <span class="text-[9px] text-slate-400 font-bold uppercase block">Uptime Server</span>
@@ -248,9 +248,9 @@
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
                         <template x-for="comp in ['Application', 'Database', 'Cache', 'Queue', 'Storage', 'Scheduler', 'API Integration', 'Webhook Service', 'Authentication', 'Backup Engine']">
                             <div class="bg-slate-50 border border-slate-200 p-4.5 rounded-2xl flex flex-col justify-between items-center text-center space-y-2">
-                                <span class="text-xs font-bold text-slate-700" x-text="comp"></span>
+                                
                                 <div class="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 text-[10px] font-mono px-2 py-0.5 rounded border border-emerald-100 font-bold">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                    
                                     HEALTHY
                                 </div>
                             </div>
@@ -272,12 +272,12 @@
                         <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
                             <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Application metrics</h4>
                             <div class="grid grid-cols-2 gap-4 text-xs font-bold text-slate-700">
-                                <div>Average Response: <span class="block text-slate-900 font-mono text-sm mt-0.5" x-text="telemetry.application.response_avg"></span></div>
-                                <div>Requests/min: <span class="block text-slate-900 font-mono text-sm mt-0.5" x-text="telemetry.application.requests_min"></span></div>
-                                <div>P50 Latency: <span class="block text-slate-900 font-mono text-sm mt-0.5" x-text="telemetry.application.p50"></span></div>
-                                <div>P95 Latency: <span class="block text-slate-900 font-mono text-sm mt-0.5" x-text="telemetry.application.p95"></span></div>
-                                <div>P99 Latency: <span class="block text-rose-600 font-mono text-sm mt-0.5" x-text="telemetry.application.p99"></span></div>
-                                <div>Error Rate: <span class="block text-slate-900 font-mono text-sm mt-0.5" x-text="telemetry.application.error_rate"></span></div>
+                                <div>Average Response: </div>
+                                <div>Requests/min: </div>
+                                <div>P50 Latency: </div>
+                                <div>P95 Latency: </div>
+                                <div>P99 Latency: </div>
+                                <div>Error Rate: </div>
                             </div>
                         </div>
 
@@ -285,12 +285,12 @@
                         <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
                             <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Database metrics</h4>
                             <div class="grid grid-cols-2 gap-4 text-xs font-bold text-slate-700">
-                                <div>Connections: <span class="block text-slate-900 font-mono text-sm mt-0.5" x-text="telemetry.database.connections"></span></div>
-                                <div>Query/min: <span class="block text-slate-900 font-mono text-sm mt-0.5" x-text="telemetry.database.query_min"></span></div>
-                                <div>Slow Queries: <span class="block text-amber-700 font-mono text-sm mt-0.5" x-text="telemetry.database.slow_queries"></span></div>
-                                <div>Avg Query time: <span class="block text-slate-900 font-mono text-sm mt-0.5" x-text="telemetry.database.avg_query"></span></div>
-                                <div>Longest Query: <span class="block text-slate-900 font-mono text-sm mt-0.5" x-text="telemetry.database.longest_query"></span></div>
-                                <div>N+1 Detection: <span class="block text-amber-700 font-mono text-sm mt-0.5" x-text="telemetry.database.n1_endpoints"></span></div>
+                                <div>Connections: </div>
+                                <div>Query/min: </div>
+                                <div>Slow Queries: </div>
+                                <div>Avg Query time: </div>
+                                <div>Longest Query: </div>
+                                <div>N+1 Detection: </div>
                             </div>
                         </div>
                     </div>
@@ -324,7 +324,7 @@
                         </div>
                         <button @click="checkSystem()" :disabled="checkingSystem" class="px-4.5 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition disabled:opacity-50 flex items-center gap-2">
                             <svg class="w-3.5 h-3.5" :class="checkingSystem ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                            <span x-text="checkingSystem ? 'Mendiagnosa...' : '⚡ CHECK SYSTEM NOW'"></span>
+                            
                         </button>
                     </div>
 
@@ -333,8 +333,8 @@
                         <div class="space-y-2">
                             <template x-for="res in (diagnostic ? diagnostic.results : defaultDiagnosticResults)">
                                 <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-150">
-                                    <span class="text-xs" x-text="res.status === 'success' ? '✓' : '⚠'"></span>
-                                    <span class="text-xs font-bold" :class="res.status === 'success' ? 'text-emerald-700' : 'text-amber-700'" x-text="res.msg"></span>
+                                    
+                                    
                                 </div>
                             </template>
                         </div>
@@ -365,9 +365,7 @@
                                         <td class="py-3 pr-3" x-text="log.action"></td>
                                         <td class="py-3 pr-3 font-mono text-slate-650" x-text="log.ip"></td>
                                         <td class="py-3 px-4 text-right">
-                                            <span class="px-2 py-0.5 rounded text-[8px] font-bold tracking-wider uppercase font-mono"
-                                                  :class="log.severity === 'CRITICAL' ? 'bg-rose-50 text-rose-700 border border-rose-200' : (log.severity === 'WARNING' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-blue-50 text-blue-700 border border-blue-200')"
-                                                  x-text="log.severity"></span>
+                                            
                                         </td>
                                     </tr>
                                 </template>
@@ -389,8 +387,8 @@
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-bold text-slate-700">Status Website saat ini:</span>
                             <div class="flex items-center gap-2">
-                                <span class="h-2.5 w-2.5 rounded-full animate-pulse" :class="maintenance.is_active ? 'bg-rose-500' : 'bg-emerald-500'"></span>
-                                <span class="text-xs font-black uppercase" :class="maintenance.is_active ? 'text-rose-600' : 'text-emerald-700'" x-text="maintenance.is_active ? 'MAINTENANCE ACTIVE' : 'ONLINE'"></span>
+                                
+                                
                             </div>
                         </div>
 
@@ -401,7 +399,7 @@
 
                         <!-- Display maintenance recovery token if generated -->
                         <div class="p-4.5 bg-amber-50 border border-amber-250 rounded-xl space-y-2.5" x-show="maintenanceRecoveryLink">
-                            <span class="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">⚠️ SALIN LINK PEMULIHAN INI UNTUK MEMBUKA SITUS KEMBALI:</span>
+                            <span class="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">️ SALIN LINK PEMULIHAN INI UNTUK MEMBUKA SITUS KEMBALI:</span>
                             <div class="flex items-center gap-2">
                                 <input type="text" readonly :value="maintenanceRecoveryLink" class="flex-1 px-3 py-1.5 border border-amber-200 bg-white rounded-lg text-xs font-mono text-slate-800 outline-none" id="maint_recovery_input" />
                                 <button @click="copyMaintRecoveryLink()" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] rounded-lg transition">Salin</button>
@@ -542,7 +540,7 @@
                     <div class="p-5 border rounded-2xl" :class="defense.is_active ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-slate-50 border-slate-200 text-slate-800'">
                         <div class="flex items-center justify-between border-b pb-3 mb-4" :class="defense.is_active ? 'border-rose-200' : 'border-slate-200'">
                             <span class="text-xs font-bold uppercase">Postur Keamanan:</span>
-                            <span class="text-xs font-black uppercase tracking-wider" x-text="defense.is_active ? 'DEFENSE ACTIVE' : 'STANDARD MODE'"></span>
+                            
                         </div>
 
                         <div class="pt-5">
@@ -568,7 +566,7 @@
                     <div class="bg-rose-950 border border-rose-900 p-6 rounded-2xl text-white space-y-5">
                         <div class="flex items-center justify-between border-b border-rose-800 pb-3">
                             <span class="text-xs font-bold uppercase">Emergency Control Posture:</span>
-                            <span class="text-xs font-black text-rose-300" x-text="secretDefense.is_active ? 'PRODUCTION SHUTDOWN ACTIVE' : 'NORMAL STANDBY'"></span>
+                            
                         </div>
 
                         <p class="text-xs leading-relaxed font-semibold text-rose-100">
@@ -631,7 +629,7 @@
                     <div class="bg-slate-50 p-5 border border-slate-200 rounded-2xl space-y-3 text-xs font-bold text-slate-700">
                         <div class="flex justify-between">
                             <span>Status Sesi Security Gate:</span>
-                            <span :class="isPrivilegedSessionActive ? 'text-emerald-700' : 'text-slate-400'" x-text="isPrivilegedSessionActive ? 'AKTIF (Terverifikasi)' : 'MATI (Butuh Verifikasi)'"></span>
+                            
                         </div>
                     </div>
                 </div>
@@ -690,9 +688,7 @@
                                         <td class="py-3 pr-3" x-text="ev.os + ' / ' + ev.browser"></td>
                                         <td class="py-3 pr-3" x-text="ev.location"></td>
                                         <td class="py-3 px-3 text-right">
-                                            <span class="px-2 py-0.5 rounded text-[8px] font-bold tracking-wider uppercase font-mono"
-                                                  :class="ev.result === 'SUCCESS' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
-                                                  x-text="ev.result"></span>
+                                            
                                         </td>
                                     </tr>
                                 </template>
@@ -735,30 +731,28 @@
                         <div class="p-5 bg-white border border-slate-200 rounded-xl space-y-4" x-show="gatekeeperReport">
                             <div class="flex items-center justify-between border-b border-slate-100 pb-2">
                                 <span class="text-xs font-black text-slate-900">Hasil Analisis Otorisasi Berkas</span>
-                                <span class="px-2.5 py-0.5 rounded text-[8px] font-bold font-mono tracking-wider"
-                                      :class="gatekeeperReport && gatekeeperReport.status.includes('VERIFIED') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'"
-                                      x-text="gatekeeperReport ? gatekeeperReport.status : ''"></span>
+                                
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold text-slate-700">
-                                <div>ID Kunci: <span class="block text-slate-900 font-mono" x-text="gatekeeperReport ? gatekeeperReport.key_id : ''"></span></div>
-                                <div>Issuer CA: <span class="block text-slate-900" x-text="gatekeeperReport ? gatekeeperReport.issuer : ''"></span></div>
-                                <div>Algoritma Tanda Tangan: <span class="block text-slate-900 font-mono" x-text="gatekeeperReport ? gatekeeperReport.algorithm : ''"></span></div>
-                                <div>Peran Terkait: <span class="block text-slate-900" x-text="gatekeeperReport ? gatekeeperReport.role : ''"></span></div>
+                                <div>ID Kunci: </div>
+                                <div>Issuer CA: </div>
+                                <div>Algoritma Tanda Tangan: </div>
+                                <div>Peran Terkait: </div>
                             </div>
 
                             <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-150 space-y-2">
                                 <span class="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Wewenang Aktif (Scopes)</span>
                                 <div class="flex flex-wrap gap-2">
                                     <template x-for="scope in (gatekeeperReport ? gatekeeperReport.scopes : [])">
-                                        <span class="px-2 py-0.5 bg-emerald-50 text-emerald-800 text-[10px] rounded border border-emerald-100 font-bold" x-text="scope"></span>
+                                        
                                     </template>
                                 </div>
                             </div>
 
                             <div class="space-y-1 bg-amber-50/30 p-3 rounded-lg border border-amber-100 text-xs" x-show="gatekeeperReport">
                                 <span class="font-bold text-amber-800 block">Rekomendasi Keamanan:</span>
-                                <span class="text-slate-650 font-medium" x-text="gatekeeperReport ? gatekeeperReport.analysis.recommendation : ''"></span>
+                                
                             </div>
                         </div>
                     </div>
@@ -773,8 +767,8 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <button @click="runAllDiagnosticsSuite()" :disabled="runningTestSuite" class="px-4.5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition disabled:opacity-50 flex items-center gap-2 shadow-xs">
-                                <span x-show="runningTestSuite" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                <span x-text="runningTestSuite ? 'Menguji Sistem...' : '⚡ RUN ALL DIAGNOSTICS SUITE'"></span>
+                                
+                                
                             </button>
                             <a :href="'{{ route('superadmin.optimization.download-test-report') }}'" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition flex items-center gap-2 shadow-xs">
                                 Unduh Laporan
@@ -793,20 +787,18 @@
                             <div class="bg-slate-50 border border-slate-200 p-4.5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition hover:border-slate-300">
                                 <div class="space-y-1">
                                     <div class="flex items-center gap-2.5">
-                                        <span class="text-xs font-black text-slate-850" x-text="module.name"></span>
-                                        <span class="px-2 py-0.5 rounded text-[8px] font-bold font-mono tracking-wider uppercase"
-                                              :class="module.status === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : (module.status === 'warning' ? 'bg-amber-50 text-amber-700 border border-amber-200' : (module.status === 'failed' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-405 border-slate-200'))"
-                                              x-text="module.status ? module.status : 'PENDING'"></span>
+                                        
+                                        
                                     </div>
                                     <p class="text-[11px] text-slate-550 font-medium" x-text="module.details ? module.details : module.description"></p>
                                     <template x-if="module.recommendation">
-                                        <p class="text-[10px] text-emerald-700 font-bold" x-text="'💡 Rekomendasi: ' + module.recommendation"></p>
+                                        <p class="text-[10px] text-emerald-700 font-bold" x-text="' Rekomendasi: ' + module.recommendation"></p>
                                     </template>
                                 </div>
                                 <div class="flex items-center gap-3 w-full md:w-auto justify-end">
-                                    <span class="text-xs font-mono text-slate-450 font-bold" x-text="module.latency ? module.latency : ''"></span>
+                                    
                                     <button @click="runIndividualTest(module.id)" :disabled="module.running" class="px-3.5 py-1.5 bg-slate-900 text-white font-bold text-[10px] rounded-lg hover:bg-slate-800 transition disabled:opacity-50">
-                                        <span x-text="module.running ? 'Menguji...' : 'Uji Modul'"></span>
+                                        
                                     </button>
                                 </div>
                             </div>
@@ -831,7 +823,7 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- 🔑 MODAL PRIVILEGED SECURITY GATE                        -->
+    <!--  MODAL PRIVILEGED SECURITY GATE                        -->
     <!-- ======================================================== -->
     <div x-show="showSecurityGateModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" x-transition x-cloak>
         <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col p-8 space-y-6">
@@ -874,7 +866,7 @@
         
         <!-- Display the generated recovery link during countdown so the admin can copy it quickly! -->
         <div class="bg-rose-950/50 border border-rose-800 p-6 rounded-2xl my-6 max-w-md w-full space-y-3 text-center" x-show="secretDefenseRecoveryLink">
-            <span class="text-[9px] font-bold text-rose-400 uppercase tracking-widest block">⚠️ SALIN SEGERA KUNCI PEMULIHAN INI (5 DETIK SEBELUM SHUTDOWN):</span>
+            <span class="text-[9px] font-bold text-rose-400 uppercase tracking-widest block">️ SALIN SEGERA KUNCI PEMULIHAN INI (5 DETIK SEBELUM SHUTDOWN):</span>
             <div class="flex items-center gap-2">
                 <input type="text" readonly :value="secretDefenseRecoveryLink" class="flex-1 px-3 py-1.5 border border-rose-800 bg-slate-900 rounded-lg text-xs font-mono text-rose-300 outline-none text-center" id="sec_defense_recovery_input" />
                 <button @click="copySecretDefenseRecoveryLink()" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] rounded-lg transition">Salin</button>

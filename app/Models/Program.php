@@ -26,7 +26,8 @@ class Program extends Model
         'score_schema',
         'total_hours',
         'program_certificate_template',
-        'gtu_email'
+        'gtu_email',
+        'piagam_template_id'
     ];
 
     protected $casts = [
@@ -82,5 +83,7 @@ class Program extends Model
     public function registrations(): HasMany
     {
         return $this->hasMany(Registration::class);
+    }    public function piagamTemplate() {
+        return $this->belongsTo(PiagamTemplate::class, 'piagam_template_id');
     }
 }

@@ -105,7 +105,7 @@
                             </th>
                             <th class="p-4">Nama Lengkap &amp; NIP</th>
                             <th class="p-4">Program &amp; Batch</th>
-                            <th class="p-4">No. Sertifikat</th>
+                            <th class="p-4">No. Kredensial Utama Global</th>
                             <th class="p-4">Status</th>
                             <th class="p-4 w-40 text-center">Aksi</th>
                         </tr>
@@ -138,12 +138,12 @@
                                 <td class="p-4">
                                     @if($certificate)
                                         <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full uppercase">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            
                                             Terbit
                                         </span>
                                     @else
                                         <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-extrabold text-slate-500 bg-slate-50 border border-slate-200 rounded-full uppercase">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                            
                                             Belum Ada
                                         </span>
                                     @endif
@@ -216,7 +216,7 @@
             </div>
 
             <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Nomor Sertifikat (Opsional)</label>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Nomor Kredensial Utama Global (Opsional)</label>
                 <input type="text" name="certificate_number" placeholder="Contoh: CERT/2026/001" class="w-full text-xs font-medium text-slate-600 bg-slate-50 border border-slate-100 rounded-xl px-3.5 py-2.5 focus:bg-white focus:border-emerald-500 transition outline-none">
             </div>
 

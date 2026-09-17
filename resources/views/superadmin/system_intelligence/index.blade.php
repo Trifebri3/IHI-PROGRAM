@@ -13,8 +13,8 @@
         <div>
             <div class="flex items-center gap-3">
                 <span class="flex h-3 w-3 relative">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    
+                    
                 </span>
                 <div class="inline-block bg-slate-100 text-slate-700 text-[10px] font-mono px-2.5 py-1 rounded-md uppercase tracking-wider border border-slate-200">
                     PANEL KONTROL AMAN
@@ -43,7 +43,7 @@
                 <svg class="w-4 h-4" :class="healingStatus === 'running' ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                 </svg>
-                <span x-text="healingStatus === 'running' ? 'Menjalankan AI Perbaikan...' : 'Picu AI Perbaikan Mandiri' "></span>
+                
             </button>
 
             <button @click="runSystemRefresh()" 
@@ -52,7 +52,7 @@
                 <svg class="w-4 h-4" :class="healingStatus === 'running' ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4"/>
                 </svg>
-                <span x-text="healingStatus === 'running' ? 'Memproses Refresh...' : 'Refresh System Total' "></span>
+                
             </button>
         </div>
     </div>
@@ -93,8 +93,8 @@
          x-transition
          class="fixed bottom-5 right-5 z-50 p-4 rounded-2xl shadow-lg border text-xs font-bold flex items-center gap-3.5"
          :class="notification.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'">
-        <span x-text="notification.message"></span>
-        <button @click="notification.show = false" class="hover:text-slate-900 text-slate-400">✕</button>
+        
+        <button @click="notification.show = false" class="hover:text-slate-900 text-slate-400"></button>
     </div>
 
     <!-- Panel Simulasi Diagnostik Perbaikan Mandiri -->
@@ -105,8 +105,8 @@
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="flex h-2.5 w-2.5 relative">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="healingStatus === 'running' ? 'bg-amber-400' : (healingStatus === 'success' ? 'bg-emerald-400' : 'bg-rose-400')"></span>
-                    <span class="relative inline-flex rounded-full h-2.5 w-2.5" :class="healingStatus === 'running' ? 'bg-amber-500' : (healingStatus === 'success' ? 'bg-emerald-500' : 'bg-rose-500')"></span>
+                    
+                    
                 </span>
                 <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider" x-text="healingStatus === 'running' ? 'AI Diagnostic & Perbaikan Sistem Aktif' : (healingStatus === 'success' ? 'Perbaikan Berhasil Diselesaikan' : 'Kesalahan Diagnostik')"></h3>
             </div>
@@ -118,8 +118,8 @@
                 <div class="leading-relaxed" x-text="step"></div>
             </template>
             <div x-show="healingStatus === 'running'" class="text-amber-400 animate-pulse mt-2">● Mengeksekusi instruksi perbaikan sistem...</div>
-            <div x-show="healingStatus === 'success'" class="text-emerald-400 font-bold mt-2">✔ Sukses: Cache view dibersihkan, status antrean gagal direset ke nol.</div>
-            <div x-show="healingStatus === 'error'" class="text-rose-400 font-bold mt-2">✖ Gagal berkomunikasi dengan pengontrol pemulihan sistem.</div>
+            <div x-show="healingStatus === 'success'" class="text-emerald-400 font-bold mt-2"> Sukses: Cache view dibersihkan, status antrean gagal direset ke nol.</div>
+            <div x-show="healingStatus === 'error'" class="text-rose-400 font-bold mt-2"> Gagal berkomunikasi dengan pengontrol pemulihan sistem.</div>
         </div>
     </div>
 
@@ -251,16 +251,14 @@
                     <template x-for="log in logs" :key="log.id">
                         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
                             <div class="flex items-center justify-between">
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase font-mono"
-                                      :class="log.level === 'PERINGATAN' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'"
-                                      x-text="log.level"></span>
-                                <span class="text-[10px] text-slate-400 font-mono" x-text="log.timestamp"></span>
+                                
+                                
                             </div>
                             <h4 class="text-xs font-bold text-slate-800" x-text="log.incident"></h4>
                             <div class="text-[11px] text-slate-600 space-y-1.5 pl-2.5 border-l-2 border-emerald-600">
-                                <div><strong class="text-slate-700">Diagnosis Masalah:</strong> <span x-text="log.diagnosis"></span></div>
-                                <div><strong class="text-slate-700">Tindakan AI Agent:</strong> <span x-text="log.action"></span></div>
-                                <div><strong class="text-slate-700">Hasil Verifikasi:</strong> <span class="text-emerald-600 font-bold" x-text="log.verification"></span></div>
+                                <div><strong class="text-slate-700">Diagnosis Masalah:</strong> </div>
+                                <div><strong class="text-slate-700">Tindakan AI Agent:</strong> </div>
+                                <div><strong class="text-slate-700">Hasil Verifikasi:</strong> </div>
                             </div>
                         </div>
                     </template>
@@ -437,21 +435,21 @@
             <div class="bg-white border border-slate-200 p-5 rounded-3xl shadow-sm flex flex-col justify-between min-h-[110px]">
                 <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Insiden Terbuka (OPEN)</span>
                 <div class="flex items-baseline justify-between mt-2">
-                    <span class="text-3xl font-black text-rose-600 font-mono" x-text="countErrorsByStatus('OPEN')"></span>
+                    
                     <span class="text-[10px] text-slate-400 font-medium">Membutuhkan investigasi</span>
                 </div>
             </div>
             <div class="bg-white border border-slate-200 p-5 rounded-3xl shadow-sm flex flex-col justify-between min-h-[110px]">
                 <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Dalam Investigasi</span>
                 <div class="flex items-baseline justify-between mt-2">
-                    <span class="text-3xl font-black text-amber-600 font-mono" x-text="countErrorsByStatus('INVESTIGATING')"></span>
+                    
                     <span class="text-[10px] text-slate-400 font-medium">Sedang ditinjau IT</span>
                 </div>
             </div>
             <div class="bg-white border border-slate-200 p-5 rounded-3xl shadow-sm flex flex-col justify-between min-h-[110px]">
                 <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Insiden Selesai (RESOLVED)</span>
                 <div class="flex items-baseline justify-between mt-2">
-                    <span class="text-3xl font-black text-emerald-600 font-mono" x-text="countErrorsByStatus('RESOLVED')"></span>
+                    
                     <span class="text-[10px] text-slate-400 font-medium">Terselesaikan sepenuhnya</span>
                 </div>
             </div>
@@ -496,7 +494,7 @@
                 </div>
             </div>
             
-            <button @click="resetErrorFilters()" class="text-xs text-slate-500 hover:text-slate-800 font-bold self-end lg:self-center">✕ Reset Filter</button>
+            <button @click="resetErrorFilters()" class="text-xs text-slate-500 hover:text-slate-800 font-bold self-end lg:self-center"> Reset Filter</button>
         </div>
 
         <!-- Aggregated Errors Table -->
@@ -507,7 +505,7 @@
             </div>
 
             <div x-show="filteredErrors().length === 0" class="p-12 text-center bg-slate-50/50 space-y-2">
-                <span class="text-3xl">🎉</span>
+                
                 <h4 class="text-sm font-bold text-slate-800">Tidak ada Log Error yang sesuai filter</h4>
                 <p class="text-xs text-slate-500 max-w-sm mx-auto">Semua insiden dengan filter terpilih bersih atau sudah selesai diselesaikan.</p>
             </div>
@@ -531,12 +529,10 @@
                             <tr class="hover:bg-slate-50/70 cursor-pointer transition-colors" @click="toggleErrorExpand(error)">
                                 <td class="py-4 px-6">
                                     <div class="flex items-center gap-2">
-                                        <span class="inline-block transition-transform duration-200 text-slate-400" :class="expandedError === error.id ? 'rotate-90' : ''">▶</span>
+                                        
                                         <div class="flex flex-col">
-                                            <span class="font-mono font-bold text-slate-700" x-text="error.id"></span>
-                                            <span class="text-[9px] font-bold tracking-wider mt-0.5 px-1 py-0.5 rounded text-center w-max"
-                                                  :class="error.severity === 'CRITICAL' ? 'bg-rose-50 text-rose-700 border border-rose-200' : (error.severity === 'ERROR' ? 'bg-orange-50 text-orange-700 border border-orange-200' : 'bg-amber-50 text-amber-700 border border-amber-200')"
-                                                  x-text="error.severity"></span>
+                                            
+                                            
                                         </div>
                                     </div>
                                 </td>
@@ -545,13 +541,11 @@
                                 <td class="py-4 pr-4 max-w-[280px] truncate font-semibold text-slate-650" :title="error.message" x-text="error.message"></td>
                                 <td class="py-4 pr-4 text-center font-bold font-mono text-slate-800" x-text="error.occurrences.toLocaleString() + 'x'"></td>
                                 <td class="py-4 pr-4">
-                                    <span class="px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase font-mono"
-                                          :class="error.status === 'OPEN' ? 'bg-rose-100 text-rose-800' : (error.status === 'INVESTIGATING' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800')"
-                                          x-text="error.status"></span>
+                                    
                                 </td>
                                 <td class="py-4 px-6 text-right">
                                     <button class="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-[10px] font-bold transition">
-                                        <span x-text="expandedError === error.id ? 'Tutup Detail' : 'Analisis Detail' "></span>
+                                        
                                     </button>
                                 </td>
                             </tr>
@@ -572,43 +566,43 @@
                                                     <svg class="w-3.5 h-3.5 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
                                                     <div>
                                                         <span class="text-slate-400 block text-[9px] uppercase tracking-wider font-bold">Endpoint / URL:</span>
-                                                        <span class="font-mono font-bold text-slate-900 text-xs break-all" x-text="error.endpoint"></span>
+                                                        
                                                     </div>
                                                 </div>
                                                 <div class="flex items-start gap-2.5">
                                                     <svg class="w-3.5 h-3.5 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                                     <div>
                                                         <span class="text-slate-400 block text-[9px] uppercase tracking-wider font-bold">Nama Pengguna (User):</span>
-                                                        <span class="font-bold text-slate-800" x-text="error.user"></span>
+                                                        
                                                     </div>
                                                 </div>
                                                 <div class="flex items-start gap-2.5">
                                                     <svg class="w-3.5 h-3.5 text-emerald-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                                                     <div>
                                                         <span class="text-slate-400 block text-[9px] uppercase tracking-wider font-bold">Indikasi Perangkat (Device):</span>
-                                                        <span class="font-bold text-emerald-700 text-xs" x-text="error.device"></span>
+                                                        
                                                     </div>
                                                 </div>
                                                 
                                                 <div class="grid grid-cols-2 gap-4 border-t border-slate-50 pt-3">
                                                     <div>
                                                         <span class="text-slate-400 block text-[9px] uppercase tracking-wider font-bold">Request ID:</span>
-                                                        <span class="font-mono font-bold text-slate-700 text-[10px]" x-text="error.request_id"></span>
+                                                        
                                                     </div>
                                                     <div>
                                                         <span class="text-slate-400 block text-[9px] uppercase tracking-wider font-bold">HTTP Status:</span>
-                                                        <span class="font-mono font-black text-rose-600 text-xs" x-text="error.http_status"></span>
+                                                        
                                                     </div>
                                                 </div>
                                                 
                                                 <div class="grid grid-cols-2 gap-4 border-t border-slate-50 pt-3">
                                                     <div>
                                                         <span class="text-slate-400 block text-[9px] uppercase tracking-wider font-bold">Terjadi Pertama:</span>
-                                                        <span class="font-mono text-slate-650 text-[10px]" x-text="error.first_seen"></span>
+                                                        
                                                     </div>
                                                     <div>
                                                         <span class="text-slate-400 block text-[9px] uppercase tracking-wider font-bold">Terjadi Terakhir:</span>
-                                                        <span class="font-mono text-slate-650 text-[10px]" x-text="error.last_seen"></span>
+                                                        
                                                     </div>
                                                 </div>
                                             </div>
@@ -633,13 +627,13 @@
                                             <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-xs space-y-4">
                                                 <div>
                                                     <span class="text-slate-400 block text-[9px] uppercase tracking-wider font-bold">Class Exception:</span>
-                                                    <span class="font-mono text-slate-800 text-xs font-bold" x-text="error.exception"></span>
+                                                    
                                                 </div>
                                                 
                                                 <!-- Laporan Pesan Error Lengkap -->
                                                 <div class="bg-rose-50/25 border border-rose-100 p-3.5 rounded-xl text-slate-800 space-y-1 shadow-2xs">
                                                     <span class="text-rose-600 block text-[9px] uppercase tracking-wider font-bold">Pesan Error Lengkap (Full Message):</span>
-                                                    <span class="font-mono text-xs font-bold leading-relaxed break-words whitespace-pre-wrap" x-text="error.message"></span>
+                                                    
                                                 </div>
                                                 
                                                 <div class="space-y-1.5">
@@ -649,9 +643,9 @@
                                                         <!-- Window Controls Header -->
                                                         <div class="bg-slate-900 border-b border-slate-950 px-4 py-2 flex items-center justify-between">
                                                             <div class="flex items-center gap-1.5">
-                                                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
-                                                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-                                                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                                                                
+                                                                
+                                                                
                                                             </div>
                                                             <span class="text-[9px] font-mono text-slate-400 font-bold uppercase tracking-wider">laravel.log - Stack Trace</span>
                                                             <div class="w-10"></div>
@@ -710,7 +704,7 @@
                                     <td class="py-2.5 font-sans" x-text="service.name"></td>
                                     <td class="py-2.5 text-right font-bold text-emerald-600" x-text="service.uptime"></td>
                                     <td class="py-2.5 text-right">
-                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200" x-text="service.status"></span>
+                                        
                                     </td>
                                 </tr>
                             </template>
@@ -801,12 +795,12 @@
                     <p class="text-xs text-slate-500 mt-0.5">Sistem memindai codebase secara real-time pada direktori <strong>app/</strong>, <strong>routes/</strong>, dan <strong>resources/views/</strong>. Klik pada baris temuan untuk melihat detail &amp; petunjuk perbaikan.</p>
                 </div>
                 <div class="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-slate-100 text-slate-800 border border-slate-200">
-                    Total Temuan: <span x-text="findings.length"></span>
+                    Total Temuan: 
                 </div>
             </div>
 
             <div x-show="findings.length === 0" class="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-2">
-                <span class="text-3xl">🎉</span>
+                
                 <h4 class="text-sm font-bold text-slate-800">Codebase Terstruktur Sangat Bersih!</h4>
                 <p class="text-xs text-slate-500 max-w-md mx-auto">Tidak ditemukan adanya potensi kebocoran memori, loop query database (N+1), file controller terlalu besar, atau kode debug yang tertinggal di production.</p>
             </div>
@@ -830,13 +824,11 @@
                                         :title="finding.file" 
                                         x-text="finding.file"></td>
                                     <td class="py-3.5 pr-4 font-bold text-slate-800">
-                                        <span class="inline-block transition-transform duration-200 text-slate-400 mr-1.5" :class="expandedFinding === finding.file + '-' + finding.line ? 'rotate-90' : ''">▶</span>
-                                        <span x-text="finding.type"></span>
+                                        
+                                        
                                     </td>
                                     <td class="py-3.5 pr-4">
-                                        <span class="px-2 py-0.5 rounded text-[9px] font-bold tracking-wider"
-                                              :class="finding.severity === 'TINGGI' ? 'bg-rose-50 text-rose-700 border border-rose-200' : (finding.severity === 'SEDANG' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-100 text-slate-700 border border-slate-200')"
-                                              x-text="finding.severity"></span>
+                                        
                                     </td>
                                     <td class="py-3.5 pr-4 text-slate-500 max-w-[320px] truncate leading-relaxed" x-text="finding.description"></td>
                                     <td class="py-3.5 text-right font-mono font-bold text-slate-850" x-text="finding.line"></td>
@@ -849,14 +841,14 @@
                                                 <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                                                 <div class="flex flex-col">
                                                     <span class="text-[9px] uppercase tracking-wider font-bold text-slate-400">Lokasi Berkas (File Path)</span>
-                                                    <span class="font-mono font-bold text-slate-800 break-all select-all" x-text="finding.file"></span>
+                                                    
                                                 </div>
                                             </div>
                                             <div class="flex items-center gap-2.5 border-l border-emerald-100 pl-4.5">
                                                 <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                                 <div class="flex flex-col">
                                                     <span class="text-[9px] uppercase tracking-wider font-bold text-slate-400">Baris</span>
-                                                    <span class="font-mono font-black text-slate-900" x-text="'L' + finding.line"></span>
+                                                    
                                                 </div>
                                             </div>
                                         </div>
@@ -865,18 +857,18 @@
                                             <div class="space-y-4">
                                                 <div>
                                                     <h5 class="font-bold text-slate-800 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
-                                                        <span class="h-1.5 w-1.5 rounded-full bg-slate-500"></span>
+                                                        
                                                         Potongan Kode Bermasalah (Code Snippet)
                                                     </h5>
                                                     <!-- Window Editor Code Snippet Box -->
                                                     <div class="bg-slate-950 border border-slate-900 rounded-xl overflow-hidden shadow-sm mt-1.5">
                                                         <div class="bg-slate-900 border-b border-slate-950 px-4 py-1.5 flex items-center justify-between">
                                                             <div class="flex items-center gap-1">
-                                                                <span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>
-                                                                <span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
-                                                                <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                                                                
+                                                                
+                                                                
                                                             </div>
-                                                            <span class="text-[9px] font-mono text-slate-500" x-text="finding.file.split(/[\\/]/).pop()"></span>
+                                                            
                                                             <div class="w-10"></div>
                                                         </div>
                                                         <pre class="text-emerald-400 font-mono p-4 text-[10px] overflow-x-auto"><code x-text="finding.code_snippet"></code></pre>
@@ -887,21 +879,21 @@
                                                 <div class="p-4 rounded-xl border mt-2.5" 
                                                      :class="finding.severity === 'TINGGI' ? 'bg-rose-50/30 border-rose-150 text-rose-800' : (finding.severity === 'SEDANG' ? 'bg-amber-50/30 border-amber-150 text-amber-800' : 'bg-slate-50/60 border-slate-200 text-slate-800')">
                                                     <h5 class="font-bold uppercase tracking-wider text-[9px] flex items-center gap-1.5 mb-1.5" :class="finding.severity === 'TINGGI' ? 'text-rose-700' : (finding.severity === 'SEDANG' ? 'text-amber-700' : 'text-slate-700')">
-                                                        ⚠️ DAMPAK TERHADAP KINERJA SISTEM (PERFORMANCE IMPACT)
+                                                        ️ DAMPAK TERHADAP KINERJA SISTEM (PERFORMANCE IMPACT)
                                                     </h5>
                                                     <p class="text-xs leading-relaxed font-semibold" x-text="finding.impact"></p>
                                                 </div>
                                             </div>
                                             <div class="space-y-2">
                                                 <h5 class="font-bold text-slate-800 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
-                                                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                    
                                                     Langkah Rekomendasi Perbaikan (Remediation Steps)
                                                 </h5>
                                                 <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-2.5 mt-1.5 shadow-2xs">
                                                     <template x-for="(step, index) in finding.remediation.split('\n')">
                                                         <div class="flex gap-2.5">
-                                                            <span class="font-bold text-emerald-600" x-text="index + 1 + '.'"></span>
-                                                            <span class="text-slate-600 leading-relaxed font-medium" x-text="step.replace(/^\d+\.\s*/, '')"></span>
+                                                            
+                                                            
                                                         </div>
                                                     </template>
                                                 </div>
@@ -916,7 +908,7 @@
 
                 <div class="flex items-center justify-between border-t border-slate-100 pt-4 text-xs font-semibold text-slate-600">
                     <div>
-                        Menampilkan <span x-text="startRecord()"></span> hingga <span x-text="endRecord()"></span> dari <span x-text="findings.length"></span> temuan.
+                        Menampilkan  hingga  dari  temuan.
                     </div>
                     <div class="flex items-center gap-2">
                         <button @click="prevPage()" 
@@ -925,7 +917,7 @@
                             Sebelumnya
                         </button>
                         <span class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
-                            Halaman <span x-text="currentPage"></span> dari <span x-text="totalPages()"></span>
+                            Halaman  dari 
                         </span>
                         <button @click="nextPage()" 
                                 :disabled="currentPage === totalPages()"
@@ -949,7 +941,7 @@
                     <p class="text-xs text-slate-500 mt-0.5">Daftar pengguna dengan indikator aktivitas mencurigakan (IP berganti cepat, request berlebih, atau spam pendaftaran). Anda dapat menonaktifkan akun mereka secara langsung.</p>
                 </div>
                 <div class="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-slate-100 text-slate-800 border border-slate-200">
-                    Akun Mencurigakan: <span x-text="anomalousUsers.length"></span>
+                    Akun Mencurigakan: 
                 </div>
             </div>
 
@@ -980,12 +972,10 @@
                                 <td class="py-4 pr-4 text-slate-900 font-bold" x-text="user.name"></td>
                                 <td class="py-4 pr-4 font-mono text-slate-600" x-text="user.email"></td>
                                 <td class="py-4 pr-4">
-                                    <span class="px-2 py-0.5 rounded text-[9px] font-bold tracking-wider"
-                                          :class="user.severity === 'TINGGI' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-amber-50 text-amber-700 border border-amber-200'"
-                                          x-text="user.severity"></span>
+                                    
                                 </td>
                                 <td class="py-4 pr-4 font-bold font-mono" :class="user.score >= 60 ? 'text-rose-600' : 'text-amber-600'">
-                                    <span x-text="user.score"></span>%
+                                    %
                                 </td>
                                 <td class="py-4 pr-4 text-slate-500 max-w-[300px] leading-relaxed">
                                     <ul class="list-disc pl-4 space-y-0.5">
@@ -995,9 +985,7 @@
                                     </ul>
                                 </td>
                                 <td class="py-4 pr-4">
-                                    <span class="px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase font-mono"
-                                          :class="user.is_blocked ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'"
-                                          x-text="user.is_blocked ? 'DIBLOKIR' : 'AKTIF'"></span>
+                                    
                                 </td>
                                 <td class="py-4 text-right">
                                     <button @click="toggleUserBlockStatus(user)"
@@ -1006,7 +994,7 @@
                                             :class="user.is_blocked 
                                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-250 hover:bg-emerald-100' 
                                                 : 'bg-rose-50 text-rose-700 border-rose-250 hover:bg-rose-100'">
-                                        <span x-text="blockingUserLoading === user.id ? 'Memproses...' : (user.is_blocked ? 'Aktifkan Akun' : 'Matikan Akun')"></span>
+                                        
                                     </button>
                                 </td>
                             </tr>
@@ -1161,7 +1149,7 @@
                                placeholder="Masukkan kunci API Gemini Anda disini..." 
                                class="w-full pl-4 pr-12 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-mono focus:border-emerald-500 focus:bg-white outline-none transition" />
                         <button type="button" @click="showApiKey = !showApiKey" class="absolute right-4 top-3 text-slate-400 hover:text-slate-600 transition">
-                            <span x-text="showApiKey ? '👁️' : '👁️‍🗨️' "></span>
+                            
                         </button>
                     </div>
                     <p class="text-[10px] text-slate-400 font-medium">API Key disimpan secara aman dan terenkripsi pada sistem lokal IHI.</p>
@@ -1206,13 +1194,13 @@
                     <button type="submit" 
                             :disabled="savingSettingsLoading"
                             class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition disabled:opacity-50">
-                        <span x-text="savingSettingsLoading ? 'Menyimpan...' : 'Simpan Pengaturan' "></span>
+                        
                     </button>
                     <button type="button" 
                             @click="testAiApiConnection()"
                             :disabled="testingConnectionLoading"
                             class="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs transition disabled:opacity-50">
-                        <span x-text="testingConnectionLoading ? 'Menghubungkan...' : 'Uji Koneksi API Gemini' "></span>
+                        
                     </button>
                 </div>
             </form>
@@ -1837,12 +1825,12 @@
                 this.healingSteps = [];
                 
                 const steps = [
-                    '🔍 [DETEKSI] Memindai modul register aktif, partisi memori, dan index lock database...',
-                    '⚙️ [DIAGNOSA] Memeriksa latensi respons pekerja antrean dan file handler...',
-                    '🤖 [DIAGNOSA] Autonomous Healing Agent dikerahkan untuk menangani penumpukan cache...',
-                    '🛠️ [AKSI] Membersihkan compile view blade Laravel, menghapus serialized cache kadaluarsa, dan mengosongkan failed_jobs...',
-                    '✅ [VERIFIKASI] Memverifikasi modul kesehatan: Semua mesin sistem melaporkan SEHAT (Waktu respons: 8ms)...',
-                    '📝 [AUDIT] Menulis jejak audit kriptografis ke log lokal database...'
+                    ' [DETEKSI] Memindai modul register aktif, partisi memori, dan index lock database...',
+                    '️ [DIAGNOSA] Memeriksa latensi respons pekerja antrean dan file handler...',
+                    ' [DIAGNOSA] Autonomous Healing Agent dikerahkan untuk menangani penumpukan cache...',
+                    '️ [AKSI] Membersihkan compile view blade Laravel, menghapus serialized cache kadaluarsa, dan mengosongkan failed_jobs...',
+                    ' [VERIFIKASI] Memverifikasi modul kesehatan: Semua mesin sistem melaporkan SEHAT (Waktu respons: 8ms)...',
+                    ' [AUDIT] Menulis jejak audit kriptografis ke log lokal database...'
                 ];
                 
                 for (let i = 0; i < steps.length; i++) {
@@ -1880,11 +1868,11 @@
                 this.healingSteps = [];
                 
                 const steps = [
-                    '🧹 [REFRESH] Menghapus cache konfigurasi, rute, dan view compiled...',
-                    '🔑 [RESET] Mengosongkan tabel personal access tokens (API Sanctum) secara total...',
-                    '🔐 [CLEANUP] Membersihkan tiket reset password yang kadaluarsa...',
-                    '🚪 [SESSIONS] Menghapus semua sesi pengguna lain di server untuk memulihkan memori...',
-                    '📝 [LOG] Mencatat aksi pembersihan total ke database audit log...'
+                    ' [REFRESH] Menghapus cache konfigurasi, rute, dan view compiled...',
+                    ' [RESET] Mengosongkan tabel personal access tokens (API Sanctum) secara total...',
+                    ' [CLEANUP] Membersihkan tiket reset password yang kadaluarsa...',
+                    ' [SESSIONS] Menghapus semua sesi pengguna lain di server untuk memulihkan memori...',
+                    ' [LOG] Mencatat aksi pembersihan total ke database audit log...'
                 ];
                 
                 for (let i = 0; i < steps.length; i++) {

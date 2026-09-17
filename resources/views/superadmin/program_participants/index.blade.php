@@ -9,7 +9,7 @@
     @if(session('success'))
         <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl flex items-center justify-between shadow-sm animate-fade-in">
             <div class="flex items-center gap-3">
-                <span class="p-2 bg-emerald-500 text-white rounded-xl text-sm">✓</span>
+                
                 <p class="text-sm font-semibold">{{ session('success') }}</p>
             </div>
             <button type="button" @click="$el.parentElement.remove()" class="text-emerald-600 hover:text-emerald-900 text-sm font-bold">&times;</button>
@@ -32,7 +32,7 @@
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-6">
                 <div>
                     <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-full mb-2">
-                        <span>🎯</span> INDUK PROGRAM DAHULU
+                         INDUK PROGRAM DAHULU
                     </div>
                     <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Partisipan Program</h1>
                     <p class="text-slate-500 text-sm mt-1 max-w-2xl">
@@ -85,7 +85,7 @@
                                         <span class="text-xs font-bold text-emerald-700">Orang Lolos</span>
                                     </div>
                                     <div class="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full mt-1 border border-emerald-300">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        
                                         Status: PASSED / Diterima
                                     </div>
                                 </div>
@@ -105,7 +105,7 @@
                     </div>
                 @empty
                     <div class="col-span-3 p-12 text-center bg-slate-50 rounded-2xl border border-slate-200">
-                        <span class="text-4xl">📁</span>
+                        
                         <h4 class="font-bold text-slate-800 text-base mt-2">Belum Ada Program</h4>
                         <p class="text-sm text-slate-500 mt-1">Belum ada data program yang terdaftar di sistem.</p>
                     </div>
@@ -133,7 +133,7 @@
                             {{ $selectedProgram->is_open ? 'Pendaftaran Dibuka' : 'Pendaftaran Ditutup' }}
                         </span>
                         <span class="text-xs font-black text-emerald-800 bg-emerald-100/90 px-3 py-1 rounded-md border border-emerald-300 flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            
                             Khusus Peserta Lolos (Status: PASSED)
                         </span>
                     </div>
@@ -153,14 +153,14 @@
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
                             <path d="M8.8 11.2l1.9 2.8-1.9 2.8h1.6l1.1-1.8 1.1 1.8h1.6l-1.9-2.8 1.9-2.8h-1.6l-1.1 1.8-1.1-1.8H8.8z"/>
                         </svg>
-                        <span>📥 Download Semua Data User ({{ number_format($stats['total_all'] ?? 0) }})</span>
+                        <span> Download Semua Data User ({{ number_format($stats['total_all'] ?? 0) }})</span>
                     </a>
 
                     {{-- 2. Tombol Download Khusus Peserta Lolos --}}
                     <a href="{{ route('superadmin.program-participants.export-excel', ['programId' => $selectedProgram->id, 'scope' => 'passed', 'tag' => 'all', 'sort' => request('sort', 'provinsi_nama')]) }}"
                        class="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-xl transition-all"
                        title="Download data khusus peserta yang berstatus lolos (total {{ number_format($stats['total_passed'] ?? 0) }} peserta)">
-                        <span>📗</span>
+                        
                         <span>Khusus Lolos ({{ number_format($stats['total_passed'] ?? 0) }})</span>
                     </a>
 
@@ -169,7 +169,7 @@
                         <a href="{{ route('superadmin.program-participants.export-excel', ['programId' => $selectedProgram->id, 'scope' => 'all', 'tag' => request('tag'), 'filter_by_tag' => 1, 'sort' => request('sort', 'provinsi_nama')]) }}"
                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold rounded-xl transition-all shadow-sm"
                            title="Download khusus pendaftar yang memiliki tag {{ request('tag') }}">
-                            <span>🏷️</span>
+                            <span>️</span>
                             <span>Khusus Tag "{{ request('tag') }}"</span>
                         </a>
                     @endif
@@ -178,7 +178,7 @@
                     <button type="button"
                             @click="niModalOpen = true"
                             class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-xl transition-all">
-                        <span>📝</span>
+                        
                         <span>Update Nomor Induk</span>
                     </button>
 
@@ -186,7 +186,7 @@
                     <button type="button"
                             @click="fillBlanksModalOpen = true; fillBlanksTab = 'paste'"
                             class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm">
-                        <span>🔄</span>
+                        
                         <span>Lengkapi Data / Alamat Kosong</span>
                     </button>
 
@@ -194,14 +194,14 @@
                     <button type="button"
                             @click="importUsersModalOpen = true"
                             class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition-all">
-                        <span>➕</span>
+                        
                         <span>Tambah Peserta</span>
                     </button>
 
                     {{-- 5. Tombol Khusus Komparasi Data Sheet vs Database --}}
                     <a href="{{ route('superadmin.program-participants.reconciliation', $selectedProgram->id) }}"
                        class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-emerald-600 text-white text-xs font-black rounded-xl transition-all shadow-md">
-                        <span>🔍</span>
+                        
                         <span>Komparasi Data Sheet</span>
                     </a>
 
@@ -209,7 +209,7 @@
                     <a href="{{ route('superadmin.database-backups.index') }}"
                        class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
                        title="Buka panel backup database & kelola auto-backup">
-                        <span>💾</span>
+                        
                         <span>Backup DB</span>
                     </a>
 
@@ -217,7 +217,7 @@
                     <button type="button"
                             @click="openTagModal()"
                             class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-md">
-                        <span>🏷️</span>
+                        <span>️</span>
                         <span>Kelola Tag Peserta</span>
                     </button>
 
@@ -228,13 +228,13 @@
                             @csrf
                             <button type="submit"
                                     class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-black rounded-xl transition-all shadow-md cursor-pointer animate-pulse">
-                                <span>⚡</span>
+                                
                                 <span>Verifikasi Semua Email ({{ $stats['unverified_email'] }})</span>
                             </button>
                         </form>
                     @else
                         <div class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-xl cursor-default">
-                            <span>✓</span>
+                            
                             <span>Semua Email Terverifikasi</span>
                         </div>
                     @endif
@@ -249,7 +249,7 @@
                         <span class="text-xl font-black text-emerald-800">{{ number_format($stats['total_passed'] ?? 0) }}</span>
                         <span class="text-[10px] text-slate-400 font-bold block">dari {{ number_format($stats['total_all'] ?? 0) }} pendaftar</span>
                     </div>
-                    <span class="p-2.5 rounded-xl bg-emerald-50 text-emerald-700 text-lg">🌟</span>
+                    
                 </div>
 
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
@@ -257,7 +257,7 @@
                         <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block">Sudah Ada NI</span>
                         <span class="text-xl font-black text-indigo-700">{{ number_format($stats['has_ni'] ?? 0) }}</span>
                     </div>
-                    <span class="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 text-lg">📝</span>
+                    
                 </div>
 
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
@@ -265,7 +265,7 @@
                         <span class="text-[10px] font-bold text-amber-600 uppercase tracking-wider block">Belum Ada NI</span>
                         <span class="text-xl font-black text-amber-700">{{ number_format($stats['no_ni'] ?? 0) }}</span>
                     </div>
-                    <span class="p-2.5 rounded-xl bg-amber-50 text-amber-600 text-lg">⏳</span>
+                    
                 </div>
 
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
@@ -276,7 +276,7 @@
                             <span class="text-amber-600">{{ number_format($stats['default_password'] ?? 0) }} Wajib Ganti</span>
                         </span>
                     </div>
-                    <span class="p-2.5 rounded-xl bg-slate-100 text-slate-700 text-lg">🔑</span>
+                    
                 </div>
 
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
@@ -287,7 +287,7 @@
                             <span class="{{ ($stats['unverified_email'] ?? 0) > 0 ? 'text-rose-600 font-extrabold' : 'text-slate-400' }}">{{ number_format($stats['unverified_email'] ?? 0) }} Belum</span>
                         </span>
                     </div>
-                    <span class="p-2.5 rounded-xl bg-teal-50 text-teal-700 text-lg">✉️</span>
+                    <span class="p-2.5 rounded-xl bg-teal-50 text-teal-700 text-lg">️</span>
                 </div>
             </div>
 
@@ -315,10 +315,10 @@
                     <div>
                         <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Urutan Data</label>
                         <select name="sort" class="w-full text-xs font-semibold py-2 px-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
-                            <option value="provinsi_nama" {{ request('sort', 'provinsi_nama') === 'provinsi_nama' ? 'selected' : '' }}>📌 Provinsi (A-Z) → Nama</option>
-                            <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}>🕒 Pendaftar Terbaru</option>
-                            <option value="nama_asc" {{ request('sort') === 'nama_asc' ? 'selected' : '' }}>🔤 Nama Peserta (A-Z)</option>
-                            <option value="ni_asc" {{ request('sort') === 'ni_asc' ? 'selected' : '' }}>🔢 Nomor Induk (A-Z)</option>
+                            <option value="provinsi_nama" {{ request('sort', 'provinsi_nama') === 'provinsi_nama' ? 'selected' : '' }}> Provinsi (A-Z) → Nama</option>
+                            <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}> Pendaftar Terbaru</option>
+                            <option value="nama_asc" {{ request('sort') === 'nama_asc' ? 'selected' : '' }}> Nama Peserta (A-Z)</option>
+                            <option value="ni_asc" {{ request('sort') === 'ni_asc' ? 'selected' : '' }}> Nomor Induk (A-Z)</option>
                         </select>
                     </div>
 
@@ -330,7 +330,7 @@
                             <option value="none" {{ request('tag') === 'none' ? 'selected' : '' }}>Tanpa Tag</option>
                             @foreach($availableTags as $avTag)
                                 <option value="{{ $avTag }}" {{ request('tag') === $avTag ? 'selected' : '' }}>
-                                    🏷️ {{ $avTag }}
+                                    ️ {{ $avTag }}
                                 </option>
                             @endforeach
                         </select>
@@ -351,8 +351,8 @@
                         <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Status Nomor Induk</label>
                         <select name="ni_status" class="w-full text-xs font-semibold py-2 px-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
                             <option value="all">Semua Peserta Lolos</option>
-                            <option value="has_ni" {{ request('ni_status') === 'has_ni' ? 'selected' : '' }}>✅ Sudah Ada NI</option>
-                            <option value="no_ni" {{ request('ni_status') === 'no_ni' ? 'selected' : '' }}>⚠️ Belum Ada NI</option>
+                            <option value="has_ni" {{ request('ni_status') === 'has_ni' ? 'selected' : '' }}> Sudah Ada NI</option>
+                            <option value="no_ni" {{ request('ni_status') === 'no_ni' ? 'selected' : '' }}>️ Belum Ada NI</option>
                         </select>
                     </div>
 
@@ -362,7 +362,7 @@
                         <select name="email_verified_status" class="w-full text-xs font-semibold py-2 px-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
                             <option value="all">Semua Email</option>
                             <option value="verified" {{ request('email_verified_status') === 'verified' ? 'selected' : '' }}>🟢 Terverifikasi</option>
-                            <option value="unverified" {{ request('email_verified_status') === 'unverified' ? 'selected' : '' }}>⚠️ Belum Verifikasi</option>
+                            <option value="unverified" {{ request('email_verified_status') === 'unverified' ? 'selected' : '' }}>️ Belum Verifikasi</option>
                         </select>
                     </div>
 
@@ -384,7 +384,7 @@
                         </button>
                         @if(request()->hasAny(['search', 'ni_status', 'password_status', 'provinsi', 'sort', 'tag', 'email_verified_status']))
                             <a href="{{ route('superadmin.program-participants.index', ['program_id' => $selectedProgram->id]) }}" class="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold" title="Reset Filter">
-                                ✕
+                                
                             </a>
                         @endif
                     </div>
@@ -470,7 +470,7 @@
                                             <div class="flex items-center gap-1">
                                                 <span class="font-bold text-slate-900 whitespace-nowrap">{{ $user?->name ?? 'Akun Terhapus' }}</span>
                                                 @if($user?->verification?->status === 'verified')
-                                                    <span class="text-blue-500" title="Akun Terverifikasi">✓</span>
+                                                    
                                                 @endif
                                             </div>
                                         </div>
@@ -482,14 +482,14 @@
                                          @if($user)
                                              @if($user->email_verified_at)
                                                  <span class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 mt-0.5" title="Email terverifikasi pada {{ $user->email_verified_at->format('d/m/Y H:i') }}">
-                                                     <span>✓</span>
+                                                     
                                                      <span>Terverifikasi</span>
                                                  </span>
                                              @else
                                                  <form method="POST" action="{{ route('superadmin.program-participants.verify-single-email', $user->id) }}" class="inline-block mt-0.5" onsubmit="return confirm('Verifikasi email untuk {{ $user->name }} sekarang?')">
                                                      @csrf
                                                      <button type="submit" title="Klik untuk verifikasi akun ini sekarang" class="inline-flex items-center gap-1 text-[9px] font-black text-amber-800 bg-amber-100 hover:bg-amber-200 px-1.5 py-0.5 rounded border border-amber-300 transition-colors cursor-pointer">
-                                                         <span>⚡</span>
+                                                         
                                                          <span>Belum Verif (Klik Verif)</span>
                                                      </button>
                                                  </form>
@@ -501,12 +501,12 @@
                                     <td class="py-2.5 px-3 align-middle text-center whitespace-nowrap">
                                         @if($hasChangedPassword)
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300" title="Pengguna telah mengganti password atau menggunakan password permanen">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                
                                                 Sudah Ganti
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300" title="Password default/sementara dari admin, wajib diganti saat login">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                                
                                                 Belum Ganti
                                             </span>
                                         @endif
@@ -529,7 +529,7 @@
                                                             @click="openSingleTagModal({{ $reg->id }}, '{{ addslashes($reg->tags) }}', '{{ addslashes($user?->name ?? '') }}')"
                                                             class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-all {{ $tagBadge }}"
                                                             title="Klik untuk ubah tag">
-                                                        <span>🏷️</span>
+                                                        <span>️</span>
                                                         <span>{{ $t }}</span>
                                                     </button>
                                                 @endforeach
@@ -564,7 +564,7 @@
                                     {{-- Status Pendaftaran (Khusus Lolos) --}}
                                     <td class="py-2.5 px-3 align-middle text-center whitespace-nowrap">
                                         <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            
                                             Lolos (Passed)
                                         </span>
                                     </td>
@@ -597,7 +597,7 @@
                                 <tr>
                                     <td colspan="11" class="py-12 text-center text-slate-400">
                                         <div class="space-y-1">
-                                            <span class="text-3xl block">🔍</span>
+                                            
                                             <p class="font-bold text-slate-700">Tidak ada partisipan yang sesuai filter</p>
                                         </div>
                                     </td>
@@ -626,7 +626,7 @@
                  x-transition:leave-end="translate-y-8 opacity-0"
                  class="fixed bottom-6 inset-x-0 mx-auto max-w-xl z-40 bg-slate-900/95 backdrop-blur-md text-white px-6 py-3.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center justify-between gap-4">
                 <div class="flex items-center gap-2 text-xs font-bold">
-                    <span class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-xs font-black" x-text="selectedUserIds.length"></span>
+                    
                     <span>Akun Peserta Dipilih</span>
                 </div>
 
@@ -634,13 +634,13 @@
                     <button type="button"
                             @click="openTagModalWithSelected()"
                             class="px-3.5 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-black text-xs rounded-xl transition-all shadow-md flex items-center gap-1.5">
-                        <span>🏷️</span>
+                        <span>️</span>
                         <span>Beri Tag</span>
                     </button>
                     <button type="button"
                             @click="bulkResetModalOpen = true"
                             class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs rounded-xl transition-all shadow-md flex items-center gap-1.5">
-                        <span>🔑</span>
+                        
                         <span>Reset Password</span>
                     </button>
                     <button type="button"
@@ -677,7 +677,7 @@
                 </template>
 
                 <div class="p-3 bg-emerald-50 text-emerald-900 rounded-xl border border-emerald-100 flex items-center gap-2">
-                    <span class="text-lg">👥</span>
+                    
                     <p>Password baru akan diterapkan serempak ke <strong x-text="selectedUserIds.length"></strong> akun terpilih.</p>
                 </div>
 
@@ -733,9 +733,9 @@
 
             <div class="p-5 bg-gradient-to-r from-indigo-900 to-indigo-700 text-white flex items-center justify-between">
                 <div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-300 block">⚡ Update Nomor Induk Cepat</span>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-300 block"> Update Nomor Induk Cepat</span>
                     <h3 class="text-lg font-black text-white flex items-center gap-2">
-                        <span>📝</span>
+                        
                         <span>Update Nomor Induk (NI) Peserta</span>
                     </h3>
                 </div>
@@ -746,7 +746,7 @@
                 {{-- Banner Penjelasan Cerdas Pencocokan Email --}}
                 <div class="p-4 bg-indigo-50/70 rounded-2xl border border-indigo-200 text-indigo-950 space-y-2">
                     <div class="flex items-start gap-2">
-                        <span class="text-lg">💡</span>
+                        
                         <div>
                             <strong class="font-bold block text-xs">Otomatis Cocokkan Berdasarkan Email di Database:</strong>
                             <p class="text-[11px] text-indigo-900 mt-0.5 leading-relaxed">
@@ -768,25 +768,25 @@
 
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-0.5">
                         <select x-model="niDownloadTag" class="flex-1 text-xs py-2 px-3 bg-white border border-slate-300 rounded-xl font-semibold focus:ring-2 focus:ring-indigo-500">
-                            <option value="all">👥 Semua Peserta Lolos (Semua Tag)</option>
-                            <option value="none">⚪ Tanpa Tag / Belum Ditandai</option>
+                            <option value="all"> Semua Peserta Lolos (Semua Tag)</option>
+                            <option value="none"> Tanpa Tag / Belum Ditandai</option>
                             @if(isset($availableTags) && $availableTags->isNotEmpty())
                                 <optgroup label="Tag yang Terdaftar:">
                                     @foreach($availableTags as $avTag)
-                                        <option value="{{ $avTag }}">🏷️ Khusus Tag: {{ $avTag }}</option>
+                                        <option value="{{ $avTag }}">️ Khusus Tag: {{ $avTag }}</option>
                                     @endforeach
                                 </optgroup>
                             @endif
                             @if(!isset($availableTags) || !$availableTags->contains('Pokja'))
-                                <option value="Pokja">🏷️ Khusus Tag: Pokja</option>
+                                <option value="Pokja">️ Khusus Tag: Pokja</option>
                             @endif
                             @if(!isset($availableTags) || !$availableTags->contains('Peserta Biasa'))
-                                <option value="Peserta Biasa">🏷️ Khusus Tag: Peserta Biasa</option>
+                                <option value="Peserta Biasa">️ Khusus Tag: Peserta Biasa</option>
                             @endif
                         </select>
                         <a :href="'{{ route('superadmin.program-participants.template-ni', $selectedProgram->id) }}?tag=' + encodeURIComponent(niDownloadTag)"
                            class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition-all shadow-sm whitespace-nowrap">
-                            <span>📥</span>
+                            
                             <span>Download CSV</span>
                         </a>
                     </div>
@@ -804,7 +804,7 @@
                                 @click="niModalTab = 'paste'"
                                 :class="niModalTab === 'paste' ? 'border-indigo-600 text-indigo-700 font-black bg-indigo-50/50' : 'border-transparent text-slate-500 hover:text-slate-700 font-semibold'"
                                 class="py-2.5 px-4 text-xs border-b-2 transition-all flex items-center gap-2 rounded-t-xl">
-                            <span>📋</span>
+                            
                             <span>Salin &amp; Tempel (Copas dari Sheet)</span>
                             <span class="px-1.5 py-0.5 text-[9px] bg-indigo-100 text-indigo-800 rounded-full font-bold">Paling Cepat</span>
                         </button>
@@ -812,7 +812,7 @@
                                 @click="niModalTab = 'upload'"
                                 :class="niModalTab === 'upload' ? 'border-indigo-600 text-indigo-700 font-black bg-indigo-50/50' : 'border-transparent text-slate-500 hover:text-slate-700 font-semibold'"
                                 class="py-2.5 px-4 text-xs border-b-2 transition-all flex items-center gap-2 rounded-t-xl">
-                            <span>📁</span>
+                            
                             <span>Unggah File Spreadsheet (.csv / .txt)</span>
                         </button>
                     </div>
@@ -833,7 +833,7 @@
                                       placeholder="Contoh: Blok kolom di Excel lalu Copy-Paste ke sini:&#10;Email	Nomor Induk&#10;peserta1@gmail.com	PRG202601001&#10;peserta2@gmail.com	PRG202601002&#10;peserta3@gmail.com	PRG202601003"
                                       class="w-full font-mono text-[11px] p-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"></textarea>
                             <p class="text-[10px] text-slate-500 flex items-center gap-1">
-                                <span>💡</span>
+                                
                                 <span><strong>Tips:</strong> Cukup blok kolom <em>Email</em> dan <em>Nomor Induk</em> (boleh juga ada kolom Nama) di Excel, tekan <kbd class="px-1 py-0.5 bg-slate-100 border border-slate-300 rounded text-[9px] font-bold">Ctrl+C</kbd>, lalu paste di kotak ini.</span>
                             </p>
                         </div>
@@ -860,7 +860,7 @@
                                     Batal
                                 </button>
                                 <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black shadow-md flex items-center gap-1.5">
-                                    <span>⚡</span>
+                                    
                                     <span>Perbarui Nomor Induk</span>
                                 </button>
                             </div>
@@ -881,7 +881,7 @@
             {{-- Modal Header --}}
             <div class="p-5 bg-gradient-to-r from-amber-800 to-amber-600 text-white flex items-center justify-between">
                 <div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-amber-200 block">🛡️ Sinkronisasi Aman (Fill-Blanks Only)</span>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-amber-200 block">️ Sinkronisasi Aman (Fill-Blanks Only)</span>
                     <h3 class="text-lg font-black text-white">Lengkapi Data / Alamat Kosong</h3>
                 </div>
                 <button type="button" @click="fillBlanksModalOpen = false" class="text-white hover:text-slate-300 font-bold text-xl">&times;</button>
@@ -891,7 +891,7 @@
                 {{-- Penjelasan Ketentuan Fitur --}}
                 <div class="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-950 space-y-2">
                     <div class="flex items-start gap-2">
-                        <span class="text-base">🛡️</span>
+                        <span class="text-base">️</span>
                         <div>
                             <strong class="font-bold block text-xs">Data Lama di Database Dijamin 100% Aman:</strong>
                             <p class="text-[11px] text-amber-900 mt-0.5">
@@ -901,11 +901,11 @@
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-amber-200/60 text-[11px]">
                         <div class="flex items-center gap-1.5">
-                            <span class="text-amber-700 font-bold">🎯 Acuan Pencocokan:</span>
+                            <span class="text-amber-700 font-bold"> Acuan Pencocokan:</span>
                             <span class="font-semibold text-slate-800">Email atau Nama Lengkap</span>
                         </div>
                         <div class="flex items-center gap-1.5">
-                            <span class="text-amber-700 font-bold">✨ Kolom Bebas:</span>
+                            <span class="text-amber-700 font-bold"> Kolom Bebas:</span>
                             <span class="font-semibold text-slate-800">Tidak wajib lengkap (bisa Nama + Email + Provinsi saja)</span>
                         </div>
                     </div>
@@ -917,7 +917,7 @@
                             @click="fillBlanksTab = 'paste'"
                             :class="fillBlanksTab === 'paste' ? 'border-amber-600 text-amber-700 font-black bg-amber-50/50' : 'border-transparent text-slate-500 hover:text-slate-700 font-semibold'"
                             class="py-2.5 px-4 text-xs border-b-2 transition-all flex items-center gap-2 rounded-t-xl">
-                        <span>📋</span>
+                        
                         <span>Salin & Tempel (Copas dari Sheet)</span>
                         <span class="px-1.5 py-0.5 text-[9px] bg-amber-100 text-amber-800 rounded-full font-bold">Paling Mudah</span>
                     </button>
@@ -925,7 +925,7 @@
                             @click="fillBlanksTab = 'upload'"
                             :class="fillBlanksTab === 'upload' ? 'border-amber-600 text-amber-700 font-black bg-amber-50/50' : 'border-transparent text-slate-500 hover:text-slate-700 font-semibold'"
                             class="py-2.5 px-4 text-xs border-b-2 transition-all flex items-center gap-2 rounded-t-xl">
-                        <span>📁</span>
+                        
                         <span>Unggah File Spreadsheet (.csv)</span>
                     </button>
                 </div>
@@ -946,7 +946,7 @@
                                   placeholder="Contoh: Blok kolom di Google Sheets lalu Copy-Paste ke sini:&#10;Nama	Email	Provinsi	Kabupaten&#10;Warih Handono	warihhan21.11@gmail.com	Jawa Barat	Bandung&#10;Nabila Azuwa	nabilaazuwa708@gmail.com	Aceh	Banda Aceh&#10;Muhammad Danil	muhamaddanil032002@gmail.com	Aceh	Aceh Besar"
                                   class="w-full font-mono text-[11px] p-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all"></textarea>
                         <p class="text-[10px] text-slate-500 flex items-center gap-1">
-                            <span>💡</span>
+                            
                             <span><strong>Tips:</strong> Di spreadsheet Anda, cukup blok kolom yang ingin dilengkapi (sertakan baris judulnya seperti <em>Nama</em>, <em>Email</em>, <em>Provinsi</em>, dll.), tekan <kbd class="px-1 py-0.5 bg-slate-100 border border-slate-300 rounded text-[9px] font-bold">Ctrl+C</kbd>, lalu paste di kotak atas.</span>
                         </p>
 
@@ -965,7 +965,7 @@
                                 </select>
                                 <a :href="'{{ route('superadmin.program-participants.template-fill-blanks', $selectedProgram->id) }}?tag=' + encodeURIComponent(fillBlanksDownloadTag)"
                                    class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-[10px] transition-all whitespace-nowrap shadow-sm">
-                                    <span>📥 Unduh CSV</span>
+                                    <span> Unduh CSV</span>
                                 </a>
                             </div>
                         </div>
@@ -987,32 +987,32 @@
                         <div class="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200 space-y-2">
                             <div>
                                 <span class="font-bold text-amber-950 block text-[11px] flex items-center gap-1.5">
-                                    <span>📥</span>
+                                    
                                     <span>Download Template Sesuai Tag / Kategori:</span>
                                 </span>
                                 <span class="text-[10px] text-amber-800">Unduh data peserta saat ini dalam format CSV (bisa disaring berdasarkan tag)</span>
                             </div>
                             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
                                 <select x-model="fillBlanksDownloadTag" class="flex-1 text-xs py-2 px-3 bg-white border border-amber-300 rounded-xl font-semibold focus:ring-2 focus:ring-amber-500">
-                                    <option value="all">👥 Semua Peserta Lolos (Semua Tag)</option>
-                                    <option value="none">⚪ Tanpa Tag / Belum Ditandai</option>
+                                    <option value="all"> Semua Peserta Lolos (Semua Tag)</option>
+                                    <option value="none"> Tanpa Tag / Belum Ditandai</option>
                                     @if(isset($availableTags) && $availableTags->isNotEmpty())
                                         <optgroup label="Tag yang Terdaftar:">
                                             @foreach($availableTags as $avTag)
-                                                <option value="{{ $avTag }}">🏷️ Khusus Tag: {{ $avTag }}</option>
+                                                <option value="{{ $avTag }}">️ Khusus Tag: {{ $avTag }}</option>
                                             @endforeach
                                         </optgroup>
                                     @endif
                                     @if(!isset($availableTags) || !$availableTags->contains('Pokja'))
-                                        <option value="Pokja">🏷️ Khusus Tag: Pokja</option>
+                                        <option value="Pokja">️ Khusus Tag: Pokja</option>
                                     @endif
                                     @if(!isset($availableTags) || !$availableTags->contains('Peserta Biasa'))
-                                        <option value="Peserta Biasa">🏷️ Khusus Tag: Peserta Biasa</option>
+                                        <option value="Peserta Biasa">️ Khusus Tag: Peserta Biasa</option>
                                     @endif
                                 </select>
                                 <a :href="'{{ route('superadmin.program-participants.template-fill-blanks', $selectedProgram->id) }}?tag=' + encodeURIComponent(fillBlanksDownloadTag)"
                                    class="inline-flex items-center justify-center gap-1 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition-all shadow-sm whitespace-nowrap">
-                                    <span>📥</span>
+                                    
                                     <span>Download CSV</span>
                                 </a>
                             </div>
@@ -1027,7 +1027,7 @@
                                 Batal
                             </button>
                             <button type="submit" class="px-5 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white rounded-xl font-black shadow-md flex items-center gap-1.5">
-                                <span>🔄</span>
+                                
                                 <span>Sinkronkan Data Kosong</span>
                             </button>
                         </div>
@@ -1057,7 +1057,7 @@
                     <span class="font-bold text-slate-900 block">1. Download Template Tambah Peserta:</span>
                     <a href="{{ route('superadmin.program-participants.template-import-users', $selectedProgram->id) }}"
                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl transition-all">
-                        <span>📥</span>
+                        
                         <span>Download Format CSV (.csv)</span>
                     </a>
                 </div>
@@ -1130,20 +1130,18 @@
                             </div>
                             <div>
                                 <span class="text-slate-500 block">Nomor Induk (NI):</span>
-                                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono font-bold" x-text="detailData?.registration?.final_id_number || 'Belum Ada'"></span>
+                                
                             </div>
                             <div>
                                 <span class="text-slate-500 block">Status Ganti Password:</span>
-                                <span class="px-2 py-0.5 rounded font-bold"
-                                      :class="detailData?.user?.must_change_password ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-800'"
-                                      x-text="detailData?.user?.must_change_password ? 'Belum Ganti Password (Wajib)' : 'Sudah Ganti Password (Aktif)'"></span>
+                                
                             </div>
                         </div>
                     </div>
 
                     {{-- Data Wilayah Lengkap Sampai Kelurahan --}}
                     <div class="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 space-y-3">
-                        <span class="font-bold uppercase tracking-wider text-[10px] text-emerald-800 block">📍 Data Wilayah &amp; Alamat Lengkap</span>
+                        <span class="font-bold uppercase tracking-wider text-[10px] text-emerald-800 block"> Data Wilayah &amp; Alamat Lengkap</span>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-700">
                             <div>
                                 <span class="text-slate-500 block">Provinsi:</span>
@@ -1178,17 +1176,15 @@
                                     <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-2">
                                         <div class="flex items-center justify-between border-b border-slate-100 pb-2">
                                             <strong class="text-slate-800" x-text="sData.stage?.title || 'Tahapan Program'"></strong>
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"
-                                                  :class="sData.status === 'passed' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'"
-                                                  x-text="sData.status"></span>
+                                            
                                         </div>
                                         <div class="space-y-2 pt-1">
                                             <template x-if="sData.form_values">
                                                 <div class="grid grid-cols-1 gap-2">
                                                     <template x-for="(val, key) in sData.form_values" :key="key">
                                                         <div class="bg-slate-50 p-2.5 rounded-xl">
-                                                            <span class="text-[10px] text-slate-400 font-bold block" x-text="key"></span>
-                                                            <span class="text-slate-800 font-medium" x-text="typeof val === 'object' ? JSON.stringify(val) : val"></span>
+                                                            
+                                                            
                                                         </div>
                                                     </template>
                                                 </div>
@@ -1238,9 +1234,9 @@
                     <select name="status" x-model="statusForm.status" class="w-full text-xs font-bold py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
                         <option value="passed">🟢 Lolos (Passed)</option>
                         <option value="submitted">🟡 In Review / Submitted</option>
-                        <option value="revision">🔵 Revisi</option>
-                        <option value="draft">⚪ Draft</option>
-                        <option value="rejected">🔴 Ditolak (Rejected)</option>
+                        <option value="revision"> Revisi</option>
+                        <option value="draft"> Draft</option>
+                        <option value="rejected"> Ditolak (Rejected)</option>
                     </select>
                 </div>
 
@@ -1286,7 +1282,7 @@
                 <div>
                     <span class="text-[10px] font-bold uppercase tracking-wider text-purple-300 block">Kategori &amp; Pengelompokan Peserta</span>
                     <h3 class="text-lg font-black text-white flex items-center gap-2">
-                        <span>🏷️</span>
+                        <span>️</span>
                         <span>Kelola &amp; Tambah Tag Peserta</span>
                     </h3>
                 </div>
@@ -1304,7 +1300,7 @@
                 {{-- Info Box --}}
                 <div class="p-4 bg-purple-50 rounded-2xl border border-purple-200 text-purple-950 space-y-1.5">
                     <div class="flex items-center gap-2 font-bold text-purple-900 text-xs">
-                        <span>💡</span>
+                        
                         <span>Cara Cepat Menandai Peserta:</span>
                     </div>
                     <p class="text-[11px] text-purple-900 leading-relaxed">
@@ -1315,7 +1311,7 @@
                 {{-- Jika ada akun dicentang dari tabel --}}
                 <div x-show="selectedUserIds.length > 0" class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900 flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold" x-text="selectedUserIds.length"></span>
+                        
                         <span class="font-bold text-[11px]">Akun peserta sedang dicentang dari tabel</span>
                     </div>
                     <span class="text-[10px] text-emerald-700 font-medium">Akan ikut ditandai bersama daftar email</span>
@@ -1344,28 +1340,28 @@
                                 @click="selectedTagInput = 'Pokja'"
                                 :class="selectedTagInput === 'Pokja' ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-purple-50 text-purple-800 border-purple-200 hover:bg-purple-100'"
                                 class="px-3 py-1.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5">
-                            <span>🏷️</span>
+                            <span>️</span>
                             <span>Pokja</span>
                         </button>
                         <button type="button"
                                 @click="selectedTagInput = 'Peserta Biasa'"
                                 :class="selectedTagInput === 'Peserta Biasa' ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'"
                                 class="px-3 py-1.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5">
-                            <span>🏷️</span>
+                            <span>️</span>
                             <span>Peserta Biasa</span>
                         </button>
                         <button type="button"
                                 @click="selectedTagInput = 'Fasilitator'"
                                 :class="selectedTagInput === 'Fasilitator' ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'"
                                 class="px-3 py-1.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5">
-                            <span>🏷️</span>
+                            <span>️</span>
                             <span>Fasilitator</span>
                         </button>
                         <button type="button"
                                 @click="selectedTagInput = 'Panitia'"
                                 :class="selectedTagInput === 'Panitia' ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'"
                                 class="px-3 py-1.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5">
-                            <span>🏷️</span>
+                            <span>️</span>
                             <span>Panitia</span>
                         </button>
                     </div>
@@ -1385,19 +1381,19 @@
                         <label class="p-2.5 rounded-xl border cursor-pointer transition-all flex flex-col items-center text-center gap-1"
                                :class="tagActionChoice === 'set' ? 'border-purple-500 bg-purple-50 text-purple-900 font-bold' : 'border-slate-200 hover:bg-slate-50 text-slate-600'">
                             <input type="radio" name="tag_action" value="set" x-model="tagActionChoice" class="sr-only">
-                            <span>📌 Ganti / Tetapkan</span>
+                            <span> Ganti / Tetapkan</span>
                             <span class="text-[9px] text-slate-400 font-normal">Ganti tag jadi ini</span>
                         </label>
                         <label class="p-2.5 rounded-xl border cursor-pointer transition-all flex flex-col items-center text-center gap-1"
                                :class="tagActionChoice === 'append' ? 'border-purple-500 bg-purple-50 text-purple-900 font-bold' : 'border-slate-200 hover:bg-slate-50 text-slate-600'">
                             <input type="radio" name="tag_action" value="append" x-model="tagActionChoice" class="sr-only">
-                            <span>➕ Tambahkan</span>
+                            <span> Tambahkan</span>
                             <span class="text-[9px] text-slate-400 font-normal">Gabung ke tag lama</span>
                         </label>
                         <label class="p-2.5 rounded-xl border cursor-pointer transition-all flex flex-col items-center text-center gap-1"
                                :class="tagActionChoice === 'remove' ? 'border-rose-500 bg-rose-50 text-rose-900 font-bold' : 'border-slate-200 hover:bg-slate-50 text-slate-600'">
                             <input type="radio" name="tag_action" value="remove" x-model="tagActionChoice" class="sr-only">
-                            <span>🗑️ Hapus Tag Ini</span>
+                            <span>️ Hapus Tag Ini</span>
                             <span class="text-[9px] text-slate-400 font-normal">Hapus dari akun</span>
                         </label>
                     </div>
@@ -1409,7 +1405,7 @@
                         Batal
                     </button>
                     <button type="submit" class="px-5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-black shadow-md flex items-center gap-1.5">
-                        <span>🏷️</span>
+                        <span>️</span>
                         <span>Terapkan Tag</span>
                     </button>
                 </div>

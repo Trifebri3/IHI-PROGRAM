@@ -85,10 +85,10 @@
                         <td class="p-4">
                             <span class="font-bold text-slate-800 text-sm block">{{ $field->name }}</span>
                             @if($field->description)
-                                <span class="block text-[10px] text-slate-500 font-semibold mt-1">📝 Petunjuk: {{ $field->description }}</span>
+                                <span class="block text-[10px] text-slate-500 font-semibold mt-1"> Petunjuk: {{ $field->description }}</span>
                             @endif
                             @if($field->example)
-                                <span class="block text-[10px] text-slate-450 font-mono mt-0.5">💡 Contoh: "{{ $field->example }}"</span>
+                                <span class="block text-[10px] text-slate-450 font-mono mt-0.5"> Contoh: "{{ $field->example }}"</span>
                             @endif
                         </td>
                         <td class="p-4">

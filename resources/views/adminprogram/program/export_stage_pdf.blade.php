@@ -28,7 +28,7 @@
             </div>
             <div class="no-print">
                 <button onclick="window.print()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">
-                    🖨️ Cetak / Simpan PDF
+                    ️ Cetak / Simpan PDF
                 </button>
             </div>
         </div>

@@ -13,23 +13,23 @@
                 <form action="{{ route('superadmin.users.toggle-mitigation-global') }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin MENONAKTIFKAN mode mitigasi global? Keamanan email & password ketat akan diberlakukan kembali.')">
                     @csrf
                     <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition shadow-sm uppercase tracking-wider">
-                        ⚡ Mitigasi Global: AKTIF
+                         Mitigasi Global: AKTIF
                     </button>
                 </form>
             @else
                 <form action="{{ route('superadmin.users.toggle-mitigation-global') }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin MENGAKTIFKAN mode mitigasi global? Verifikasi email akan dilewati dan pendaftar tidak sempurna bisa masuk dengan password bebas.')">
                     @csrf
                     <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-400 hover:bg-slate-500 text-white text-xs font-bold rounded-xl transition shadow-sm uppercase tracking-wider">
-                        💤 Mitigasi Global: NONAKTIF
+                         Mitigasi Global: NONAKTIF
                     </button>
                 </form>
             @endif
 
             <a href="{{ route('superadmin.users.export', request()->query()) }}" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow-sm uppercase tracking-wider">
-                📥 Eksport Excel
+                 Eksport Excel
             </a>
             <button type="button" onclick="openCreateModal()" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow-sm uppercase tracking-wider">
-                ➕ Tambah Pengguna
+                 Tambah Pengguna
             </button>
         </div>
     </div>
@@ -175,7 +175,7 @@
                         <td class="p-4 text-center">
                             @if($user->is_blocked)
                                 <span class="bg-rose-50 text-rose-700 border border-rose-100 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider">
-                                    🔴 Diblokir
+                                     Diblokir
                                 </span>
                             @else
                                 <span class="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider">

@@ -56,7 +56,7 @@
                 <span class="block text-[9px] font-extrabold uppercase text-slate-400">Status Akun Sistem</span>
                 <div class="flex items-center space-x-1.5">
                     @if($registration->user->is_blocked)
-                        <span class="font-bold text-rose-800">🔴 DI-BLOKIR</span>
+                        <span class="font-bold text-rose-800"> DI-BLOKIR</span>
                     @else
                         <span class="font-bold text-emerald-800">🟢 AKTIF / AMAN</span>
                     @endif
@@ -122,12 +122,12 @@
                         <div class="pt-2 border-t flex flex-col gap-2 font-bold">
                             @if($registration->user->verification->ktp_path)
                                 <a href="{{ asset('storage/' . $registration->user->verification->ktp_path) }}" target="_blank" class="inline-flex items-center text-[10px] text-emerald-700 bg-emerald-50/50 border border-emerald-100 px-3 py-1.5 rounded-lg hover:bg-emerald-100/50 transition">
-                                    📥 Dokumen KTP Identitas
+                                     Dokumen KTP Identitas
                                 </a>
                             @endif
                             @if($registration->user->verification->photo_path)
                                 <a href="{{ asset('storage/' . $registration->user->verification->photo_path) }}" target="_blank" class="inline-flex items-center text-[10px] text-emerald-700 bg-emerald-50/50 border border-emerald-100 px-3 py-1.5 rounded-lg hover:bg-emerald-100/50 transition">
-                                    📷 Foto Selfie Peserta
+                                     Foto Selfie Peserta
                                 </a>
                             @endif
                         </div>
@@ -187,7 +187,7 @@
                                 <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100 flex flex-col justify-between">
                                     <span class="text-[9px] font-bold uppercase text-slate-400 block mb-0.5">{{ $val->biodataField->name }}</span>
                                     @if($val->biodataField->type === 'file')
-                                        <a href="{{ asset('storage/' . $val->value) }}" target="_blank" class="text-[10px] font-bold text-emerald-700 hover:underline mt-1 block">📄 Unduh Dokumen</a>
+                                        <a href="{{ asset('storage/' . $val->value) }}" target="_blank" class="text-[10px] font-bold text-emerald-700 hover:underline mt-1 block"> Unduh Dokumen</a>
                                     @else
                                         <span class="text-xs font-semibold text-slate-800 break-all leading-normal">{{ $val->value ?? '—' }}</span>
                                     @endif
@@ -213,7 +213,7 @@
                                 @if(is_array($ansValue))
                                     <span class="text-xs font-semibold text-slate-800 leading-normal">{{ implode(', ', $ansValue) }}</span>
                                 @elseif(is_string($ansValue) && (str_ends_with(strtolower($ansValue), '.jpg') || str_ends_with(strtolower($ansValue), '.png') || str_ends_with(strtolower($ansValue), '.jpeg') || str_ends_with(strtolower($ansValue), '.pdf')))
-                                    <a href="{{ asset('storage/' . $ansValue) }}" target="_blank" class="text-[10px] font-bold text-emerald-700 hover:underline mt-1 block font-mono">📄 Unduh Lampiran</a>
+                                    <a href="{{ asset('storage/' . $ansValue) }}" target="_blank" class="text-[10px] font-bold text-emerald-700 hover:underline mt-1 block font-mono"> Unduh Lampiran</a>
                                 @else
                                     <span class="text-xs font-semibold text-slate-800 break-all leading-normal">{{ $ansValue ?? '—' }}</span>
                                 @endif
@@ -261,7 +261,7 @@
                                             @if(($fv['type'] ?? '') === 'file' || ($fv['type'] ?? '') === 'image')
                                                 @if(!empty($fv['value']))
                                                     <a href="{{ asset('storage/' . $fv['value']) }}" target="_blank" class="text-[10px] font-bold text-emerald-700 hover:underline">
-                                                        📄 Lihat Dokumen ({{ strtoupper($fv['type']) }})
+                                                         Lihat Dokumen ({{ strtoupper($fv['type']) }})
                                                     </a>
                                                 @else
                                                     <span class="text-rose-500 italic">Tidak diunggah</span>

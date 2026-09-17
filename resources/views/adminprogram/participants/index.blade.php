@@ -34,7 +34,7 @@
          style="display: none;">
         <div class="border-b border-emerald-100 pb-2 flex items-center justify-between">
             <h3 class="text-sm font-extrabold text-emerald-950 uppercase tracking-wider flex items-center">
-                ⚡ Pusat Generator Nomor Induk (NI) Massal
+                 Pusat Generator Nomor Induk (NI) Massal
             </h3>
             <button @click="openBulkGenerator = false" class="text-emerald-700 hover:text-emerald-900 text-xs font-bold">Tutup</button>
         </div>
@@ -44,12 +44,12 @@
             <button @click="generatorTab = 'formula'" 
                     :class="generatorTab === 'formula' ? 'border-emerald-500 text-emerald-600 font-bold border-b-2' : 'text-slate-500 hover:text-slate-800'"
                     class="py-2 px-4 text-xs uppercase tracking-wider transition outline-none">
-                ⚡ Skema 1: Pola Formula Otomatis
+                 Skema 1: Pola Formula Otomatis
             </button>
             <button @click="generatorTab = 'excel'" 
                     :class="generatorTab === 'excel' ? 'border-emerald-500 text-emerald-600 font-bold border-b-2' : 'text-slate-500 hover:text-slate-800'"
                     class="py-2 px-4 text-xs uppercase tracking-wider transition outline-none">
-                📂 Skema 2: Ekspor &amp; Impor Excel/CSV
+                 Skema 2: Ekspor &amp; Impor Excel/CSV
             </button>
         </div>
 
@@ -110,7 +110,7 @@
             <!-- Download Template -->
             <div class="space-y-3 p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
                 <h4 class="text-xs font-bold text-slate-800 uppercase flex items-center">
-                    📥 1. Unduh Template Excel / CSV
+                     1. Unduh Template Excel / CSV
                 </h4>
                 <p class="text-[11px] text-slate-500">Unduh data seluruh peserta yang berstatus Lulus (passed) untuk diisi Nomor Induknya secara manual di Excel.</p>
                 
@@ -136,7 +136,7 @@
             <!-- Upload Template -->
             <div class="space-y-3 p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
                 <h4 class="text-xs font-bold text-slate-800 uppercase flex items-center">
-                    📤 2. Unggah &amp; Impor Nomor Induk
+                     2. Unggah &amp; Impor Nomor Induk
                 </h4>
                 <p class="text-[11px] text-slate-500">Unggah kembali file template CSV yang sudah diisi Nomor Induknya untuk disinkronkan ke database secara otomatis.</p>
                 
@@ -296,7 +296,7 @@
                     <div class="flex items-center border-l md:pl-4 border-slate-200">
                         <label class="inline-flex items-center text-xs text-slate-600 font-bold cursor-pointer select-none">
                             <input type="checkbox" name="show_all_applicants" value="1" {{ request('show_all_applicants') ? 'checked' : '' }} class="rounded text-emerald-600 focus:ring-emerald-500 mr-2 w-4 h-4 border-slate-300 shadow-3xs" onchange="this.form.submit()">
-                            <span>🔍 Tampilkan Semua Pendaftar (Termasuk Belum Lolos)</span>
+                            <span> Tampilkan Semua Pendaftar (Termasuk Belum Lolos)</span>
                         </label>
                     </div>
                 </div>
@@ -322,7 +322,7 @@
         <!-- Selected Count Panel & Bulk Action Buttons -->
         <div id="bulkActionsPanel" class="hidden bg-slate-800 text-white p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 shadow-md transition-all duration-200">
             <div class="flex items-center gap-2">
-                <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                
                 <span class="text-xs font-bold"><span id="selectedCount">0</span> Peserta Dipilih</span>
             </div>
             
@@ -526,7 +526,7 @@
                                 <td class="px-6 py-4">
                                     @if($isAlumniActive)
                                         <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full uppercase">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                                            
                                             Alumni Aktif
                                         </span>
                                     @else

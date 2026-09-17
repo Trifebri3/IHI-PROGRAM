@@ -16,7 +16,7 @@
         <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
             <div>
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold mb-3">
-                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    
                     <span>Database Resilience & Security</span>
                 </div>
                 <h1 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
@@ -34,7 +34,7 @@
                     @csrf
                     <button type="submit" 
                             class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all">
-                        <span>⚡</span>
+                        
                         <span>Tes Auto-Backup</span>
                     </button>
                 </form>
@@ -42,7 +42,7 @@
                 <button type="button" 
                         @click="manualModal = true"
                         class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-black rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
-                    <span>💾</span>
+                    
                     <span>Buat Backup Baru</span>
                 </button>
             </div>
@@ -53,7 +53,7 @@
     @if(session('success'))
         <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center justify-between shadow-sm animate-fade-in">
             <div class="flex items-center gap-2.5">
-                <span class="text-lg">✓</span>
+                
                 <span>{{ session('success') }}</span>
             </div>
             <button type="button" @click="$el.parentElement.remove()" class="text-emerald-600 hover:text-emerald-800 text-sm font-bold">×</button>
@@ -63,7 +63,7 @@
     @if(session('error'))
         <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-semibold flex items-center justify-between shadow-sm animate-fade-in">
             <div class="flex items-center gap-2.5">
-                <span class="text-lg">⚠️</span>
+                <span class="text-lg">️</span>
                 <span>{{ session('error') }}</span>
             </div>
             <button type="button" @click="$el.parentElement.remove()" class="text-rose-600 hover:text-rose-800 text-sm font-bold">×</button>
@@ -80,7 +80,7 @@
                 <span class="text-[11px] text-emerald-600 font-semibold block mt-0.5">{{ $mysqlVersion }}</span>
             </div>
             <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl flex-shrink-0">
-                🗄️
+                ️
             </div>
         </div>
 
@@ -92,7 +92,7 @@
                 <span class="text-[11px] text-slate-500 font-semibold block mt-0.5">{{ $totalTables }} Tabel Terdeteksi</span>
             </div>
             <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center text-xl flex-shrink-0">
-                📊
+                
             </div>
         </div>
 
@@ -102,10 +102,10 @@
                 <span class="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">Auto-Backup</span>
                 <div class="flex items-center gap-1.5 mt-0.5">
                     @if($autoSettings['enabled'])
-                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                        
                         <span class="text-base font-black text-emerald-700">AKTIF</span>
                     @else
-                        <span class="inline-block w-2 h-2 rounded-full bg-slate-400"></span>
+                        
                         <span class="text-base font-black text-slate-500">NONAKTIF</span>
                     @endif
                 </div>
@@ -118,7 +118,7 @@
                 </span>
             </div>
             <div class="w-12 h-12 rounded-2xl {{ $autoSettings['enabled'] ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400' }} flex items-center justify-center text-xl flex-shrink-0">
-                ⚡
+                
             </div>
         </div>
 
@@ -130,7 +130,7 @@
                 <span class="text-[11px] text-slate-500 font-semibold block mt-0.5">Total: {{ $totalBackupSizeFormatted }}</span>
             </div>
             <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl flex-shrink-0">
-                📦
+                
             </div>
         </div>
     </div>
@@ -144,7 +144,7 @@
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
                     <div>
                         <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
-                            <span>⚙️</span>
+                            <span>️</span>
                             <span>Konfigurasi Auto-Backup Database</span>
                         </h2>
                         <p class="text-xs text-slate-400 mt-0.5">Atur jadwal pencadangan otomatis tanpa perlu campur tangan manual.</p>
@@ -164,7 +164,7 @@
                             <label class="block text-xs font-bold text-slate-700 mb-1.5">Status Auto-Backup</label>
                             <select name="auto_backup_enabled" class="w-full text-xs font-semibold rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 bg-slate-50/50 p-2.5">
                                 <option value="1" {{ $autoSettings['enabled'] ? 'selected' : '' }}>🟢 Aktifkan Auto-Backup Terjadwal</option>
-                                <option value="0" {{ !$autoSettings['enabled'] ? 'selected' : '' }}>⚪ Nonaktifkan Auto-Backup</option>
+                                <option value="0" {{ !$autoSettings['enabled'] ? 'selected' : '' }}> Nonaktifkan Auto-Backup</option>
                             </select>
                         </div>
 
@@ -204,9 +204,9 @@
                     <div class="pt-3 flex items-center justify-between">
                         <div class="text-xs text-slate-500 font-medium">
                             @if($nextScheduled)
-                                <span>📅 Jadwal perkiraan berikutnya: <strong class="text-slate-700">{{ $nextScheduled->format('d M Y, H:i') }} WIB</strong></span>
+                                <span> Jadwal perkiraan berikutnya: <strong class="text-slate-700">{{ $nextScheduled->format('d M Y, H:i') }} WIB</strong></span>
                             @else
-                                <span>📅 Jadwal berikutnya: <span class="text-slate-400">Menunggu eksekusi pertama</span></span>
+                                <span> Jadwal berikutnya: <span class="text-slate-400">Menunggu eksekusi pertama</span></span>
                             @endif
                         </div>
 
@@ -224,7 +224,7 @@
 
             <div>
                 <div class="flex items-center gap-2 mb-3">
-                    <span class="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 text-lg">💾</span>
+                    
                     <div>
                         <h3 class="text-base font-black text-white tracking-tight">Manual Instant Backup</h3>
                         <p class="text-[11px] text-slate-400">Buat salinan instan database sekarang</p>
@@ -263,7 +263,7 @@
                         <button type="submit" 
                                 :disabled="isCreatingBackup"
                                 class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-xs font-black rounded-xl transition-all shadow-lg hover:shadow-emerald-500/20 disabled:opacity-50">
-                            <span x-show="!isCreatingBackup">🚀 Mulai Backup Sekarang</span>
+                            <span x-show="!isCreatingBackup"> Mulai Backup Sekarang</span>
                             <span x-show="isCreatingBackup" class="flex items-center gap-2">
                                 <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -284,7 +284,7 @@
         <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
-                    <span>📦</span>
+                    
                     <span>Daftar Berkas Backup Tersimpan ({{ count($backups) }})</span>
                 </h3>
                 <p class="text-xs text-slate-400 mt-0.5">Seluruh file backup yang dapat diunduh langsung ke komputer Anda atau dihapus.</p>
@@ -297,13 +297,13 @@
                            x-model="searchKeyword" 
                            placeholder="Cari nama file..." 
                            class="text-xs rounded-xl border-slate-200 pl-8 pr-3 py-2 w-48 focus:border-emerald-500 focus:ring-emerald-500 bg-slate-50/50">
-                    <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
+                    
                 </div>
 
                 <select x-model="filterType" class="text-xs rounded-xl border-slate-200 py-2 px-3 focus:border-emerald-500 focus:ring-emerald-500 bg-slate-50/50 font-bold text-slate-700">
                     <option value="all">Semua Tipe</option>
                     <option value="auto">🟢 Otomatis</option>
-                    <option value="manual">🔵 Manual</option>
+                    <option value="manual"> Manual</option>
                 </select>
             </div>
         </div>
@@ -330,19 +330,19 @@
                             <td class="py-3.5 px-5 text-slate-400 font-mono">{{ $index + 1 }}</td>
                             <td class="py-3.5 px-5">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-base">{{ $file['extension'] === 'zip' ? '🗜️' : '📄' }}</span>
+                                    <span class="text-base">{{ $file['extension'] === 'zip' ? '️' : '' }}</span>
                                     <span class="font-mono font-bold text-slate-800">{{ $file['filename'] }}</span>
                                 </div>
                             </td>
                             <td class="py-3.5 px-5">
                                 @if($file['type'] === 'auto')
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        
                                         <span>Otomatis</span>
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                        
                                         <span>Manual</span>
                                     </span>
                                 @endif
@@ -377,7 +377,7 @@
                                         @method('DELETE')
                                         <button type="submit" 
                                                 class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl transition border border-rose-200">
-                                            <span>🗑️</span>
+                                            <span>️</span>
                                         </button>
                                     </form>
                                 </div>
@@ -387,7 +387,7 @@
                         <tr>
                             <td colspan="7" class="py-12 text-center text-slate-400">
                                 <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-2xl mx-auto mb-3">
-                                    📭
+                                    
                                 </div>
                                 <p class="text-sm font-bold text-slate-700">Belum Ada File Backup Tersimpan</p>
                                 <p class="text-xs text-slate-400 mt-1">Klik tombol "Buat Backup Baru" di atas untuk mencadangkan database Anda.</p>
@@ -402,7 +402,7 @@
     {{-- 5. Card Informasi & Panduan Restorasi Database --}}
     <div class="bg-white rounded-3xl p-6 lg:p-7 border border-slate-100 shadow-sm">
         <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2 mb-3">
-            <span>💡</span>
+            
             <span>Panduan Restorasi Database (Restore Guide)</span>
         </h4>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-600 leading-relaxed">
@@ -430,7 +430,7 @@
              @click.away="manualModal = false">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                 <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
-                    <span>💾</span>
+                    
                     <span>Buat Backup Database Baru</span>
                 </h3>
                 <button type="button" @click="manualModal = false" class="text-slate-400 hover:text-slate-700 text-lg font-bold">×</button>

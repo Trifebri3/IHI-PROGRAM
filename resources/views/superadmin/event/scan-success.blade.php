@@ -7,7 +7,7 @@
         
         <!-- Status Icon -->
         <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-3xl shadow-sm border border-emerald-200">
-            ✅
+            
         </div>
 
         <div class="space-y-1">
@@ -26,7 +26,7 @@
                 <span class="block text-[8px] font-black text-slate-400 uppercase">Email / Kontak</span>
                 <span class="text-slate-600 font-semibold">{{ $registration->user ? $registration->user->email : $registration->guest_email }}</span>
                 @if($registration->guest_phone)
-                    <div class="text-slate-500 mt-0.5">📞 {{ $registration->guest_phone }}</div>
+                    <div class="text-slate-500 mt-0.5"> {{ $registration->guest_phone }}</div>
                 @endif
             </div>
             <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
@@ -45,12 +45,12 @@
         <div class="text-xs text-left bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50 space-y-1">
             <span class="block text-[8px] font-black text-emerald-700 uppercase">Agenda Kegiatan</span>
             <span class="font-bold text-emerald-900 block leading-snug">{{ $event->title }}</span>
-            <span class="text-[10px] text-slate-500 font-semibold block mt-0.5">📅 {{ date('d M Y', strtotime($event->event_date)) }}</span>
+            <span class="text-[10px] text-slate-500 font-semibold block mt-0.5"> {{ date('d M Y', strtotime($event->event_date)) }}</span>
         </div>
 
         <div class="space-y-2 pt-2">
             <a href="{{ route('superadmin.events.dashboard', $event->id) }}" class="block w-full py-3 bg-slate-900 hover:bg-black text-white rounded-xl font-bold uppercase text-[10px] tracking-wider text-center transition shadow-md">
-                ⚙️ Kembali ke Dashboard Event
+                ️ Kembali ke Dashboard Event
             </a>
             <a href="{{ route('superadmin.events.index') }}" class="block w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold uppercase text-[9px] tracking-wider text-center transition">
                 Daftar Semua Event

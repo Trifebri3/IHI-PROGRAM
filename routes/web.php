@@ -664,3 +664,5 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
     
     
 require __DIR__.'/auth.php';
+
+require __DIR__.'/piagam.php';

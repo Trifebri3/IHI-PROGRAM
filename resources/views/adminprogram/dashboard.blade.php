@@ -58,7 +58,7 @@
     <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
         <div class="border-b pb-3">
             <h2 class="text-sm font-extrabold uppercase tracking-wider text-slate-700 flex items-center">
-                <span class="inline-block w-2.5 h-2.5 rounded-full bg-rose-500 mr-2 animate-pulse"></span>
+                
                 Action Center (Butuh Tindakan Admin)
             </h2>
         </div>

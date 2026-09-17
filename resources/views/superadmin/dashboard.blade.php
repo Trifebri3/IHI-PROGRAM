@@ -34,7 +34,7 @@
 
         <a href="{{ route('superadmin.events.index') }}" class="relative flex flex-col p-6 transition-all duration-300 bg-white border border-emerald-50 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300 group">
             <div class="flex items-center justify-center w-14 h-14 mb-4 rounded-xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                <span class="text-xl shrink-0">🚀</span>
+                
             </div>
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-bold text-gray-900 group-hover:text-emerald-700 font-sans">Manajemen Event</h3>
@@ -106,7 +106,7 @@
 
         <a href="{{ route('superadmin.power-panel.index') }}" class="relative flex flex-col p-6 transition-all duration-300 bg-white border border-emerald-50 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300 group">
             <div class="flex items-center justify-center w-14 h-14 mb-4 rounded-xl bg-amber-100 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-colors">
-                <span class="text-xl">⚡</span>
+                
             </div>
             <h3 class="text-lg font-bold text-gray-900 group-hover:text-emerald-700">Super Power Panel</h3>
             <p class="mt-2 text-sm text-gray-500 flex-1">Generator Akun Dummy massal, Import Akun Excel/CSV, dan Pendaftaran Paksa pendaftar ke program kerja.</p>
@@ -117,14 +117,14 @@
     <!-- PROGRAM FILTER DROPDOWN -->
     <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 mt-10">
         <div>
-            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">🎯 Filter Analisis & Data Registrasi</h3>
+            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider"> Filter Analisis & Data Registrasi</h3>
             <p class="text-xs text-slate-400 mt-0.5">Pilih program kerja di bawah untuk melihat statistik kelulusan & tabel pendaftar secara rinci.</p>
         </div>
         <div class="flex items-center gap-2">
             <select id="programFilterSelect" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition w-full md:w-[280px]">
-                <option value="all">📊 Semua Program (Global)</option>
+                <option value="all"> Semua Program (Global)</option>
                 @foreach($programsList as $p)
-                    <option value="{{ $p->id }}">🎓 {{ $p->name }}</option>
+                    <option value="{{ $p->id }}"> {{ $p->name }}</option>
                 @endforeach
             </select>
         </div>
@@ -137,21 +137,21 @@
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pengguna</p>
                 <h3 class="text-3xl font-black text-slate-800 mt-1">{{ $totalUsers }}</h3>
             </div>
-            <div class="bg-emerald-50 text-emerald-600 p-4 rounded-xl">👤</div>
+            <div class="bg-emerald-50 text-emerald-600 p-4 rounded-xl"></div>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
             <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Program</p>
                 <h3 class="text-3xl font-black text-slate-800 mt-1">{{ $totalPrograms }}</h3>
             </div>
-            <div class="bg-emerald-50 text-emerald-600 p-4 rounded-xl">🎓</div>
+            <div class="bg-emerald-50 text-emerald-600 p-4 rounded-xl"></div>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
             <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pendaftaran</p>
                 <h3 class="text-3xl font-black text-slate-800 mt-1">{{ $totalRegistrations }}</h3>
             </div>
-            <div class="bg-emerald-50 text-emerald-600 p-4 rounded-xl">📝</div>
+            <div class="bg-emerald-50 text-emerald-600 p-4 rounded-xl"></div>
         </div>
     </div>
 
@@ -162,28 +162,28 @@
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pendaftaran Masuk</p>
                 <h3 id="ext-stat-total" class="text-2xl font-black text-slate-800 mt-1">0</h3>
             </div>
-            <div class="bg-blue-50 text-blue-600 p-3 rounded-lg text-sm">📥</div>
+            <div class="bg-blue-50 text-blue-600 p-3 rounded-lg text-sm"></div>
         </div>
         <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
             <div>
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lolos Seleksi (Passed)</p>
                 <h3 id="ext-stat-passed" class="text-2xl font-black text-emerald-700 mt-1">0</h3>
             </div>
-            <div class="bg-emerald-50 text-emerald-600 p-3 rounded-lg text-sm">✅</div>
+            <div class="bg-emerald-50 text-emerald-600 p-3 rounded-lg text-sm"></div>
         </div>
         <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
             <div>
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Draft / Belum Kirim</p>
                 <h3 id="ext-stat-draft" class="text-2xl font-black text-amber-600 mt-1">0</h3>
             </div>
-            <div class="bg-amber-50 text-amber-600 p-3 rounded-lg text-sm">📋</div>
+            <div class="bg-amber-50 text-amber-600 p-3 rounded-lg text-sm"></div>
         </div>
         <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
             <div>
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Gugur Seleksi (Failed)</p>
                 <h3 id="ext-stat-failed" class="text-2xl font-black text-rose-600 mt-1">0</h3>
             </div>
-            <div class="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm">❌</div>
+            <div class="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm"></div>
         </div>
     </div>
 
@@ -380,7 +380,7 @@
                 participantTableBody.innerHTML = `
                     <tr>
                         <td colspan="5" class="p-8 text-center text-slate-400">
-                            <span class="animate-pulse font-bold text-xs">🔄 Memuat data analisis program...</span>
+                            <span class="animate-pulse font-bold text-xs"> Memuat data analisis program...</span>
                         </td>
                     </tr>
                 `;

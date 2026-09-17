@@ -13,7 +13,7 @@
 
     @if(session('success'))
         <div class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold shadow-sm">
-            ✨ {{ session('success') }}
+             {{ session('success') }}
         </div>
     @endif
 
@@ -37,8 +37,8 @@
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Gaya Tema Kartu</label>
                     <select name="theme" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-white text-slate-750 font-bold">
-                        <option value="light">☀️ Tema Putih / Bersih (Teks Gelap)</option>
-                        <option value="dark">🌙 Tema Hijau Gelap (Teks Putih - Kontras)</option>
+                        <option value="light">️ Tema Putih / Bersih (Teks Gelap)</option>
+                        <option value="dark"> Tema Hijau Gelap (Teks Putih - Kontras)</option>
                     </select>
                     @error('theme')
                         <p class="text-rose-500 text-[10px] mt-0.5 font-bold">{{ $message }}</p>
@@ -81,7 +81,7 @@
                 </div>
 
                 <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 text-white font-bold text-xs rounded-xl transition uppercase tracking-wider shadow-md shadow-emerald-50">
-                    💾 Simpan & Terbitkan Ke Public
+                     Simpan & Terbitkan Ke Public
                 </button>
             </form>
         </div>
@@ -110,14 +110,14 @@
                                         <div class="font-extrabold text-slate-800 text-sm tracking-tight">{{ $item->title }}</div>
                                         <div class="text-[11px] text-slate-500 leading-relaxed font-medium line-clamp-2">{!! strip_tags($item->content) !!}</div>
                                         @if($item->banner_path)
-                                            <a href="{{ asset('storage/'.$item->banner_path) }}" target="_blank" class="inline-block text-[9px] font-black text-emerald-600 hover:underline">🖼️ Lihat Lampiran Banner</a>
+                                            <a href="{{ asset('storage/'.$item->banner_path) }}" target="_blank" class="inline-block text-[9px] font-black text-emerald-600 hover:underline">️ Lihat Lampiran Banner</a>
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         @if($item->theme === 'dark')
-                                            <span class="px-2 py-0.5 rounded-md font-bold text-[8px] bg-slate-900 text-white border border-slate-950 uppercase">🌙 Dark Green</span>
+                                            <span class="px-2 py-0.5 rounded-md font-bold text-[8px] bg-slate-900 text-white border border-slate-950 uppercase"> Dark Green</span>
                                         @else
-                                            <span class="px-2 py-0.5 rounded-md font-bold text-[8px] bg-slate-50 text-slate-700 border border-slate-200 uppercase">☀️ Light/White</span>
+                                            <span class="px-2 py-0.5 rounded-md font-bold text-[8px] bg-slate-50 text-slate-700 border border-slate-200 uppercase">️ Light/White</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-center">
@@ -133,13 +133,13 @@
                                         <form action="{{ route('superadmin.public-highlights.toggle', $item->id) }}" method="POST">
                                             @csrf
                                             <button type="submit" class="px-2.5 py-1 rounded-full text-[9px] font-extrabold transition-all duration-150 cursor-pointer {{ $item->is_active ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-100 text-slate-400 hover:bg-slate-250' }}">
-                                                {{ $item->is_active ? '🟢 AKTIF' : '⚪ NONAKTIF' }}
+                                                {{ $item->is_active ? '🟢 AKTIF' : ' NONAKTIF' }}
                                             </button>
                                         </form>
                                     </td>
                                     <td class="px-4 py-3 text-center">
-                                        <div class="text-[10px] font-bold text-slate-700">👁️ {{ $item->views_count ?? 0 }} View</div>
-                                        <div class="text-[10px] font-bold text-emerald-600">🖱️ {{ $item->clicks_count ?? 0 }} Klik</div>
+                                        <div class="text-[10px] font-bold text-slate-700">️ {{ $item->views_count ?? 0 }} View</div>
+                                        <div class="text-[10px] font-bold text-emerald-600">️ {{ $item->clicks_count ?? 0 }} Klik</div>
                                     </td>
                                     <td class="px-4 py-3 text-right">
                                         <div class="flex items-center justify-end gap-2">
@@ -194,8 +194,8 @@
             <div>
                 <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Gaya Tema Kartu</label>
                 <select name="theme" id="edit_theme" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-white text-slate-750 font-bold">
-                    <option value="light">☀️ Tema Putih / Bersih (Teks Gelap)</option>
-                    <option value="dark">🌙 Tema Hijau Gelap (Teks Putih - Kontras)</option>
+                    <option value="light">️ Tema Putih / Bersih (Teks Gelap)</option>
+                    <option value="dark"> Tema Hijau Gelap (Teks Putih - Kontras)</option>
                 </select>
             </div>
 
@@ -226,7 +226,7 @@
             </div>
 
             <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 text-white font-bold text-xs rounded-xl transition uppercase tracking-wider shadow-md shadow-emerald-50">
-                💾 Simpan Perubahan Sorotan
+                 Simpan Perubahan Sorotan
             </button>
         </form>
     </div>

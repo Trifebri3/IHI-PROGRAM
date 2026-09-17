@@ -65,7 +65,7 @@
                             <form action="{{ route('superadmin.programs.pin', $program->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="px-2.5 py-1 rounded-xl text-[9px] font-extrabold transition-all border {{ $program->is_pinned ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-50 text-slate-450 border-slate-200 hover:bg-slate-100 hover:text-slate-700' }}">
-                                    {{ $program->is_pinned ? '📌 PINNED' : '📌 PIN' }}
+                                    {{ $program->is_pinned ? ' PINNED' : ' PIN' }}
                                 </button>
                             </form>
                         </td>

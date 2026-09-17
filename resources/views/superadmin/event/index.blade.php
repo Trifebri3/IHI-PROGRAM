@@ -11,7 +11,7 @@
 
     @if(session('success'))
         <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold shadow-sm animate-fade-in">
-            ✨ {{ session('success') }}
+             {{ session('success') }}
         </div>
     @endif
 
@@ -52,9 +52,9 @@
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Tipe Registrasi</label>
                         <select name="registration_type" id="registration_type" class="w-full p-3 border border-slate-200 rounded-xl text-xs bg-white text-slate-750 font-bold focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition outline-none" onchange="toggleExternalLinkField(this.value)">
-                            <option value="public">☀️ Terbuka Umum</option>
-                            <option value="external">🔗 Link Eksternal</option>
-                            <option value="logged_in">🔑 Wajib Login</option>
+                            <option value="public">️ Terbuka Umum</option>
+                            <option value="external"> Link Eksternal</option>
+                            <option value="logged_in"> Wajib Login</option>
                         </select>
                     </div>
                 </div>
@@ -79,7 +79,7 @@
                 </div>
 
                 <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-green-700 text-white font-bold text-xs rounded-xl hover:from-emerald-700 transition uppercase tracking-wider shadow-sm shadow-emerald-100">
-                    🚀 Publikasikan Event
+                     Publikasikan Event
                 </button>
             </form>
         </div>
@@ -105,21 +105,21 @@
                                 <td class="p-3 space-y-1">
                                     <span class="font-extrabold text-slate-800 text-sm block tracking-tight">{{ $ev->title }}</span>
                                     @if($ev->banner_path)
-                                        <a href="{{ asset('storage/'.$ev->banner_path) }}" target="_blank" class="inline-block text-[9px] font-black text-emerald-650 hover:underline">🖼️ Lihat Pamflet</a>
+                                        <a href="{{ asset('storage/'.$ev->banner_path) }}" target="_blank" class="inline-block text-[9px] font-black text-emerald-650 hover:underline">️ Lihat Pamflet</a>
                                     @endif
                                 </td>
                                 <td class="p-3 space-y-1">
-                                    <div class="font-bold text-slate-800">📅 {{ date('d M Y', strtotime($ev->event_date)) }}</div>
+                                    <div class="font-bold text-slate-800"> {{ date('d M Y', strtotime($ev->event_date)) }}</div>
                                     <div class="text-[10px] text-slate-400 font-semibold">⏱️ {{ $ev->event_time }} WIB</div>
-                                    <div class="text-[10px] text-emerald-700 font-bold max-w-[150px] truncate">📍 {{ $ev->location }}</div>
+                                    <div class="text-[10px] text-emerald-700 font-bold max-w-[150px] truncate"> {{ $ev->location }}</div>
                                 </td>
                                 <td class="p-3 text-center">
                                     @if($ev->registration_type === 'external')
-                                        <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase bg-indigo-50 text-indigo-700 border border-indigo-200">🔗 Link Eksternal</span>
+                                        <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase bg-indigo-50 text-indigo-700 border border-indigo-200"> Link Eksternal</span>
                                     @elseif($ev->registration_type === 'logged_in')
-                                        <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase bg-amber-50 text-amber-700 border border-amber-200">🔑 Wajib Login</span>
+                                        <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase bg-amber-50 text-amber-700 border border-amber-200"> Wajib Login</span>
                                     @else
-                                        <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-250">☀️ Terbuka Umum</span>
+                                        <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-250">️ Terbuka Umum</span>
                                     @endif
                                 </td>
                                 <td class="p-3 text-center">
@@ -130,12 +130,12 @@
                                 <td class="p-3">
                                     <div class="flex items-center justify-center gap-2">
                                         <a href="{{ route('superadmin.events.dashboard', $ev->id) }}" class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-150 text-emerald-700 font-extrabold text-[9px] uppercase tracking-wide rounded-lg transition shrink-0">
-                                            ⚙️ Kelola & Rekap
+                                            ️ Kelola & Rekap
                                         </a>
                                         <form action="{{ route('superadmin.events.delete', $ev->id) }}" method="POST" onsubmit="return confirm('Batalkan dan hapus event ini?')" class="inline">
                                             @csrf 
                                             @method('DELETE')
-                                            <button type="submit" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition">✕</button>
+                                            <button type="submit" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1.5 rounded-lg text-xs font-bold transition"></button>
                                         </form>
                                     </div>
                                 </td>
