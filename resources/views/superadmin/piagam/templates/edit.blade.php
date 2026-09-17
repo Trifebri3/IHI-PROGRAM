@@ -662,16 +662,37 @@
                         total_pages: this.totalPages
                     });
                     
+                    if(typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Tersimpan!',
+                            text: 'Layout berhasil disimpan ke sistem.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert('Layout berhasil disimpan ke sistem.');
+                    }
                     this.statusText = 'Berhasil disimpan!';
                     setTimeout(() => { this.statusText = 'Siap'; }, 3000);
                 } catch (error) {
                     console.error(error);
+                    if(typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: 'Terjadi kesalahan saat menyimpan layout.'
+                        });
+                    } else {
+                        alert('Gagal menyimpan layout!');
+                    }
                     this.statusText = 'Gagal menyimpan!';
                 }
             }
         }));
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
     /* Prevent text selection while dragging on canvas */
     .canvas-container {
