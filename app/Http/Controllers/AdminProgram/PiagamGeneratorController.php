@@ -90,8 +90,9 @@ class PiagamGeneratorController extends Controller {
         }
 
         try {
-            \Illuminate\Support\Facades\Mail::to($registration->user->email)->send(new \App\Mail\PiagamCertificateMail($certificate));
-            return back()->with('success', 'Sertifikat berhasil dikirimkan ke email peserta.');
+            \Illuminate\Support\Facades\Mail::to($registration->user->email)->queue(new \App\Mail\PiagamCertificateMail($certificate));
+            $certificate->update(['email_sent_at' => now()]);
+            return back()->with('success', 'Sertifikat berhasil dimasukkan ke antrean (queue) pengiriman email.');
         } catch (\Exception $e) {
             \Log::error('Failed to send certificate email: ' . $e->getMessage());
             return back()->with('error', 'Gagal mengirim email: ' . $e->getMessage());

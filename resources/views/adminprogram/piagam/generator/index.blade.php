@@ -80,7 +80,13 @@
                                         <a href="{{ asset('storage/' . $participant->piagamCertificate->file_path) }}" target="_blank" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg transition-colors">Lihat PDF</a>
                                         <form action="{{ route('adminprogram.piagam.generator.sendEmailOne', [$program->id, $participant->id]) }}" method="POST" class="inline" onsubmit="return confirm('Kirim sertifikat ini ke email peserta?')">
                                             @csrf
-                                            <button type="submit" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors" title="Kirim ke Email">Kirim Email</button>
+                                            @if($participant->piagamCertificate->email_sent_at)
+                                                <button type="submit" class="px-3 py-1.5 bg-slate-100 hover:bg-emerald-500 text-emerald-700 hover:text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1" title="Kirim Ulang Email">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Terkirim
+                                                </button>
+                                            @else
+                                                <button type="submit" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors" title="Kirim ke Email">Kirim Email</button>
+                                            @endif
                                         </form>
                                     </div>
                                 @else
