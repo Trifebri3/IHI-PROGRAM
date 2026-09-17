@@ -98,25 +98,33 @@ class CertificateGeneratorService {
                         $pdf->SetTextColor($r, $g, $b);
                         $pdf->SetXY($element->x_pos, $element->y_pos);
                         
-                        $font = strtolower($element->font_family) ?: 'helvetica';
-                        if (!in_array($font, ['courier', 'helvetica', 'arial', 'times'])) {
-                            $font = 'helvetica';
+                        $fontFamilyRaw = strtolower($element->font_family ?? 'arial');
+                        $font = 'arial'; // default
+                        
+                        if (str_contains($fontFamilyRaw, 'times') || str_contains($fontFamilyRaw, 'georgia')) {
+                            $font = 'times';
+                        } elseif (str_contains($fontFamilyRaw, 'courier')) {
+                            $font = 'courier';
+                        } elseif (str_contains($fontFamilyRaw, 'helvetica') || str_contains($fontFamilyRaw, 'arial') || str_contains($fontFamilyRaw, 'verdana')) {
+                            $font = 'arial';
                         }
                         
                         $pdf->SetFont($font, '', $element->font_size);
+                        
+                        // Use FontSize as cell height to align top of text with y_pos
+                        $cellHeight = $pdf->FontSize;
+                        
+                        // Always draw from x_pos to preserve exactly where the user placed it visually.
+                        // We use MultiCell to support potential line breaks, though mostly it's single line.
+                        $pdf->SetXY($element->x_pos, $element->y_pos);
+                        
+                        // Convert alignment
                         $align = strtoupper(substr($element->text_align ?? 'left', 0, 1));
                         if(!in_array($align, ['L', 'C', 'R'])) $align = 'L';
                         
-                        if ($align === 'C') {
-                            $pdf->SetXY(0, $element->y_pos);
-                            $pdf->Cell($size['width'], 0, utf8_decode($text), 0, 0, 'C');
-                        } else if ($align === 'R') {
-                            $pdf->SetXY(0, $element->y_pos);
-                            $pdf->Cell($size['width'], 0, utf8_decode($text), 0, 0, 'R');
-                        } else {
-                            $pdf->SetXY($element->x_pos, $element->y_pos);
-                            $pdf->Cell(0, 0, utf8_decode($text), 0, 0, 'L');
-                        }
+                        // To avoid centering across the whole page, we just left align it from the x_pos.
+                        // In Fabric.js, x_pos is the left edge of the bounding box anyway.
+                        $pdf->MultiCell(0, $cellHeight, utf8_decode($text), 0, 'L');
                     }
                 }
             }
