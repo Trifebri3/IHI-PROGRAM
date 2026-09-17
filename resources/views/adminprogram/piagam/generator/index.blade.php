@@ -76,7 +76,13 @@
                                         <button type="submit" class="text-[10px] text-slate-400 hover:text-indigo-600 underline" title="Batalkan Tidak Lolos dan Generate">Tetap Generate</button>
                                     </form>
                                 @elseif($participant->piagamCertificate && $participant->piagamCertificate->file_path)
-                                    <a href="{{ asset('storage/' . $participant->piagamCertificate->file_path) }}" target="_blank" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Lihat PDF</a>
+                                    <div class="flex items-center justify-center gap-2">
+                                        <a href="{{ asset('storage/' . $participant->piagamCertificate->file_path) }}" target="_blank" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg transition-colors">Lihat PDF</a>
+                                        <form action="{{ route('adminprogram.piagam.generator.sendEmailOne', [$program->id, $participant->id]) }}" method="POST" class="inline" onsubmit="return confirm('Kirim sertifikat ini ke email peserta?')">
+                                            @csrf
+                                            <button type="submit" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors" title="Kirim ke Email">Kirim Email</button>
+                                        </form>
+                                    </div>
                                 @else
                                     <div class="flex items-center justify-center gap-2">
                                         <form action="{{ route('adminprogram.piagam.generator.generateOne', [$program->id, $participant->id]) }}" method="POST" class="inline">

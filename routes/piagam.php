@@ -26,6 +26,7 @@ Route::prefix('adminprogram/programs/{program}/piagam')->name('adminprogram.piag
     Route::post('generator/generate', [PiagamGeneratorController::class, 'generate'])->name('generator.generate');
       Route::post('generator/generate/{participant}', [PiagamGeneratorController::class, 'generateOne'])->name('generator.generateOne');
       Route::post('generator/fail/{participant}', [PiagamGeneratorController::class, 'failOne'])->name('generator.failOne');
+      Route::post('generator/send-email/{participant}', [PiagamGeneratorController::class, 'sendEmailOne'])->name('generator.sendEmailOne');
     Route::get('published', [PiagamGeneratorController::class, 'published'])->name('generator.published');
 });
 

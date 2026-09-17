@@ -81,6 +81,23 @@ class PiagamGeneratorController extends Controller {
         return back()->with('success', 'Peserta ditandai sebagai TIDAK LOLOS.');
     }
 
+    public function sendEmailOne(Request $request, $programId, $participantId) {
+        $registration = \App\Models\Registration::findOrFail($participantId);
+        $certificate = PiagamCertificate::where('participant_id', $participantId)->first();
+        
+        if (!$certificate || !$certificate->file_path) {
+            return back()->with('error', 'Sertifikat belum di-generate untuk peserta ini.');
+        }
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($registration->user->email)->send(new \App\Mail\PiagamCertificateMail($certificate));
+            return back()->with('success', 'Sertifikat berhasil dikirimkan ke email peserta.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to send certificate email: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengirim email: ' . $e->getMessage());
+        }
+    }
+
     public function published($programId) { 
         $program = Program::findOrFail($programId);
         $certificates = PiagamCertificate::whereHas('registration', function($q) use ($programId) {
