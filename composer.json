@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "chillerlan/php-qrcode": "^6.0",
+        "drainerlight/php-pdf-decompressor": "*",
         "fpdf/fpdf": "^1.86",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",

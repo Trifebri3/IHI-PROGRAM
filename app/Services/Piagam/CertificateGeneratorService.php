@@ -49,7 +49,18 @@ class CertificateGeneratorService {
             throw new \Exception("Template file not found at: " . $templatePath);
         }
 
-        $pageCount = $pdf->setSourceFile($templatePath);
+        // Auto-decompress if PDF uses object streams or xref streams (PDF 1.5+)
+        $this->ensureCompatiblePdf($templatePath);
+
+        try {
+            $pageCount = $pdf->setSourceFile($templatePath);
+        } catch (\Throwable $e) {
+            // Force normalize and retry with a fresh FPDI instance
+            $this->normalizePdf($templatePath);
+            $pdf = new Fpdi();
+            $pdf->SetAutoPageBreak(false);
+            $pageCount = $pdf->setSourceFile($templatePath);
+        }
 
         // Generate QR code image temporary
         $qrToken = $certificate->qr_token ?? (string) Str::uuid();
@@ -124,7 +135,11 @@ class CertificateGeneratorService {
                         
                         // To avoid centering across the whole page, we just left align it from the x_pos.
                         // In Fabric.js, x_pos is the left edge of the bounding box anyway.
-                        $pdf->MultiCell(0, $cellHeight, utf8_decode($text), 0, 'L');
+                        // Convert text encoding safely without deprecation
+                        $encodedText = function_exists('mb_convert_encoding') 
+                            ? mb_convert_encoding($text, 'ISO-8859-1', 'UTF-8') 
+                            : @utf8_decode($text);
+                        $pdf->MultiCell(0, $cellHeight, $encodedText, 0, 'L');
                     }
                 }
             }
@@ -169,6 +184,48 @@ class CertificateGeneratorService {
         }
 
         return $text;
+    }
+
+    /**
+     * Ensure a PDF file is readable by FPDI by converting PDF 1.5+ compressed streams to classic PDF 1.4 format.
+     */
+    public function ensureCompatiblePdf(string $filePath): void
+    {
+        if (!file_exists($filePath)) {
+            return;
+        }
+
+        if (class_exists(\PdfDecompressor\Normalizer::class)) {
+            $bytes = @file_get_contents($filePath);
+            if ($bytes && \PdfDecompressor\Normalizer::isCompressed($bytes)) {
+                $this->normalizePdf($filePath);
+            }
+        }
+    }
+
+    /**
+     * Decompress PDF in place using PdfDecompressor\Normalizer.
+     */
+    public function normalizePdf(string $filePath): void
+    {
+        if (!file_exists($filePath)) {
+            return;
+        }
+
+        if (class_exists(\PdfDecompressor\Normalizer::class)) {
+            $bytes = @file_get_contents($filePath);
+            if ($bytes) {
+                try {
+                    $normalizer = new \PdfDecompressor\Normalizer();
+                    $normalized = $normalizer->normalize($bytes);
+                    if (!empty($normalized) && strncmp($normalized, '%PDF-', 5) === 0) {
+                        @file_put_contents($filePath, $normalized);
+                    }
+                } catch (\Throwable $t) {
+                    \Illuminate\Support\Facades\Log::warning("PdfDecompressor normalization failed on {$filePath}: " . $t->getMessage());
+                }
+            }
+        }
     }
 }
 

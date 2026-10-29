@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8ef17dd839f642d349f97606a6a481cc",
+    "content-hash": "935d08d71b45be82553fcd133b28e1f3",
     "packages": [
         {
             "name": "brick/math",
@@ -606,6 +606,69 @@
                 }
             ],
             "time": "2025-10-31T18:51:33+00:00"
+        },
+        {
+            "name": "drainerlight/php-pdf-decompressor",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/drainerlight/php-pdf-decompressor.git",
+                "reference": "f799cbb87bea4d89aa35a0d6d8bffba4d9aba864"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/drainerlight/php-pdf-decompressor/zipball/f799cbb87bea4d89aa35a0d6d8bffba4d9aba864",
+                "reference": "f799cbb87bea4d89aa35a0d6d8bffba4d9aba864",
+                "shasum": ""
+            },
+            "require": {
+                "ext-zlib": "*",
+                "php": ">=7.4"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.5",
+                "setasign/fpdi-fpdf": "^2.3"
+            },
+            "bin": [
+                "bin/pdf-decompress"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PdfDecompressor\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "drainerlight"
+                }
+            ],
+            "description": "Pure-PHP PDF decompressor: converts PDF 1.5+ cross-reference streams and object streams (ObjStm) into a classic PDF 1.4 structure, so parsers that only understand the traditional xref table (such as FPDI's free parser) can read them. A qpdf-free alternative — no external binaries.",
+            "homepage": "https://github.com/drainerlight/php-pdf-decompressor",
+            "keywords": [
+                "cross-reference-stream",
+                "decompress",
+                "decompressor",
+                "flatedecode",
+                "fpdi",
+                "object-stream",
+                "objstm",
+                "pdf",
+                "pdf-parser",
+                "php",
+                "qpdf",
+                "uncompress",
+                "xref"
+            ],
+            "support": {
+                "issues": "https://github.com/drainerlight/php-pdf-decompressor/issues",
+                "source": "https://github.com/drainerlight/php-pdf-decompressor/tree/v0.1.0"
+            },
+            "time": "2026-07-01T09:17:20+00:00"
         },
         {
             "name": "egulias/email-validator",

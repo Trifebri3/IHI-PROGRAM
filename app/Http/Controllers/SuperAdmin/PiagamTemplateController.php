@@ -21,13 +21,30 @@ class PiagamTemplateController extends Controller {
         ]);
         
         $path = $request->file('file_path')->store('piagam_templates', 'public');
+        $fullPath = storage_path('app/public/' . $path);
+
+        // Normalize PDF immediately if it uses PDF 1.5+ compression
+        if (class_exists(\PdfDecompressor\Normalizer::class)) {
+            $bytes = @file_get_contents($fullPath);
+            if ($bytes) {
+                try {
+                    $normalizer = new \PdfDecompressor\Normalizer();
+                    $normalized = $normalizer->normalize($bytes);
+                    if (!empty($normalized) && strncmp($normalized, '%PDF-', 5) === 0) {
+                        @file_put_contents($fullPath, $normalized);
+                    }
+                } catch (\Throwable $t) {
+                    \Illuminate\Support\Facades\Log::warning("PdfDecompressor template upload normalization: " . $t->getMessage());
+                }
+            }
+        }
         
         // Count total pages using FPDI
         $totalPages = 1;
         try {
             $pdf = new \setasign\Fpdi\Fpdi();
-            $totalPages = $pdf->setSourceFile(storage_path('app/public/' . $path));
-        } catch (\Exception $e) {
+            $totalPages = $pdf->setSourceFile($fullPath);
+        } catch (\Throwable $e) {
             // fallback if error
             $totalPages = 1;
         }

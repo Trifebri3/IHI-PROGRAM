@@ -262,7 +262,35 @@ $options = new QROptions([
         if ($isImage) {
             $pdf->Image($templatePath, 0, 0, 297, 210);
         } else {
-            $pdf->setSourceFile($templatePath);
+            // Auto decompress if PDF 1.5+ uses compressed xref or object streams
+            if (class_exists(\PdfDecompressor\Normalizer::class)) {
+                $rawBytes = @file_get_contents($templatePath);
+                if ($rawBytes && \PdfDecompressor\Normalizer::isCompressed($rawBytes)) {
+                    try {
+                        $norm = (new \PdfDecompressor\Normalizer())->normalize($rawBytes);
+                        if (!empty($norm) && strncmp($norm, '%PDF-', 5) === 0) {
+                            @file_put_contents($templatePath, $norm);
+                        }
+                    } catch (\Throwable $t) {}
+                }
+            }
+            try {
+                $pdf->setSourceFile($templatePath);
+            } catch (\Throwable $e) {
+                if (class_exists(\PdfDecompressor\Normalizer::class)) {
+                    try {
+                        $norm = (new \PdfDecompressor\Normalizer())->normalize(file_get_contents($templatePath));
+                        file_put_contents($templatePath, $norm);
+                        $pdf = new Fpdi('L', 'mm', 'A4');
+                        $pdf->AddPage();
+                        $pdf->setSourceFile($templatePath);
+                    } catch (\Throwable $t) {
+                        throw $e;
+                    }
+                } else {
+                    throw $e;
+                }
+            }
             $tplIdx = $pdf->importPage(1);
             $pdf->useTemplate($tplIdx, 0, 0, 297, 210); // A4 Landscape is 297mm x 210mm
         }
