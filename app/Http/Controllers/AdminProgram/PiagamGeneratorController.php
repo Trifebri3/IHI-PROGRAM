@@ -354,6 +354,167 @@ class PiagamGeneratorController extends Controller {
         return redirect()->route('adminprogram.piagam.generator.index', $program->id)->with('success', $msg);
     }
 
+    public function regenerateOne(Request $request, $programId, $participantId, CertificateGeneratorService $generatorService) {
+        $program = Program::with('piagamTemplate')->findOrFail($programId);
+        if (!$program->piagamTemplate) {
+            return back()->with('error', 'Program belum memiliki template piagam.');
+        }
+
+        try {
+            $generatorService->generateForParticipant($participantId, force: true);
+            return back()->with('success', 'Sertifikat berhasil diterbitkan ulang (regenerated).');
+        } catch (\Exception $e) {
+            Log::error('Failed to regenerate certificate: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menerbitkan ulang sertifikat: ' . $e->getMessage());
+        }
+    }
+
+    public function cancelOne(Request $request, $programId, $participantId) {
+        $registration = Registration::where('id', $participantId)->where('program_id', $programId)->firstOrFail();
+        $certificate = PiagamCertificate::where('participant_id', $participantId)->first();
+        if ($certificate) {
+            if ($certificate->file_path) {
+                Storage::disk('public')->delete($certificate->file_path);
+            }
+            $certificate->delete();
+        }
+        return back()->with('success', 'Piagam sertifikat untuk ' . ($registration->user->name ?? 'peserta') . ' berhasil dibatalkan dan dihapus.');
+    }
+
+    public function bulkCancel(Request $request, $programId) {
+        $selectedIds = $request->input('participant_ids', []);
+        if (empty($selectedIds)) {
+            return back()->with('error', 'Pilih minimal satu peserta untuk dibatalkan piagamnya.');
+        }
+
+        $regIds = Registration::where('program_id', $programId)->whereIn('id', $selectedIds)->pluck('id');
+        $certificates = PiagamCertificate::whereIn('participant_id', $regIds)->get();
+        $count = 0;
+        foreach ($certificates as $cert) {
+            if ($cert->file_path) {
+                Storage::disk('public')->delete($cert->file_path);
+            }
+            $cert->delete();
+            $count++;
+        }
+
+        return back()->with('success', "Berhasil membatalkan dan menghapus $count piagam sertifikat terpilih.");
+    }
+
+    public function bulkRegenerate(Request $request, $programId, CertificateGeneratorService $generatorService) {
+        $program = Program::with('piagamTemplate')->findOrFail($programId);
+        if (!$program->piagamTemplate) {
+            return back()->with('error', 'Program belum memiliki template piagam.');
+        }
+
+        $selectedIds = $request->input('participant_ids', []);
+        if (empty($selectedIds)) {
+            return back()->with('error', 'Pilih minimal satu peserta untuk diterbitkan ulang piagamnya.');
+        }
+
+        $count = 0;
+        foreach ($selectedIds as $pId) {
+            try {
+                $generatorService->generateForParticipant($pId, force: true);
+                $count++;
+            } catch (\Exception $e) {
+                Log::error("Failed to bulk regenerate for #$pId: " . $e->getMessage());
+            }
+        }
+
+        return back()->with('success', "Berhasil menerbitkan ulang $count piagam sertifikat.");
+    }
+
+    public function getCertificateData($programId, $participantId) {
+        $registration = Registration::with(['user', 'piagamCertificate'])->where('id', $participantId)->where('program_id', $programId)->firstOrFail();
+        $certificate = $registration->piagamCertificate;
+
+        $predikat = $certificate ? ($certificate->predikat ?? null) : null;
+        if (!$predikat) {
+            $pGrade = \App\Models\PiagamParticipantGrade::where('participant_id', $participantId)->where('variable_name', 'PREDIKAT')->first();
+            $predikat = $pGrade ? $pGrade->value : '';
+        }
+
+        $grades = \App\Models\PiagamParticipantGrade::where('participant_id', $participantId)->get();
+
+        return response()->json([
+            'participant_id' => $registration->id,
+            'name' => $registration->user->name ?? '',
+            'email' => $registration->user->email ?? '',
+            'certificate_number' => $certificate->certificate_number ?? ('IHI-' . date('Y') . '-' . str_pad($participantId, 4, '0', STR_PAD_LEFT)),
+            'final_grade' => $certificate->final_grade ?? '',
+            'predikat' => $predikat,
+            'published_at' => $certificate && $certificate->published_at ? date('Y-m-d', strtotime($certificate->published_at)) : date('Y-m-d'),
+            'has_certificate' => $certificate && $certificate->file_path ? true : false,
+            'file_url' => $certificate && $certificate->file_path ? asset('storage/' . $certificate->file_path) : null,
+            'grades' => $grades,
+        ]);
+    }
+
+    public function updateCertificateData(Request $request, $programId, $participantId, CertificateGeneratorService $generatorService) {
+        $registration = Registration::with(['program', 'user'])->where('id', $participantId)->where('program_id', $programId)->firstOrFail();
+
+        // Update participant user's name if edited
+        if ($request->filled('name') && $registration->user) {
+            $registration->user->update(['name' => trim($request->input('name'))]);
+        }
+
+        $certificate = PiagamCertificate::firstOrCreate([
+            'participant_id' => $participantId,
+        ], [
+            'program_id' => $programId,
+            'template_id' => $registration->program->piagam_template_id,
+            'certificate_number' => $request->input('certificate_number'),
+            'qr_token' => (string) \Illuminate\Support\Str::uuid(),
+            'status' => 'draft',
+            'published_at' => now(),
+        ]);
+
+        $updateData = [
+            'certificate_number' => $request->input('certificate_number'),
+            'final_grade' => $request->input('final_grade') !== null && $request->input('final_grade') !== '' ? $request->input('final_grade') : null,
+        ];
+        if ($request->filled('published_at')) {
+            $updateData['published_at'] = date('Y-m-d H:i:s', strtotime($request->input('published_at')));
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('piagam_certificates', 'predikat')) {
+            $updateData['predikat'] = $request->input('predikat');
+        }
+        $certificate->update($updateData);
+
+        if ($request->has('predikat')) {
+            \App\Models\PiagamParticipantGrade::updateOrCreate([
+                'participant_id' => $participantId,
+                'variable_name' => 'PREDIKAT',
+            ], [
+                'value' => $request->input('predikat')
+            ]);
+        }
+
+        // Custom grades
+        if ($request->has('custom_grades') && is_array($request->custom_grades)) {
+            foreach ($request->custom_grades as $varName => $val) {
+                \App\Models\PiagamParticipantGrade::updateOrCreate([
+                    'participant_id' => $participantId,
+                    'variable_name' => $varName,
+                ], [
+                    'value' => $val
+                ]);
+            }
+        }
+
+        if ($request->boolean('regenerate_now') || ($certificate->file_path && $request->input('action') === 'save_and_regenerate')) {
+            try {
+                $generatorService->generate($certificate);
+                return back()->with('success', 'Data piagam berhasil diperbarui dan sertifikat PDF berhasil diterbitkan ulang.');
+            } catch (\Exception $e) {
+                return back()->with('error', 'Data berhasil disimpan, namun gagal menerbitkan ulang PDF: ' . $e->getMessage());
+            }
+        }
+
+        return back()->with('success', 'Data piagam berhasil diperbarui.');
+    }
+
     public function published(Request $request, $programId) { 
         $program = Program::findOrFail($programId);
         

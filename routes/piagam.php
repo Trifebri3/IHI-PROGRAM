@@ -25,12 +25,18 @@ Route::prefix('adminprogram/programs/{program}/piagam')->name('adminprogram.piag
     Route::get('generator', [PiagamGeneratorController::class, 'index'])->name('generator.index');
     Route::post('generator/generate', [PiagamGeneratorController::class, 'generate'])->name('generator.generate');
     Route::post('generator/generate/{participant}', [PiagamGeneratorController::class, 'generateOne'])->name('generator.generateOne');
+    Route::post('generator/regenerate/{participant}', [PiagamGeneratorController::class, 'regenerateOne'])->name('generator.regenerateOne');
+    Route::post('generator/cancel/{participant}', [PiagamGeneratorController::class, 'cancelOne'])->name('generator.cancelOne');
     Route::post('generator/fail/{participant}', [PiagamGeneratorController::class, 'failOne'])->name('generator.failOne');
     Route::post('generator/pass/{participant}', [PiagamGeneratorController::class, 'passOne'])->name('generator.passOne');
     Route::post('generator/bulk-fail', [PiagamGeneratorController::class, 'bulkFail'])->name('generator.bulkFail');
     Route::post('generator/bulk-pass', [PiagamGeneratorController::class, 'bulkPass'])->name('generator.bulkPass');
+    Route::post('generator/bulk-cancel', [PiagamGeneratorController::class, 'bulkCancel'])->name('generator.bulkCancel');
+    Route::post('generator/bulk-regenerate', [PiagamGeneratorController::class, 'bulkRegenerate'])->name('generator.bulkRegenerate');
     Route::post('generator/bulk-send-email', [PiagamGeneratorController::class, 'bulkSendEmail'])->name('generator.bulkSendEmail');
     Route::post('generator/match-list', [PiagamGeneratorController::class, 'matchList'])->name('generator.matchList');
+    Route::get('generator/certificate/{participant}/data', [PiagamGeneratorController::class, 'getCertificateData'])->name('generator.certificate.data');
+    Route::post('generator/certificate/{participant}/update', [PiagamGeneratorController::class, 'updateCertificateData'])->name('generator.certificate.update');
     Route::post('generator/send-email/{participant}', [PiagamGeneratorController::class, 'sendEmailOne'])->name('generator.sendEmailOne');
     Route::get('published', [PiagamGeneratorController::class, 'published'])->name('generator.published');
 });

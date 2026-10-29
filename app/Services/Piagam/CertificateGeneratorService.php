@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 
 class CertificateGeneratorService {
 
-    public function generateForParticipant($participantId) {
+    public function generateForParticipant($participantId, bool $force = false) {
         $registration = \App\Models\Registration::findOrFail($participantId);
         $program = $registration->program;
         
@@ -29,6 +29,10 @@ class CertificateGeneratorService {
             'qr_token' => (string) \Illuminate\Support\Str::uuid(),
             'published_at' => now()
         ]);
+
+        if (!$force && $certificate->file_path && Storage::disk('public')->exists($certificate->file_path)) {
+            return $certificate->file_path;
+        }
 
         return $this->generate($certificate);
     }
@@ -147,13 +151,19 @@ class CertificateGeneratorService {
         
         @unlink($tmpQrPath);
 
+        // Delete previous PDF file if exists (for regenerate)
+        if ($certificate->file_path && Storage::disk('public')->exists($certificate->file_path)) {
+            Storage::disk('public')->delete($certificate->file_path);
+        }
+
         // Save PDF
         $fileName = 'certificates/' . $certificate->program_id . '/' . $certificate->id . '_' . time() . '.pdf';
         Storage::disk('public')->put($fileName, $pdf->Output('S'));
 
         $certificate->update([
             'file_path' => $fileName,
-            'status' => 'generated'
+            'status' => 'generated',
+            'published_at' => $certificate->published_at ?? now()
         ]);
 
         return $fileName;
@@ -164,13 +174,25 @@ class CertificateGeneratorService {
         $text = $content;
         $participant = $certificate->participant; 
         
+        $predikat = $certificate->predikat ?? null;
+        if (!$predikat) {
+            $predikatGrade = \App\Models\PiagamParticipantGrade::where('participant_id', $certificate->participant_id)
+                ->where('variable_name', 'PREDIKAT')
+                ->first();
+            $predikat = $predikatGrade ? $predikatGrade->value : '';
+        }
+
+        $formattedDate = $certificate->published_at 
+            ? date('d F Y', strtotime($certificate->published_at)) 
+            : date('d F Y');
+
         $variables = [
             '[NAMA_PESERTA]' => $certificate->participant->user->name ?? 'N/A',
             '[NAMA_PROGRAM]' => $certificate->program->name ?? 'N/A',
             '[NOMOR_KREDENSIAL_UTAMA_GLOBAL]' => $certificate->certificate_number ?? 'N/A',
-            '[PREDIKAT]' => $certificate->predikat ?? '', // need to add predikat if exists
+            '[PREDIKAT]' => $predikat,
             '[TOTAL_SKOR]' => $certificate->final_grade ?? 'N/A',
-            '[TANGGAL_TERBIT]' => date('d F Y'),
+            '[TANGGAL_TERBIT]' => $formattedDate,
         ];
         
         // Fetch Custom Grades
