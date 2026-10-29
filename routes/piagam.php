@@ -30,6 +30,7 @@ Route::prefix('adminprogram/programs/{program}/piagam')->name('adminprogram.piag
     Route::post('generator/bulk-fail', [PiagamGeneratorController::class, 'bulkFail'])->name('generator.bulkFail');
     Route::post('generator/bulk-pass', [PiagamGeneratorController::class, 'bulkPass'])->name('generator.bulkPass');
     Route::post('generator/bulk-send-email', [PiagamGeneratorController::class, 'bulkSendEmail'])->name('generator.bulkSendEmail');
+    Route::post('generator/match-list', [PiagamGeneratorController::class, 'matchList'])->name('generator.matchList');
     Route::post('generator/send-email/{participant}', [PiagamGeneratorController::class, 'sendEmailOne'])->name('generator.sendEmailOne');
     Route::get('published', [PiagamGeneratorController::class, 'published'])->name('generator.published');
 });

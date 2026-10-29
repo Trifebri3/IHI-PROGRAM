@@ -195,9 +195,13 @@ class CertificateGeneratorService {
             return;
         }
 
-        if (class_exists(\PdfDecompressor\Normalizer::class)) {
+        $normalizerClass = class_exists(\App\Services\PdfDecompressor\Normalizer::class)
+            ? \App\Services\PdfDecompressor\Normalizer::class
+            : (class_exists(\PdfDecompressor\Normalizer::class) ? \PdfDecompressor\Normalizer::class : null);
+
+        if ($normalizerClass) {
             $bytes = @file_get_contents($filePath);
-            if ($bytes && \PdfDecompressor\Normalizer::isCompressed($bytes)) {
+            if ($bytes && $normalizerClass::isCompressed($bytes)) {
                 $this->normalizePdf($filePath);
             }
         }
@@ -212,11 +216,15 @@ class CertificateGeneratorService {
             return;
         }
 
-        if (class_exists(\PdfDecompressor\Normalizer::class)) {
+        $normalizerClass = class_exists(\App\Services\PdfDecompressor\Normalizer::class)
+            ? \App\Services\PdfDecompressor\Normalizer::class
+            : (class_exists(\PdfDecompressor\Normalizer::class) ? \PdfDecompressor\Normalizer::class : null);
+
+        if ($normalizerClass) {
             $bytes = @file_get_contents($filePath);
             if ($bytes) {
                 try {
-                    $normalizer = new \PdfDecompressor\Normalizer();
+                    $normalizer = new $normalizerClass();
                     $normalized = $normalizer->normalize($bytes);
                     if (!empty($normalized) && strncmp($normalized, '%PDF-', 5) === 0) {
                         @file_put_contents($filePath, $normalized);

@@ -269,6 +269,91 @@ class PiagamGeneratorController extends Controller {
         return back()->with('success', "Berhasil memasukkan $sentCount email sertifikat ke antrean pengiriman.");
     }
 
+    public function matchList(Request $request, $programId, CertificateGeneratorService $generatorService) {
+        $request->validate([
+            'raw_list' => 'required|string',
+            'list_action' => 'required|in:mark_passed_only,mark_passed_others_failed,mark_failed,generate_matched',
+        ]);
+
+        $program = Program::with('piagamTemplate')->findOrFail($programId);
+        $rawText = $request->input('raw_list');
+        $lines = preg_split('/[\r\n,;]+/', $rawText);
+        $items = [];
+        foreach ($lines as $line) {
+            $trimmed = trim(preg_replace('/^\s*\d+[\.\)\-]\s*/', '', trim($line)));
+            if (!empty($trimmed)) {
+                $items[] = $trimmed;
+            }
+        }
+        $items = array_values(array_unique($items));
+
+        $allRegistrations = $program->registrations()->with('user')->get();
+        $matchedIds = [];
+        $unmatchedItems = [];
+
+        foreach ($items as $item) {
+            $cleanItem = mb_strtolower($item);
+            $isEmail = str_contains($cleanItem, '@');
+            $found = $allRegistrations->first(function($reg) use ($cleanItem, $isEmail) {
+                if (!$reg->user) return false;
+                if ($isEmail) {
+                    return mb_strtolower(trim($reg->user->email)) === $cleanItem;
+                }
+                $name = mb_strtolower(trim($reg->user->name));
+                return $name === $cleanItem || str_contains($name, $cleanItem) || str_contains($cleanItem, $name);
+            });
+
+            if ($found && !in_array($found->id, $matchedIds)) {
+                $matchedIds[] = $found->id;
+            } else {
+                $unmatchedItems[] = $item;
+            }
+        }
+
+        $action = $request->input('list_action');
+        $matchedCount = count($matchedIds);
+
+        if ($action === 'mark_passed_only') {
+            Registration::where('program_id', $programId)->whereIn('id', $matchedIds)->update(['status' => 'passed']);
+            $msg = "Berhasil menandai $matchedCount peserta dari list sebagai LOLOS/BERHAK.";
+        } elseif ($action === 'mark_passed_others_failed') {
+            Registration::where('program_id', $programId)->whereIn('id', $matchedIds)->update(['status' => 'passed']);
+            $othersCount = Registration::where('program_id', $programId)->whereNotIn('id', $matchedIds)->update(['status' => 'failed']);
+            $msg = "Berhasil menandai $matchedCount peserta dari list sebagai LOLOS, dan $othersCount peserta lainnya sebagai TIDAK LOLOS.";
+        } elseif ($action === 'mark_failed') {
+            Registration::where('program_id', $programId)->whereIn('id', $matchedIds)->update(['status' => 'failed']);
+            PiagamCertificate::whereIn('participant_id', $matchedIds)->delete();
+            $msg = "Berhasil menandai $matchedCount peserta dari list sebagai TIDAK LOLOS.";
+        } elseif ($action === 'generate_matched') {
+            if (!$program->piagamTemplate) {
+                return back()->with('error', 'Program belum memiliki template piagam.');
+            }
+            Registration::where('program_id', $programId)->whereIn('id', $matchedIds)->where('status', 'failed')->update(['status' => 'passed']);
+            $genCount = 0;
+            foreach ($matchedIds as $pId) {
+                try {
+                    $generatorService->generateForParticipant($pId);
+                    $genCount++;
+                } catch (\Throwable $t) {
+                    Log::error("Match-list generate error for #$pId: " . $t->getMessage());
+                }
+            }
+            $msg = "Berhasil men-generate $genCount piagam untuk peserta dari list.";
+        }
+
+        if (!empty($unmatchedItems)) {
+            $unmatchedSample = implode(', ', array_slice($unmatchedItems, 0, 5));
+            if (count($unmatchedItems) > 5) {
+                $unmatchedSample .= ' dan ' . (count($unmatchedItems) - 5) . ' lainnya';
+            }
+            return redirect()->route('adminprogram.piagam.generator.index', $program->id)
+                ->with('success', $msg)
+                ->with('info', count($unmatchedItems) . " nama/email dalam list tidak ditemukan di database: " . $unmatchedSample);
+        }
+
+        return redirect()->route('adminprogram.piagam.generator.index', $program->id)->with('success', $msg);
+    }
+
     public function published($programId) { 
         $program = Program::findOrFail($programId);
         $certificates = PiagamCertificate::whereHas('registration', function($q) use ($programId) {

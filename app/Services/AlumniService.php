@@ -263,11 +263,15 @@ $options = new QROptions([
             $pdf->Image($templatePath, 0, 0, 297, 210);
         } else {
             // Auto decompress if PDF 1.5+ uses compressed xref or object streams
-            if (class_exists(\PdfDecompressor\Normalizer::class)) {
+            $normalizerClass = class_exists(\App\Services\PdfDecompressor\Normalizer::class)
+                ? \App\Services\PdfDecompressor\Normalizer::class
+                : (class_exists(\PdfDecompressor\Normalizer::class) ? \PdfDecompressor\Normalizer::class : null);
+
+            if ($normalizerClass) {
                 $rawBytes = @file_get_contents($templatePath);
-                if ($rawBytes && \PdfDecompressor\Normalizer::isCompressed($rawBytes)) {
+                if ($rawBytes && $normalizerClass::isCompressed($rawBytes)) {
                     try {
-                        $norm = (new \PdfDecompressor\Normalizer())->normalize($rawBytes);
+                        $norm = (new $normalizerClass())->normalize($rawBytes);
                         if (!empty($norm) && strncmp($norm, '%PDF-', 5) === 0) {
                             @file_put_contents($templatePath, $norm);
                         }
@@ -277,9 +281,9 @@ $options = new QROptions([
             try {
                 $pdf->setSourceFile($templatePath);
             } catch (\Throwable $e) {
-                if (class_exists(\PdfDecompressor\Normalizer::class)) {
+                if ($normalizerClass) {
                     try {
-                        $norm = (new \PdfDecompressor\Normalizer())->normalize(file_get_contents($templatePath));
+                        $norm = (new $normalizerClass())->normalize(file_get_contents($templatePath));
                         file_put_contents($templatePath, $norm);
                         $pdf = new Fpdi('L', 'mm', 'A4');
                         $pdf->AddPage();

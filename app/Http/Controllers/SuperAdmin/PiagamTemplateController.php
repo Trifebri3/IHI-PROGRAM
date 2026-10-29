@@ -24,11 +24,15 @@ class PiagamTemplateController extends Controller {
         $fullPath = storage_path('app/public/' . $path);
 
         // Normalize PDF immediately if it uses PDF 1.5+ compression
-        if (class_exists(\PdfDecompressor\Normalizer::class)) {
+        $normalizerClass = class_exists(\App\Services\PdfDecompressor\Normalizer::class)
+            ? \App\Services\PdfDecompressor\Normalizer::class
+            : (class_exists(\PdfDecompressor\Normalizer::class) ? \PdfDecompressor\Normalizer::class : null);
+
+        if ($normalizerClass) {
             $bytes = @file_get_contents($fullPath);
             if ($bytes) {
                 try {
-                    $normalizer = new \PdfDecompressor\Normalizer();
+                    $normalizer = new $normalizerClass();
                     $normalized = $normalizer->normalize($bytes);
                     if (!empty($normalized) && strncmp($normalized, '%PDF-', 5) === 0) {
                         @file_put_contents($fullPath, $normalized);

@@ -16,20 +16,26 @@
             <p class="text-slate-600 mt-1">Generate PDF sertifikat untuk peserta program <strong>{{ $program->name }}</strong>.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2.5">
-            <a href="{{ route('adminprogram.piagam.grades.index', $program->id) }}" class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 shadow-sm flex items-center gap-2 transition-colors text-sm">
+            <a href="{{ route('adminprogram.piagam.grades.index', $program->id) }}" class="px-3.5 py-2 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 shadow-sm flex items-center gap-1.5 transition-colors text-sm">
                 <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                 Isi Data (Penilaian)
             </a>
             
-            <a href="{{ route('adminprogram.piagam.generator.published', $program->id) }}" class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 shadow-sm flex items-center gap-2 transition-colors text-sm">
+            <a href="{{ route('adminprogram.piagam.generator.published', $program->id) }}" class="px-3.5 py-2 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 shadow-sm flex items-center gap-1.5 transition-colors text-sm">
                 <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 Daftar Terbit ({{ $counts['generated'] }})
             </a>
 
+            <!-- Tombol Tandai dari List Nama/Email -->
+            <button type="button" onclick="openMatchListModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-sm flex items-center gap-1.5 transition-colors text-sm" title="Tempel daftar nama atau email untuk langsung menandai/memisahkan peserta">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                Tempel List Nama/Email
+            </button>
+
             <!-- Generate Semua Yang Berhak Button -->
             <form action="{{ route('adminprogram.piagam.generator.generate', $program->id) }}" method="POST" id="formGenerateAll" class="inline">
                 @csrf
-                <button type="submit" onclick="return confirmGenerateAll()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-sm flex items-center gap-2 transition-colors text-sm">
+                <button type="submit" onclick="return confirmGenerateAll()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-sm flex items-center gap-1.5 transition-colors text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     Generate Semua Yang Berhak ({{ $counts['pending'] }})
                 </button>
@@ -64,6 +70,17 @@
             </div>
         </div>
     @endif
+
+    <!-- Indicator Filter List Aktif (jika ada) -->
+    <div id="listFilterBanner" class="mb-4 p-3.5 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between text-indigo-900" style="display: none;">
+        <div class="flex items-center gap-2 text-xs font-medium">
+            <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+            <span>Tabel sedang difilter menampilkan <strong id="listFilterCount">0</strong> peserta hasil pencocokan list.</span>
+        </div>
+        <button type="button" onclick="resetListFilter()" class="px-2.5 py-1 bg-white hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg border border-indigo-200 transition-colors">
+            Tampilkan Semua Peserta
+        </button>
+    </div>
 
     <!-- Filter & Search Toolbar -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4">
@@ -206,12 +223,14 @@
                                 <input type="checkbox" 
                                        class="participant-checkbox w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" 
                                        value="{{ $participant->id }}" 
+                                       data-name="{{ strtolower($participant->user->name ?? '') }}"
+                                       data-email="{{ strtolower($participant->user->email ?? '') }}"
                                        data-status="{{ $isFailed ? 'failed' : ($hasCert ? 'generated' : 'pending') }}"
                                        onchange="handleRowCheckboxChange()">
                             </td>
 
                             <!-- No -->
-                            <td class="p-3.5 border-r border-slate-100 text-center text-xs text-slate-500 font-mono">
+                            <td class="p-3.5 border-r border-slate-100 text-center text-xs text-slate-500 font-mono row-index">
                                 {{ $index + 1 }}
                             </td>
 
@@ -266,7 +285,7 @@
                             <!-- Aksi -->
                             <td class="p-3.5 text-center">
                                 @if($isFailed)
-                                    <!-- Jika Tidak Lolos: Opsi Pulihkan atau Tetap Generate -->
+                                    <!-- Jika Tidak Lolos -->
                                     <div class="flex items-center justify-center gap-1.5">
                                         <form action="{{ route('adminprogram.piagam.generator.passOne', [$program->id, $participant->id]) }}" method="POST" class="inline">
                                             @csrf
@@ -335,6 +354,131 @@
     </div>
 </div>
 
+<!-- MODAL: TEMPEL DAFTAR NAMA / EMAIL (PISAHKAN & TANDAI) -->
+<div id="modalMatchList" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeMatchListModal()"></div>
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Tandai / Pisahkan Peserta dari Daftar</h3>
+                        <p class="text-xs text-slate-500">Tempel nama atau email peserta (langsung dari Excel, Google Sheets, atau chat)</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeMatchListModal()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Form -->
+            <form action="{{ route('adminprogram.piagam.generator.matchList', $program->id) }}" method="POST" id="matchListForm">
+                @csrf
+                <div class="p-6 space-y-4">
+                    <!-- Textarea -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            Daftar Nama atau Email Peserta (1 baris per orang):
+                        </label>
+                        <textarea id="rawListInput" 
+                                  name="raw_list" 
+                                  rows="7" 
+                                  placeholder="Contoh:&#10;Muhammad Ridho Fauzan&#10;07251058@student.itk.ac.id&#10;Muthia Arrusyda&#10;1001arrusyda@gmail.com&#10;..." 
+                                  class="w-full p-3.5 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all resize-y"
+                                  oninput="analyzePastedList()"></textarea>
+                        <p class="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Sistem otomatis mengabaikan nomor baris, titik, atau bullet dari copy-paste.
+                        </p>
+                    </div>
+
+                    <!-- Hasil Analisis Realtime -->
+                    <div id="matchAnalysisBox" class="p-3 bg-slate-100 rounded-xl border border-slate-200 text-xs" style="display: none;">
+                        <div class="font-bold text-slate-700 mb-1 flex items-center justify-between">
+                            <span>Hasil Pencocokan Instan:</span>
+                            <span id="matchAnalysisSummary" class="text-emerald-700 font-semibold"></span>
+                        </div>
+                        <div class="text-slate-600 space-y-1">
+                            <div>✅ <strong id="matchedCountText">0</strong> peserta berhasil ditemukan di tabel program ini.</div>
+                            <div id="unmatchedNotice" class="text-rose-600" style="display: none;">⚠️ <strong id="unmatchedCountText">0</strong> data tidak ditemukan di tabel.</div>
+                        </div>
+                    </div>
+
+                    <!-- Tindakan Cepat Instan di Halaman (Tanpa Simpan) -->
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                        <span class="block text-xs font-bold text-slate-700 mb-2">Tindakan Cepat di Tabel Halaman Ini:</span>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="applyCheckFromList()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Centang Peserta di Tabel
+                            </button>
+                            <button type="button" onclick="applyFilterFromList()" class="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 shadow-sm flex items-center gap-1.5 transition-colors">
+                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                                Pisahkan & Tampilkan Hanya List Ini
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tindakan Simpan Status ke Database -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            Atau Terapkan & Simpan Status ke Database:
+                        </label>
+                        <div class="space-y-2 text-xs">
+                            <label class="flex items-start gap-2.5 p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                                <input type="radio" name="list_action" value="mark_passed_others_failed" checked class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
+                                <div>
+                                    <span class="font-bold text-slate-800">Tandai Yang di List Sebagai LOLOS, Lainnya TIDAK LOLOS</span>
+                                    <p class="text-slate-500 text-[11px] mt-0.5">Sangat direkomendasikan jika dari 500+ peserta hanya puluhan yang lolos. Semua di luar list otomatis Tidak Lolos.</p>
+                                </div>
+                            </label>
+
+                            <label class="flex items-start gap-2.5 p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                                <input type="radio" name="list_action" value="mark_passed_only" class="mt-0.5 text-indigo-600 focus:ring-indigo-500">
+                                <div>
+                                    <span class="font-bold text-slate-800">Tandai Yang di List Sebagai LOLOS Saja</span>
+                                    <p class="text-slate-500 text-[11px] mt-0.5">Hanya mengubah status peserta yang di list menjadi lolos, peserta lain tidak diubah.</p>
+                                </div>
+                            </label>
+
+                            <label class="flex items-start gap-2.5 p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                                <input type="radio" name="list_action" value="mark_failed" class="mt-0.5 text-rose-600 focus:ring-rose-500">
+                                <div>
+                                    <span class="font-bold text-slate-800">Tandai Yang di List Sebagai TIDAK LOLOS</span>
+                                    <p class="text-slate-500 text-[11px] mt-0.5">Gunakan jika daftar yang Anda tempel adalah daftar peserta yang gagal / gugur.</p>
+                                </div>
+                            </label>
+
+                            <label class="flex items-start gap-2.5 p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                                <input type="radio" name="list_action" value="generate_matched" class="mt-0.5 text-indigo-600 focus:ring-indigo-500">
+                                <div>
+                                    <span class="font-bold text-slate-800">Langsung Generate Piagam untuk Peserta di List</span>
+                                    <p class="text-slate-500 text-[11px] mt-0.5">Membuat sertifikat PDF langsung untuk semua peserta yang cocok di list ini.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="p-5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                    <button type="button" onclick="closeMatchListModal()" class="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition-colors">
+                        Tutup
+                    </button>
+                    <button type="submit" onclick="return confirm('Apakah Anda yakin ingin menerapkan perubahan status ke database untuk peserta ini?')" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-colors flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Simpan Perubahan ke Database
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     // Client-side quick search filtering
     document.getElementById('clientSearchInput')?.addEventListener('keyup', function(e) {
@@ -352,6 +496,155 @@
         });
         updateSelectionState();
     });
+
+    // Modal Tandai dari List
+    function openMatchListModal() {
+        document.getElementById('modalMatchList').style.display = 'block';
+        document.getElementById('rawListInput').focus();
+    }
+
+    function closeMatchListModal() {
+        document.getElementById('modalMatchList').style.display = 'none';
+    }
+
+    // Helper: Parse pasted text to array of clean lines
+    function getPastedItems() {
+        const text = document.getElementById('rawListInput').value || '';
+        const lines = text.split(/[\r\n,;]+/);
+        const items = [];
+        lines.forEach(l => {
+            // Strip leading bullet or numbers like "1. ", "2) ", "- "
+            let clean = l.replace(/^\s*\d+[\.\)\-]\s*/, '').trim().toLowerCase();
+            if (clean.length > 0) {
+                items.push(clean);
+            }
+        });
+        return Array.from(new Set(items));
+    }
+
+    // Live analysis of pasted list vs table rows
+    function analyzePastedList() {
+        const items = getPastedItems();
+        const box = document.getElementById('matchAnalysisBox');
+        if (items.length === 0) {
+            box.style.display = 'none';
+            return;
+        }
+
+        const rows = Array.from(document.querySelectorAll('.participant-row'));
+        let matchedRows = [];
+        let unmatchedItems = [];
+
+        items.forEach(item => {
+            const isEmail = item.includes('@');
+            const foundRow = rows.find(r => {
+                if (isEmail) {
+                    return (r.getAttribute('data-email') || '') === item;
+                } else {
+                    const rowName = r.getAttribute('data-name') || '';
+                    return rowName === item || rowName.includes(item) || item.includes(rowName);
+                }
+            });
+
+            if (foundRow) {
+                if (!matchedRows.includes(foundRow)) matchedRows.push(foundRow);
+            } else {
+                unmatchedItems.push(item);
+            }
+        });
+
+        box.style.display = 'block';
+        document.getElementById('matchedCountText').innerText = matchedRows.length;
+        document.getElementById('matchAnalysisSummary').innerText = `${matchedRows.length} dari ${items.length} cocok`;
+
+        const unmatchedEl = document.getElementById('unmatchedNotice');
+        if (unmatchedItems.length > 0) {
+            unmatchedEl.style.display = 'block';
+            document.getElementById('unmatchedCountText').innerText = unmatchedItems.length;
+        } else {
+            unmatchedEl.style.display = 'none';
+        }
+    }
+
+    // Centang otomatis baris peserta yang cocok dengan list
+    function applyCheckFromList() {
+        const items = getPastedItems();
+        if (items.length === 0) {
+            alert('Silakan tempel daftar nama atau email terlebih dahulu.');
+            return;
+        }
+
+        const rows = Array.from(document.querySelectorAll('.participant-row'));
+        let checkedCount = 0;
+
+        rows.forEach(row => {
+            const name = row.getAttribute('data-name') || '';
+            const email = row.getAttribute('data-email') || '';
+            const cb = row.querySelector('.participant-checkbox');
+
+            const isMatched = items.some(item => {
+                if (item.includes('@')) {
+                    return email === item;
+                } else {
+                    return name === item || name.includes(item) || item.includes(name);
+                }
+            });
+
+            if (isMatched && cb) {
+                cb.checked = true;
+                checkedCount++;
+            }
+        });
+
+        updateSelectionState();
+        closeMatchListModal();
+
+        alert(`Berhasil mencentang ${checkedCount} peserta di tabel yang cocok dengan daftar Anda! Anda sekarang dapat memilih tindakan pada bilah biru.`);
+    }
+
+    // Filter tabel untuk menampilkan hanya peserta yang cocok dengan list
+    function applyFilterFromList() {
+        const items = getPastedItems();
+        if (items.length === 0) {
+            alert('Silakan tempel daftar nama atau email terlebih dahulu.');
+            return;
+        }
+
+        const rows = Array.from(document.querySelectorAll('.participant-row'));
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const name = row.getAttribute('data-name') || '';
+            const email = row.getAttribute('data-email') || '';
+
+            const isMatched = items.some(item => {
+                if (item.includes('@')) {
+                    return email === item;
+                } else {
+                    return name === item || name.includes(item) || item.includes(name);
+                }
+            });
+
+            if (isMatched) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        document.getElementById('listFilterBanner').style.display = 'flex';
+        document.getElementById('listFilterCount').innerText = visibleCount;
+        updateSelectionState();
+        closeMatchListModal();
+    }
+
+    // Reset filter list
+    function resetListFilter() {
+        document.querySelectorAll('.participant-row').forEach(row => row.style.display = '');
+        document.getElementById('listFilterBanner').style.display = 'none';
+        updateSelectionState();
+    }
 
     // Checkbox and Bulk Actions Logic
     function getVisibleRowCheckboxes() {
