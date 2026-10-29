@@ -122,8 +122,8 @@ class CertificateGeneratorService {
                         
                         $pdf->SetFont($font, '', $element->font_size);
                         
-                        // Use FontSize as cell height to align top of text with y_pos
-                        $cellHeight = $pdf->FontSize;
+                        // Calculate cell height based on font size (1 pt = 25.4/72 mm) to avoid PHP 8.4 protected property error
+                        $cellHeight = (float)($element->font_size > 0 ? $element->font_size : 12) * (25.4 / 72);
                         
                         // Always draw from x_pos to preserve exactly where the user placed it visually.
                         // We use MultiCell to support potential line breaks, though mostly it's single line.
