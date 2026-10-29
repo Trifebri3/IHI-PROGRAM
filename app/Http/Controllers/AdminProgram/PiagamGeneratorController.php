@@ -354,11 +354,25 @@ class PiagamGeneratorController extends Controller {
         return redirect()->route('adminprogram.piagam.generator.index', $program->id)->with('success', $msg);
     }
 
-    public function published($programId) { 
+    public function published(Request $request, $programId) { 
         $program = Program::findOrFail($programId);
-        $certificates = PiagamCertificate::whereHas('registration', function($q) use ($programId) {
-            $q->where('program_id', $programId);
-        })->with('registration.user')->paginate(20);
+        
+        $query = PiagamCertificate::where('program_id', $programId)
+            ->whereNotNull('file_path')
+            ->with(['participant.user', 'template']);
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function($q) use ($search) {
+                $q->where('certificate_number', 'like', "%{$search}%")
+                  ->orWhereHas('participant.user', function($qu) use ($search) {
+                      $qu->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $certificates = $query->latest('published_at')->paginate(20)->withQueryString();
         
         return view('adminprogram.piagam.generator.published', compact('program', 'certificates')); 
     }

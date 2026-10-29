@@ -18,6 +18,11 @@ class PiagamCertificate extends Model
         return $this->belongsTo(Registration::class, 'participant_id');
     }
 
+    public function registration()
+    {
+        return $this->belongsTo(Registration::class, 'participant_id');
+    }
+
     public function program()
     {
         return $this->belongsTo(Program::class, 'program_id');
