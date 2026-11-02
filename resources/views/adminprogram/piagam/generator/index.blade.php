@@ -1037,8 +1037,9 @@
                     customContainer.style.display = 'block';
                     data.grades.forEach(g => {
                         const col = document.createElement('div');
+                        const displayTitle = g.display_label ? `${g.display_label} (${g.variable_name})` : g.variable_name;
                         col.innerHTML = `
-                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">${g.variable_name}:</label>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">${displayTitle}:</label>
                             <input type="text" name="custom_grades[${g.variable_name}]" value="${g.value || ''}" class="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500">
                         `;
                         customInputs.appendChild(col);

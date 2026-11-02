@@ -62,7 +62,9 @@ class PiagamParticipantGradeController extends Controller {
             $gradesMap[$grade->participant_id][$grade->variable_name] = $grade->value;
         }
 
-        return view('adminprogram.piagam.grades.index', compact('program', 'customVariables', 'participants', 'gradesMap'));
+        $publicSettings = $program->piagam_public_settings ?? [];
+
+        return view('adminprogram.piagam.grades.index', compact('program', 'customVariables', 'participants', 'gradesMap', 'publicSettings'));
     }
 
     public function store(Request $request, $programId) {
@@ -90,6 +92,51 @@ class PiagamParticipantGradeController extends Controller {
             'page' => $request->input('page', 1),
             'sort' => $request->input('sort', 'name_asc')
         ])->with('success', 'Nilai berhasil disimpan!');
+    }
+
+    public function savePublicSettings(Request $request, $programId) {
+        $program = Program::with('piagamTemplate.layouts.elements')->findOrFail($programId);
+
+        $publicTitle = trim((string)$request->input('public_title', ''));
+        if (empty($publicTitle)) {
+            $publicTitle = 'Informasi Kelulusan & Nilai';
+        }
+
+        $showPublic = $request->boolean('show_public', false);
+        $showPeserta = $request->boolean('show_peserta', false);
+
+        $customVars = $this->getCustomVariables($program);
+
+        $variableLabels = [];
+        $rawLabels = $request->input('variable_labels', []);
+        if (is_array($rawLabels)) {
+            foreach ($rawLabels as $var => $lbl) {
+                $lbl = trim((string)$lbl);
+                if (!empty($lbl)) {
+                    $variableLabels[$var] = $lbl;
+                }
+            }
+        }
+
+        $variableVisibility = [];
+        $rawVisibility = $request->input('variable_visibility', []);
+        foreach ($customVars as $var) {
+            $variableVisibility[$var] = isset($rawVisibility[$var]) && ($rawVisibility[$var] == '1' || $rawVisibility[$var] === true);
+        }
+
+        $settings = [
+            'public_title' => $publicTitle,
+            'show_public' => $showPublic,
+            'show_peserta' => $showPeserta,
+            'variable_labels' => $variableLabels,
+            'variable_visibility' => $variableVisibility,
+        ];
+
+        $program->update([
+            'piagam_public_settings' => $settings
+        ]);
+
+        return back()->with('success', 'Pengaturan judul formulir dan tampilan publik berhasil disimpan!');
     }
 
     public function downloadTemplate($programId) {

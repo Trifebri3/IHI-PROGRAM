@@ -42,38 +42,42 @@
             </div>
 
             {{-- INFORMASI FORMULIR / NILAI KUSTOM PESERTA --}}
-            @if(isset($grades) && $grades->count() > 0)
+            @if(($showPublic ?? true) && ((isset($grades) && $grades->count() > 0) || $certificate->final_grade !== null))
                 <hr class="border-slate-100">
 
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">
-                        Informasi Kelulusan & Nilai
+                        {{ $publicTitle ?? 'Informasi Kelulusan & Nilai' }}
                     </label>
                     <div class="grid grid-cols-2 gap-2.5">
-                        @foreach($grades as $grade)
-                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex flex-col justify-between">
-                                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                                    {{ str_replace('_', ' ', $grade->variable_name) }}
-                                </span>
-                                <span class="text-sm font-black text-slate-800 mt-0.5 break-words">
-                                    {{ $grade->value }}
-                                </span>
-                            </div>
-                        @endforeach
+                        @if(isset($grades))
+                            @foreach($grades as $grade)
+                                @php
+                                    $label = !empty($variableLabels[$grade->variable_name]) 
+                                        ? $variableLabels[$grade->variable_name] 
+                                        : ucwords(str_replace('_', ' ', strtolower($grade->variable_name)));
+                                @endphp
+                                <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex flex-col justify-between">
+                                    <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                                        {{ $label }}
+                                    </span>
+                                    <span class="text-sm font-black text-slate-800 mt-0.5 break-words">
+                                        {{ $grade->value }}
+                                    </span>
+                                </div>
+                            @endforeach
+                        @endif
 
-                        @if($certificate->final_grade !== null && !$grades->contains('variable_name', 'SKOR') && !$grades->contains('variable_name', 'TOTAL_SKOR'))
+                        @if($certificate->final_grade !== null && (!isset($grades) || (!$grades->contains('variable_name', 'SKOR') && !$grades->contains('variable_name', 'TOTAL_SKOR'))))
+                            @php
+                                $finalGradeLabel = !empty($variableLabels['NILAI_AKHIR']) ? $variableLabels['NILAI_AKHIR'] : 'Nilai Akhir';
+                            @endphp
                             <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex flex-col justify-between">
-                                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Nilai Akhir</span>
+                                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{{ $finalGradeLabel }}</span>
                                 <span class="text-sm font-black text-slate-800 mt-0.5 break-words">{{ $certificate->final_grade }}</span>
                             </div>
                         @endif
                     </div>
-                </div>
-            @elseif($certificate->final_grade !== null)
-                <hr class="border-slate-100">
-                <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Nilai Akhir</span>
-                    <span class="text-sm font-black text-slate-800 mt-0.5">{{ $certificate->final_grade }}</span>
                 </div>
             @endif
 

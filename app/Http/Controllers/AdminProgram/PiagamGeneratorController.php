@@ -501,7 +501,17 @@ class PiagamGeneratorController extends Controller {
             $predikat = $pGrade ? $pGrade->value : '';
         }
 
-        $grades = \App\Models\PiagamParticipantGrade::where('participant_id', $participantId)->get();
+        $program = Program::find($programId);
+        $publicSettings = $program ? ($program->piagam_public_settings ?? []) : [];
+        if (is_string($publicSettings)) {
+            $publicSettings = json_decode($publicSettings, true) ?: [];
+        }
+        $labels = $publicSettings['variable_labels'] ?? [];
+
+        $grades = \App\Models\PiagamParticipantGrade::where('participant_id', $participantId)->get()->map(function($g) use ($labels) {
+            $g->display_label = !empty($labels[$g->variable_name]) ? $labels[$g->variable_name] : ucwords(str_replace('_', ' ', strtolower($g->variable_name)));
+            return $g;
+        });
 
         return response()->json([
             'participant_id' => $registration->id,

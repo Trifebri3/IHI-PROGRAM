@@ -27,11 +27,13 @@ class Program extends Model
         'total_hours',
         'program_certificate_template',
         'gtu_email',
-        'piagam_template_id'
+        'piagam_template_id',
+        'piagam_public_settings'
     ];
 
     protected $casts = [
         'score_schema' => 'array',
+        'piagam_public_settings' => 'array',
         'start_date' => 'date',
         'end_date' => 'date',
         'is_open' => 'boolean', // Ditambahkan agar otomatis dikonversi jadi true/false di Laravel

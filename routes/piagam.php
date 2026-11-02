@@ -21,6 +21,7 @@ Route::prefix('superadmin/piagam')->name('superadmin.piagam.')->middleware(['aut
 Route::prefix('adminprogram/programs/{program}/piagam')->name('adminprogram.piagam.')->middleware(['auth', 'verified'])->group(function () {
     Route::get('grades/download-template', [PiagamParticipantGradeController::class, 'downloadTemplate'])->name('grades.download_template');
     Route::post('grades/upload-template', [PiagamParticipantGradeController::class, 'uploadTemplate'])->name('grades.upload_template');
+    Route::post('grades/public-settings', [PiagamParticipantGradeController::class, 'savePublicSettings'])->name('grades.public_settings');
     Route::resource('grades', PiagamParticipantGradeController::class);
     Route::get('generator', [PiagamGeneratorController::class, 'index'])->name('generator.index');
     Route::post('generator/generate', [PiagamGeneratorController::class, 'generate'])->name('generator.generate');

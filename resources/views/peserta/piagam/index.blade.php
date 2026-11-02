@@ -82,17 +82,41 @@
                             @endif
 
                             @php
-                                $filledGrades = $reg->piagamGrades ? $reg->piagamGrades->filter(fn($g) => !empty(trim((string)$g->value))) : collect();
+                                $publicSettings = $reg->program->piagam_public_settings ?? [];
+                                if (is_string($publicSettings)) {
+                                    $publicSettings = json_decode($publicSettings, true) ?: [];
+                                }
+                                $showPeserta = array_key_exists('show_peserta', $publicSettings) ? (bool)$publicSettings['show_peserta'] : true;
+                                $publicTitle = !empty($publicSettings['public_title']) ? $publicSettings['public_title'] : 'Informasi Nilai';
+                                $variableLabels = $publicSettings['variable_labels'] ?? [];
+                                $variableVisibility = $publicSettings['variable_visibility'] ?? [];
+
+                                $filledGrades = $reg->piagamGrades ? $reg->piagamGrades->filter(function($g) use ($variableVisibility) {
+                                    if (empty(trim((string)$g->value))) return false;
+                                    if (isset($variableVisibility[$g->variable_name]) && !$variableVisibility[$g->variable_name]) return false;
+                                    return true;
+                                }) : collect();
                             @endphp
-                            @if($filledGrades->isNotEmpty())
-                                <div class="pt-2 border-t border-slate-100">
-                                    <div class="text-[10px] uppercase text-slate-400 font-bold mb-1.5">Informasi Nilai</div>
-                                    <div class="flex flex-wrap gap-1.5">
+                            @if($showPeserta && $filledGrades->isNotEmpty())
+                                <div class="pt-2.5 border-t border-slate-100">
+                                    <div class="text-[10px] uppercase text-slate-400 font-bold mb-1.5">
+                                        {{ $publicTitle }}
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-1.5">
                                         @foreach($filledGrades as $fg)
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] bg-slate-100 text-slate-700 border border-slate-200">
-                                                <span class="text-slate-400 font-medium">{{ str_replace('_', ' ', $fg->variable_name) }}:</span>
-                                                <strong class="font-bold text-slate-800">{{ $fg->value }}</strong>
-                                            </span>
+                                            @php
+                                                $properLabel = !empty($variableLabels[$fg->variable_name]) 
+                                                    ? $variableLabels[$fg->variable_name] 
+                                                    : ucwords(str_replace('_', ' ', strtolower($fg->variable_name)));
+                                            @endphp
+                                            <div class="px-2.5 py-1.5 bg-slate-50 border border-slate-200/80 rounded-lg flex flex-col justify-center">
+                                                <span class="text-[9px] uppercase tracking-wider font-semibold text-slate-400 truncate" title="{{ $properLabel }}">
+                                                    {{ $properLabel }}
+                                                </span>
+                                                <span class="text-xs font-bold text-slate-800 truncate" title="{{ $fg->value }}">
+                                                    {{ $fg->value }}
+                                                </span>
+                                            </div>
                                         @endforeach
                                     </div>
                                 </div>
