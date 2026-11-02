@@ -32,6 +32,19 @@
                 Tempel List Nama/Email
             </button>
 
+            <!-- Generate Otomatis Yang Sudah Ada Nilai Saja -->
+            <form action="{{ route('adminprogram.piagam.generator.generate', $program->id) }}" method="POST" id="formGenerateHasGrades" class="inline">
+                @csrf
+                <input type="hidden" name="mode" value="has_grades_only">
+                <button type="submit" onclick="return confirmGenerateHasGrades({{ $counts['has_grades_pending'] }})" 
+                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-sm flex items-center gap-1.5 transition-colors text-sm {{ $counts['has_grades_pending'] == 0 ? 'opacity-60 cursor-not-allowed' : '' }}" 
+                    {{ $counts['has_grades_pending'] == 0 ? 'disabled' : '' }}
+                    title="Generate otomatis hanya untuk peserta yang data formulir / nilainya sudah terisi">
+                    <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Generate Yang Ada Nilai Saja ({{ $counts['has_grades_pending'] }})
+                </button>
+            </form>
+
             <!-- Generate Semua Yang Berhak Button -->
             <form action="{{ route('adminprogram.piagam.generator.generate', $program->id) }}" method="POST" id="formGenerateAll" class="inline">
                 @csrf
@@ -107,6 +120,21 @@
                     <span class="px-1.5 py-0.2 rounded-full text-[10px] {{ $currentStatus === 'generated' ? 'bg-emerald-700 text-emerald-100' : 'bg-emerald-200 text-emerald-800' }}">{{ $counts['generated'] }}</span>
                 </a>
 
+                <a href="{{ route('adminprogram.piagam.generator.index', array_merge(['program' => $program->id, 'status' => 'has_grades'], request()->except('status'))) }}" 
+                   class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 {{ $currentStatus === 'has_grades' ? 'bg-teal-600 text-white shadow-sm' : 'bg-teal-50 text-teal-800 hover:bg-teal-100' }}"
+                   title="Tampilkan peserta yang data nilai / formulirnya sudah terisi">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Ada Nilai/Formulir</span>
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] {{ $currentStatus === 'has_grades' ? 'bg-teal-700 text-white' : 'bg-teal-200 text-teal-900' }}">{{ $counts['has_grades_total'] }}</span>
+                </a>
+
+                <a href="{{ route('adminprogram.piagam.generator.index', array_merge(['program' => $program->id, 'status' => 'no_grades'], request()->except('status'))) }}" 
+                   class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 {{ $currentStatus === 'no_grades' ? 'bg-slate-700 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}"
+                   title="Tampilkan peserta yang belum ada nilai sama sekali">
+                    <span>Nilai Kosong</span>
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] {{ $currentStatus === 'no_grades' ? 'bg-slate-800 text-slate-200' : 'bg-slate-200 text-slate-700' }}">{{ $counts['no_grades_total'] }}</span>
+                </a>
+
                 <a href="{{ route('adminprogram.piagam.generator.index', array_merge(['program' => $program->id, 'status' => 'failed'], request()->except('status'))) }}" 
                    class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 {{ $currentStatus === 'failed' ? 'bg-rose-600 text-white shadow-sm' : 'bg-rose-50 text-rose-700 hover:bg-rose-100' }}">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -148,6 +176,10 @@
                 <span class="text-indigo-200 text-xs ml-1">(Pilih tindakan untuk peserta yang dicentang)</span>
             </div>
             <div class="hidden sm:flex items-center gap-1.5 ml-2 border-l border-indigo-700 pl-3">
+                <button type="button" onclick="selectAllWithGrades()" class="text-xs text-emerald-300 hover:text-white font-semibold underline transition-colors" title="Centang hanya peserta yang nilai/formulirnya sudah terisi">
+                    Pilih Yang Ada Nilai Saja
+                </button>
+                <span class="text-indigo-400 text-xs">•</span>
                 <button type="button" onclick="selectAllEligible()" class="text-xs text-indigo-200 hover:text-white underline transition-colors">
                     Pilih Menunggu Saja
                 </button>
@@ -223,11 +255,14 @@
                         @php
                             $hasCert = $participant->piagamCertificate && $participant->piagamCertificate->file_path;
                             $isFailed = $participant->status === 'failed';
+                            $hasGrades = ($participant->piagamGrades && $participant->piagamGrades->filter(fn($g) => !empty(trim((string)$g->value)))->isNotEmpty()) 
+                                || (!empty($participant->piagamCertificate) && $participant->piagamCertificate->final_grade !== null);
                         @endphp
                         <tr class="participant-row hover:bg-slate-50/80 transition-colors {{ $isFailed ? 'bg-rose-50/30' : '' }}" 
                             data-id="{{ $participant->id }}" 
                             data-name="{{ strtolower($participant->user->name ?? '') }}" 
                             data-email="{{ strtolower($participant->user->email ?? '') }}"
+                            data-has-grades="{{ $hasGrades ? '1' : '0' }}"
                             data-status="{{ $isFailed ? 'failed' : ($hasCert ? 'generated' : 'pending') }}">
                             
                             <!-- Checkbox -->
@@ -237,6 +272,7 @@
                                        value="{{ $participant->id }}" 
                                        data-name="{{ strtolower($participant->user->name ?? '') }}"
                                        data-email="{{ strtolower($participant->user->email ?? '') }}"
+                                       data-has-grades="{{ $hasGrades ? '1' : '0' }}"
                                        data-status="{{ $isFailed ? 'failed' : ($hasCert ? 'generated' : 'pending') }}"
                                        onchange="handleRowCheckboxChange()">
                             </td>
@@ -253,11 +289,20 @@
                                         {{ substr($participant->user->name ?? 'P', 0, 2) }}
                                     </div>
                                     <div>
-                                        <div class="font-medium text-slate-800 flex items-center gap-2">
+                                        <div class="font-medium text-slate-800 flex items-center flex-wrap gap-2">
                                             <span>{{ $participant->user->name ?? 'N/A' }}</span>
                                             @if($isFailed)
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">
                                                     Tidak Lolos / Tidak Berhak
+                                                </span>
+                                            @elseif($hasGrades)
+                                                <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200" title="Data nilai / formulir piagam sudah terisi">
+                                                    <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                    Nilai Terisi
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400" title="Belum ada data nilai kustom">
+                                                    Nilai Kosong
                                                 </span>
                                             @endif
                                         </div>
@@ -834,6 +879,16 @@
         updateSelectionState();
     }
 
+    function selectAllWithGrades() {
+        const checkboxes = getVisibleRowCheckboxes();
+        checkboxes.forEach(cb => {
+            cb.checked = (cb.getAttribute('data-status') === 'pending' && cb.getAttribute('data-has-grades') === '1');
+        });
+        const master = document.getElementById('masterCheckbox');
+        if (master) master.checked = false;
+        updateSelectionState();
+    }
+
     function selectAllEligible() {
         const checkboxes = getVisibleRowCheckboxes();
         checkboxes.forEach(cb => {
@@ -932,6 +987,14 @@
         }
 
         form.submit();
+    }
+
+    function confirmGenerateHasGrades(count) {
+        if (count <= 0) {
+            alert('Tidak ada peserta yang memiliki nilai/formulir terisi dan menunggu di-generate.');
+            return false;
+        }
+        return confirm('Apakah Anda yakin ingin men-generate otomatis ' + count + ' sertifikat untuk peserta yang data formulir / nilainya SUDAH TERISI?\n\nPeserta yang nilainya kosong tidak akan diterbitkan.');
     }
 
     function confirmGenerateAll() {

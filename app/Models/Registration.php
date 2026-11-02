@@ -128,5 +128,9 @@ public function currentStage(): BelongsTo
     }    public function piagamCertificate() {
         return $this->hasOne(PiagamCertificate::class, 'participant_id');
     }
+
+    public function piagamGrades() {
+        return $this->hasMany(PiagamParticipantGrade::class, 'participant_id');
+    }
 }
 

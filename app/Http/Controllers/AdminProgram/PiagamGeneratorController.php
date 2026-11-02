@@ -17,7 +17,7 @@ class PiagamGeneratorController extends Controller {
     public function index(Request $request, $programId) { 
         $program = Program::with('piagamTemplate')->findOrFail($programId);
         
-        $query = $program->registrations()->with(['user', 'piagamCertificate']);
+        $query = $program->registrations()->with(['user', 'piagamCertificate', 'piagamGrades']);
 
         // Filter search (Nama / Email)
         if ($request->filled('search')) {
@@ -28,7 +28,7 @@ class PiagamGeneratorController extends Controller {
             });
         }
 
-        // Filter status: 'all', 'pending', 'generated', 'failed'
+        // Filter status: 'all', 'pending', 'generated', 'failed', 'has_grades', 'no_grades'
         $currentStatus = $request->get('status', 'all');
         if ($currentStatus === 'pending') {
             $query->where('status', '!=', 'failed')
@@ -41,12 +41,51 @@ class PiagamGeneratorController extends Controller {
             });
         } elseif ($currentStatus === 'failed') {
             $query->where('status', 'failed');
+        } elseif ($currentStatus === 'has_grades') {
+            $query->where('status', '!=', 'failed')
+                  ->where(function($q) {
+                      $q->whereHas('piagamGrades', function($sub) {
+                          $sub->whereNotNull('value')->where('value', '!=', '');
+                      })->orWhereHas('piagamCertificate', function($sub) {
+                          $sub->whereNotNull('final_grade');
+                      });
+                  });
+        } elseif ($currentStatus === 'no_grades') {
+            $query->where('status', '!=', 'failed')
+                  ->whereDoesntHave('piagamGrades', function($sub) {
+                      $sub->whereNotNull('value')->where('value', '!=', '');
+                  })
+                  ->whereDoesntHave('piagamCertificate', function($sub) {
+                      $sub->whereNotNull('final_grade');
+                  });
         }
 
         $participants = $query->get();
 
         // Calculate counts for quick-filter tabs
-        $allRegistrations = $program->registrations()->with('piagamCertificate')->get();
+        $allRegistrations = $program->registrations()->with(['piagamCertificate', 'piagamGrades'])->get();
+
+        $hasGradesPendingCount = $allRegistrations->where('status', '!=', 'failed')
+            ->filter(function($r) {
+                $notGenerated = empty($r->piagamCertificate) || empty($r->piagamCertificate->file_path);
+                $hasGrade = ($r->piagamGrades && $r->piagamGrades->filter(fn($g) => !empty(trim((string)$g->value)))->isNotEmpty()) 
+                    || (!empty($r->piagamCertificate) && $r->piagamCertificate->final_grade !== null);
+                return $notGenerated && $hasGrade;
+            })->count();
+
+        $hasGradesTotalCount = $allRegistrations->where('status', '!=', 'failed')
+            ->filter(function($r) {
+                return ($r->piagamGrades && $r->piagamGrades->filter(fn($g) => !empty(trim((string)$g->value)))->isNotEmpty()) 
+                    || (!empty($r->piagamCertificate) && $r->piagamCertificate->final_grade !== null);
+            })->count();
+
+        $noGradesTotalCount = $allRegistrations->where('status', '!=', 'failed')
+            ->filter(function($r) {
+                $hasGrade = ($r->piagamGrades && $r->piagamGrades->filter(fn($g) => !empty(trim((string)$g->value)))->isNotEmpty()) 
+                    || (!empty($r->piagamCertificate) && $r->piagamCertificate->final_grade !== null);
+                return !$hasGrade;
+            })->count();
+
         $counts = [
             'total' => $allRegistrations->count(),
             'pending' => $allRegistrations->where('status', '!=', 'failed')->filter(function($r) {
@@ -56,6 +95,9 @@ class PiagamGeneratorController extends Controller {
                 return !empty($r->piagamCertificate) && !empty($r->piagamCertificate->file_path);
             })->count(),
             'failed' => $allRegistrations->where('status', 'failed')->count(),
+            'has_grades_pending' => $hasGradesPendingCount,
+            'has_grades_total' => $hasGradesTotalCount,
+            'no_grades_total' => $noGradesTotalCount,
         ];
 
         return view('adminprogram.piagam.generator.index', compact('program', 'participants', 'counts', 'currentStatus')); 
@@ -69,12 +111,29 @@ class PiagamGeneratorController extends Controller {
         }
 
         $selectedIds = $request->input('participant_ids', []);
+        $mode = $request->input('mode');
         
         // If participant_ids provided (Checkbox selection)
         if (!empty($selectedIds) && is_array($selectedIds)) {
             $participants = Registration::whereIn('id', $selectedIds)
                 ->where('program_id', $programId)
-                ->with('user')
+                ->with(['user', 'piagamGrades', 'piagamCertificate'])
+                ->get();
+        } elseif ($mode === 'has_grades_only' || $request->has('only_with_grades')) {
+            // Auto option: Only generate for participants whose certificate form / grades are already filled in!
+            $participants = $program->registrations()
+                ->where('status', '!=', 'failed')
+                ->whereDoesntHave('piagamCertificate', function ($q) {
+                    $q->whereNotNull('file_path');
+                })
+                ->where(function($q) {
+                    $q->whereHas('piagamGrades', function($sub) {
+                        $sub->whereNotNull('value')->where('value', '!=', '');
+                    })->orWhereHas('piagamCertificate', function($sub) {
+                        $sub->whereNotNull('final_grade');
+                    });
+                })
+                ->with(['user', 'piagamGrades', 'piagamCertificate'])
                 ->get();
         } else {
             // Mass generate for all eligible participants (not failed and not already generated)
@@ -83,11 +142,14 @@ class PiagamGeneratorController extends Controller {
                 ->whereDoesntHave('piagamCertificate', function ($q) {
                     $q->whereNotNull('file_path');
                 })
-                ->with('user')
+                ->with(['user', 'piagamGrades', 'piagamCertificate'])
                 ->get();
         }
 
         if ($participants->isEmpty()) {
+            if ($mode === 'has_grades_only' || $request->has('only_with_grades')) {
+                return back()->with('info', 'Tidak ada peserta yang memiliki data nilai/formulir yang belum di-generate.');
+            }
             return back()->with('info', 'Tidak ada peserta yang dipilih atau memenuhi syarat untuk di-generate.');
         }
 
@@ -113,6 +175,10 @@ class PiagamGeneratorController extends Controller {
         }
 
         $message = "Berhasil men-generate $generatedCount piagam.";
+        if ($mode === 'has_grades_only' || $request->has('only_with_grades')) {
+            $message = "Berhasil otomatis men-generate $generatedCount piagam untuk peserta yang formulir / nilainya sudah terisi.";
+        }
+
         if ($skippedCount > 0) {
             $message .= " ($skippedCount peserta dilewati karena sudah memiliki sertifikat).";
         }
