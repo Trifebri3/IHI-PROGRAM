@@ -17,7 +17,7 @@
             </form>
             <form action="{{ route('adminprogram.piagam.grades.upload_template', $program->id) }}" method="POST" enctype="multipart/form-data" class="hidden" id="uploadForm">
                 @csrf
-                <input type="file" name="file" id="fileInput" accept=".csv" onchange="document.getElementById('uploadForm').submit()">
+                <input type="file" name="file" id="fileInput" accept=".csv,.txt" onchange="document.getElementById('uploadForm').submit()">
             </form>
             <button type="button" onclick="document.getElementById('fileInput').click()" class="px-5 py-2.5 bg-amber-600 text-white font-medium rounded-xl hover:bg-amber-700 shadow-sm flex items-center gap-2 transition-colors" title="Upload Template CSV">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
@@ -39,8 +39,16 @@
     </div>
 
     @if(session('success'))
-        <div class="mb-4 p-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200">
-            {{ session('success') }}
+        <div class="mb-4 p-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 flex items-center gap-3">
+            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            <div>{{ session('success') }}</div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-4 p-4 bg-rose-50 text-rose-700 rounded-xl border border-rose-200 flex items-center gap-3">
+            <svg class="w-5 h-5 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div>{{ session('error') }}</div>
         </div>
     @endif
 
