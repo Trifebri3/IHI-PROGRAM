@@ -41,6 +41,42 @@
                 </div>
             </div>
 
+            {{-- INFORMASI FORMULIR / NILAI KUSTOM PESERTA --}}
+            @if(isset($grades) && $grades->count() > 0)
+                <hr class="border-slate-100">
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">
+                        Informasi Kelulusan & Nilai
+                    </label>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        @foreach($grades as $grade)
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex flex-col justify-between">
+                                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                                    {{ str_replace('_', ' ', $grade->variable_name) }}
+                                </span>
+                                <span class="text-sm font-black text-slate-800 mt-0.5 break-words">
+                                    {{ $grade->value }}
+                                </span>
+                            </div>
+                        @endforeach
+
+                        @if($certificate->final_grade !== null && !$grades->contains('variable_name', 'SKOR') && !$grades->contains('variable_name', 'TOTAL_SKOR'))
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex flex-col justify-between">
+                                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Nilai Akhir</span>
+                                <span class="text-sm font-black text-slate-800 mt-0.5 break-words">{{ $certificate->final_grade }}</span>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @elseif($certificate->final_grade !== null)
+                <hr class="border-slate-100">
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Nilai Akhir</span>
+                    <span class="text-sm font-black text-slate-800 mt-0.5">{{ $certificate->final_grade }}</span>
+                </div>
+            @endif
+
             @if($certificate->file_path)
             <div class="pt-4">
                 <a href="{{ asset('storage/' . $certificate->file_path) }}" class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-bold rounded-xl text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors shadow-sm gap-2">

@@ -80,6 +80,23 @@
                                     <div class="text-xs font-semibold text-slate-600 font-mono">{{ $cert->certificate_number }}</div>
                                 </div>
                             @endif
+
+                            @php
+                                $filledGrades = $reg->piagamGrades ? $reg->piagamGrades->filter(fn($g) => !empty(trim((string)$g->value))) : collect();
+                            @endphp
+                            @if($filledGrades->isNotEmpty())
+                                <div class="pt-2 border-t border-slate-100">
+                                    <div class="text-[10px] uppercase text-slate-400 font-bold mb-1.5">Informasi Nilai</div>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        @foreach($filledGrades as $fg)
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] bg-slate-100 text-slate-700 border border-slate-200">
+                                                <span class="text-slate-400 font-medium">{{ str_replace('_', ' ', $fg->variable_name) }}:</span>
+                                                <strong class="font-bold text-slate-800">{{ $fg->value }}</strong>
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
 

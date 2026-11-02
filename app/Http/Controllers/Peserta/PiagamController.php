@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 
 class PiagamController extends Controller {
     public function index() { 
-        $registrations = Registration::with(['program.piagamTemplate', 'piagamCertificate.template'])
+        $registrations = Registration::with(['program.piagamTemplate', 'piagamCertificate.template', 'piagamGrades'])
                             ->where('user_id', auth()->id())
                             ->orderBy('created_at', 'desc')
                             ->get();
