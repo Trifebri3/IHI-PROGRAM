@@ -6,7 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class PiagamCertificate extends Model
 {
-        protected $guarded = [];
+    protected $guarded = [];
+
+    protected $casts = [
+        'requirements_completed_at' => 'datetime',
+        'published_at' => 'datetime',
+        'email_sent_at' => 'datetime',
+    ];
 
     public function template()
     {
@@ -28,6 +34,3 @@ class PiagamCertificate extends Model
         return $this->belongsTo(Program::class, 'program_id');
     }
 }
-
-
-

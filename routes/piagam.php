@@ -45,6 +45,7 @@ Route::prefix('adminprogram/programs/{program}/piagam')->name('adminprogram.piag
 Route::prefix('peserta/piagam')->name('peserta.piagam.')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [PiagamController::class, 'index'])->name('index');
     Route::get('/{certificate}/download', [PiagamController::class, 'download'])->name('download');
+    Route::post('/{certificate}/complete-requirements', [PiagamController::class, 'completeRequirements'])->name('complete_requirements');
 });
 
 // Public Verification Route

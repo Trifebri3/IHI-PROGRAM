@@ -4,6 +4,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PiagamTemplate;
 use App\Models\Program;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PiagamTemplateController extends Controller {
     public function index() { 
@@ -18,6 +20,7 @@ class PiagamTemplateController extends Controller {
         $request->validate([
             'name' => 'required|string|max:255',
             'file_path' => 'required|mimes:pdf|max:10240',
+            'requirements' => 'nullable|array',
         ]);
         
         $path = $request->file('file_path')->store('piagam_templates', 'public');
@@ -53,9 +56,27 @@ class PiagamTemplateController extends Controller {
             $totalPages = 1;
         }
 
+        $requirements = [];
+        if ($request->has('requirements') && is_array($request->requirements)) {
+            foreach ($request->requirements as $req) {
+                $title = trim($req['title'] ?? '');
+                $url = trim($req['url'] ?? '');
+                $btn = trim($req['button_text'] ?? '') ?: 'Kunjungi Tautan';
+                if (!empty($title) && !empty($url)) {
+                    $requirements[] = [
+                        'id' => (string) Str::uuid(),
+                        'title' => $title,
+                        'url' => $url,
+                        'button_text' => $btn,
+                    ];
+                }
+            }
+        }
+
         PiagamTemplate::create([
             'name' => $request->name,
             'description' => $request->description ?? null,
+            'download_requirements' => !empty($requirements) ? $requirements : null,
             'file_path' => $path,
             'total_pages' => $totalPages
         ]);
@@ -71,7 +92,77 @@ class PiagamTemplateController extends Controller {
         return view('superadmin.piagam.templates.edit', compact('template')); 
     }
     
-    public function update(Request $request, $id) {}
+    public function update(Request $request, $id) {
+        $template = PiagamTemplate::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'file_path' => 'nullable|mimes:pdf|max:10240',
+            'requirements' => 'nullable|array',
+        ]);
+
+        $data = [
+            'name' => $request->name,
+            'description' => $request->description ?? null,
+        ];
+
+        if ($request->hasFile('file_path')) {
+            $path = $request->file('file_path')->store('piagam_templates', 'public');
+            $fullPath = storage_path('app/public/' . $path);
+
+            $normalizerClass = class_exists(\App\Services\PdfDecompressor\Normalizer::class)
+                ? \App\Services\PdfDecompressor\Normalizer::class
+                : (class_exists(\PdfDecompressor\Normalizer::class) ? \PdfDecompressor\Normalizer::class : null);
+
+            if ($normalizerClass) {
+                $bytes = @file_get_contents($fullPath);
+                if ($bytes) {
+                    try {
+                        $normalizer = new $normalizerClass();
+                        $normalized = $normalizer->normalize($bytes);
+                        if (!empty($normalized) && strncmp($normalized, '%PDF-', 5) === 0) {
+                            @file_put_contents($fullPath, $normalized);
+                        }
+                    } catch (\Throwable $t) {
+                        \Illuminate\Support\Facades\Log::warning("PdfDecompressor template upload normalization: " . $t->getMessage());
+                    }
+                }
+            }
+
+            $totalPages = 1;
+            try {
+                $pdf = new \setasign\Fpdi\Fpdi();
+                $totalPages = $pdf->setSourceFile($fullPath);
+            } catch (\Throwable $e) {
+                $totalPages = 1;
+            }
+
+            $data['file_path'] = $path;
+            $data['total_pages'] = $totalPages;
+        }
+
+        $requirements = [];
+        if ($request->has('requirements') && is_array($request->requirements)) {
+            foreach ($request->requirements as $req) {
+                $title = trim($req['title'] ?? '');
+                $url = trim($req['url'] ?? '');
+                $btn = trim($req['button_text'] ?? '') ?: 'Kunjungi Tautan';
+                if (!empty($title) && !empty($url)) {
+                    $requirements[] = [
+                        'id' => $req['id'] ?? (string) Str::uuid(),
+                        'title' => $title,
+                        'url' => $url,
+                        'button_text' => $btn,
+                    ];
+                }
+            }
+        }
+        $data['download_requirements'] = !empty($requirements) ? $requirements : null;
+
+        $template->update($data);
+
+        return redirect()->route('superadmin.piagam.templates.index')->with('success', 'Template dan syarat berhasil diperbarui.');
+    }
     
     public function destroy($id) {
         $template = PiagamTemplate::findOrFail($id);
@@ -147,8 +238,7 @@ class PiagamTemplateController extends Controller {
         
         return response()->json([
             'status' => 'success',
-            'url' => \Illuminate\Support\Facades\Storage::url($path)
+            'url' => Storage::url($path)
         ]);
     }
 }
-
