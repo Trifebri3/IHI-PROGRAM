@@ -53,6 +53,15 @@
                     Generate Semua Yang Berhak ({{ $counts['pending'] }})
                 </button>
             </form>
+
+            <!-- Tandai Nilai Kosong Jadi Tidak Lolos Button -->
+            <button type="button" onclick="openFailNoGradesModal()" 
+                class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl shadow-sm flex items-center gap-1.5 transition-colors text-sm {{ $counts['no_grades_total'] == 0 ? 'opacity-60 cursor-not-allowed' : '' }}" 
+                {{ $counts['no_grades_total'] == 0 ? 'disabled' : '' }}
+                title="Tandai otomatis peserta bernilai kosong sebagai Tidak Lolos">
+                <svg class="w-4 h-4 text-rose-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                Tandai Nilai Kosong Tidak Lolos ({{ $counts['no_grades_pending'] }})
+            </button>
         </div>
     </div>
 
@@ -81,6 +90,45 @@
             <div>
                 <p class="font-semibold text-sm">{{ session('info') }}</p>
             </div>
+        </div>
+    @endif
+
+    @if($currentStatus === 'no_grades' && $counts['no_grades_total'] > 0)
+        <div class="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-900">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold shrink-0">
+                    ⚠️
+                </div>
+                <div>
+                    <div class="text-sm font-bold text-amber-900">Ada {{ $counts['no_grades_total'] }} peserta yang belum memiliki nilai formulir</div>
+                    <div class="text-xs text-amber-700 mt-0.5">Ingin menandai mereka sekaligus sebagai Tidak Lolos tanpa klik satu per satu?</div>
+                </div>
+            </div>
+            <button type="button" onclick="openFailNoGradesModal()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center justify-center gap-1.5 shrink-0">
+                <svg class="w-4 h-4 text-rose-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                Tandai Nilai Kosong Jadi Tidak Lolos
+            </button>
+        </div>
+    @endif
+
+    @if($currentStatus === 'failed' && $counts['failed'] > 0)
+        <div class="mb-4 p-4 bg-rose-50 border border-rose-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-rose-900">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600 font-bold shrink-0">
+                    ℹ️
+                </div>
+                <div>
+                    <div class="text-sm font-bold text-rose-900">Terdapat {{ $counts['failed'] }} peserta berstatus Tidak Lolos (Tidak Berhak)</div>
+                    <div class="text-xs text-rose-700 mt-0.5">Peserta ini tidak dapat menerima sertifikat. Anda bisa memulihkan mereka jika diperlukan.</div>
+                </div>
+            </div>
+            <form action="{{ route('adminprogram.piagam.generator.restoreAllFailed', $program->id) }}" method="POST" onsubmit="return confirm('Pulihkan SEMUA {{ $counts['failed'] }} peserta ini kembali menjadi berhak/lolos?')">
+                @csrf
+                <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center justify-center gap-1.5 shrink-0">
+                    <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Pulihkan Semua Menjadi Lolos
+                </button>
+            </form>
         </div>
     @endif
 
@@ -178,6 +226,10 @@
             <div class="hidden sm:flex items-center gap-1.5 ml-2 border-l border-indigo-700 pl-3">
                 <button type="button" onclick="selectAllWithGrades()" class="text-xs text-emerald-300 hover:text-white font-semibold underline transition-colors" title="Centang hanya peserta yang nilai/formulirnya sudah terisi">
                     Pilih Yang Ada Nilai Saja
+                </button>
+                <span class="text-indigo-400 text-xs">•</span>
+                <button type="button" onclick="selectAllWithoutGrades()" class="text-xs text-amber-300 hover:text-white font-semibold underline transition-colors" title="Centang peserta yang nilainya kosong">
+                    Pilih Nilai Kosong Saja
                 </button>
                 <span class="text-indigo-400 text-xs">•</span>
                 <button type="button" onclick="selectAllEligible()" class="text-xs text-indigo-200 hover:text-white underline transition-colors">
@@ -440,6 +492,72 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: TANDAI PESERTA NILAI KOSONG SEBAGAI TIDAK LOLOS -->
+<div id="modalFailNoGrades" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeFailNoGradesModal()"></div>
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="p-5 border-b border-rose-100 flex items-center justify-between bg-rose-50/60">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-lg">
+                        🚫
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Tandai Nilai Kosong Tidak Lolos</h3>
+                        <p class="text-xs text-rose-700">Otomatisasi massal untuk peserta tanpa nilai formulir</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeFailNoGradesModal()" class="text-slate-400 hover:text-slate-600 transition-colors text-2xl leading-none">&times;</button>
+            </div>
+
+            <form action="{{ route('adminprogram.piagam.generator.failNoGrades', $program->id) }}" method="POST" class="p-6 space-y-4">
+                @csrf
+
+                <div class="p-3.5 bg-rose-50/70 border border-rose-200 rounded-xl text-xs text-rose-800 leading-relaxed">
+                    Sistem mendeteksi ada <strong>{{ $counts['no_grades_total'] }} peserta</strong> yang belum memiliki nilai formulir sertifikat. Peserta yang ditandai <em>Tidak Lolos</em> tidak akan diterbitkan piagamnya.
+                </div>
+
+                <div class="space-y-3">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Pilih Sasaran Peserta:</label>
+
+                    <label class="p-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl flex items-start gap-3 cursor-pointer transition-colors">
+                        <input type="radio" name="scope" value="pending_only" checked class="w-4 h-4 text-rose-600 border-slate-300 focus:ring-rose-500 mt-0.5">
+                        <div class="text-xs">
+                            <div class="font-bold text-slate-800">Hanya Yang Menunggu Generate ({{ $counts['no_grades_pending'] }} Peserta) <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold text-[10px]">Direkomendasikan</span></div>
+                            <div class="text-slate-500 mt-0.5">Hanya peserta yang belum memiliki sertifikat & nilainya kosong. Peserta yang sudah pernah terbit sertifikatnya tetap aman.</div>
+                        </div>
+                    </label>
+
+                    @if($counts['no_grades_total'] > $counts['no_grades_pending'])
+                    <label class="p-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl flex items-start gap-3 cursor-pointer transition-colors">
+                        <input type="radio" name="scope" value="all" class="w-4 h-4 text-rose-600 border-slate-300 focus:ring-rose-500 mt-0.5">
+                        <div class="text-xs">
+                            <div class="font-bold text-slate-800">Semua Yang Bernilai Kosong ({{ $counts['no_grades_total'] }} Peserta)</div>
+                            <div class="text-slate-500 mt-0.5">Termasuk peserta yang sudah terbit sertifikatnya (sertifikat yang ada akan ditarik/dihapus).</div>
+                        </div>
+                    </label>
+                    @endif
+                </div>
+
+                <div class="text-[11px] text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    💡 <em>Catatan: Anda tetap bisa memulihkan status mereka kapan saja melalui tab <strong>"Tidak Lolos (Tidak Berhak)"</strong>.</em>
+                </div>
+
+                <div class="pt-3 border-t border-slate-100 flex justify-end gap-2.5">
+                    <button type="button" onclick="closeFailNoGradesModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2 text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-sm transition-colors flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Tandai Tidak Lolos Sekarang
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -715,6 +833,14 @@
     });
 
     // Modal Tandai dari List
+    function openFailNoGradesModal() {
+        document.getElementById('modalFailNoGrades').style.display = 'block';
+    }
+
+    function closeFailNoGradesModal() {
+        document.getElementById('modalFailNoGrades').style.display = 'none';
+    }
+
     function openMatchListModal() {
         document.getElementById('modalMatchList').style.display = 'block';
         document.getElementById('rawListInput').focus();
@@ -883,6 +1009,16 @@
         const checkboxes = getVisibleRowCheckboxes();
         checkboxes.forEach(cb => {
             cb.checked = (cb.getAttribute('data-status') === 'pending' && cb.getAttribute('data-has-grades') === '1');
+        });
+        const master = document.getElementById('masterCheckbox');
+        if (master) master.checked = false;
+        updateSelectionState();
+    }
+
+    function selectAllWithoutGrades() {
+        const checkboxes = getVisibleRowCheckboxes();
+        checkboxes.forEach(cb => {
+            cb.checked = (cb.getAttribute('data-status') === 'pending' && cb.getAttribute('data-has-grades') === '0');
         });
         const master = document.getElementById('masterCheckbox');
         if (master) master.checked = false;

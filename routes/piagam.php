@@ -32,6 +32,8 @@ Route::prefix('adminprogram/programs/{program}/piagam')->name('adminprogram.piag
     Route::post('generator/pass/{participant}', [PiagamGeneratorController::class, 'passOne'])->name('generator.passOne');
     Route::post('generator/bulk-fail', [PiagamGeneratorController::class, 'bulkFail'])->name('generator.bulkFail');
     Route::post('generator/bulk-pass', [PiagamGeneratorController::class, 'bulkPass'])->name('generator.bulkPass');
+    Route::post('generator/fail-no-grades', [PiagamGeneratorController::class, 'failNoGrades'])->name('generator.failNoGrades');
+    Route::post('generator/restore-all-failed', [PiagamGeneratorController::class, 'restoreAllFailed'])->name('generator.restoreAllFailed');
     Route::post('generator/bulk-cancel', [PiagamGeneratorController::class, 'bulkCancel'])->name('generator.bulkCancel');
     Route::post('generator/bulk-regenerate', [PiagamGeneratorController::class, 'bulkRegenerate'])->name('generator.bulkRegenerate');
     Route::post('generator/bulk-send-email', [PiagamGeneratorController::class, 'bulkSendEmail'])->name('generator.bulkSendEmail');

@@ -86,6 +86,14 @@ class PiagamGeneratorController extends Controller {
                 return !$hasGrade;
             })->count();
 
+        $noGradesPendingCount = $allRegistrations->where('status', '!=', 'failed')
+            ->filter(function($r) {
+                $notGenerated = empty($r->piagamCertificate) || empty($r->piagamCertificate->file_path);
+                $hasGrade = ($r->piagamGrades && $r->piagamGrades->filter(fn($g) => !empty(trim((string)$g->value)))->isNotEmpty()) 
+                    || (!empty($r->piagamCertificate) && $r->piagamCertificate->final_grade !== null);
+                return $notGenerated && !$hasGrade;
+            })->count();
+
         $counts = [
             'total' => $allRegistrations->count(),
             'pending' => $allRegistrations->where('status', '!=', 'failed')->filter(function($r) {
@@ -98,6 +106,7 @@ class PiagamGeneratorController extends Controller {
             'has_grades_pending' => $hasGradesPendingCount,
             'has_grades_total' => $hasGradesTotalCount,
             'no_grades_total' => $noGradesTotalCount,
+            'no_grades_pending' => $noGradesPendingCount,
         ];
 
         return view('adminprogram.piagam.generator.index', compact('program', 'participants', 'counts', 'currentStatus')); 
@@ -280,6 +289,52 @@ class PiagamGeneratorController extends Controller {
 
         $count = Registration::whereIn('id', $selectedIds)
             ->where('program_id', $programId)
+            ->update(['status' => 'passed']);
+
+        return back()->with('success', "Berhasil memulihkan status $count peserta menjadi BERHAK/LOLOS.");
+    }
+
+    public function failNoGrades(Request $request, $programId) {
+        $program = Program::findOrFail($programId);
+        $scope = $request->input('scope', 'pending_only'); // 'pending_only' or 'all'
+
+        $query = $program->registrations()
+            ->where('status', '!=', 'failed')
+            ->whereDoesntHave('piagamGrades', function($sub) {
+                $sub->whereNotNull('value')->where('value', '!=', '');
+            })
+            ->whereDoesntHave('piagamCertificate', function($sub) {
+                $sub->whereNotNull('final_grade');
+            });
+
+        if ($scope === 'pending_only') {
+            $query->whereDoesntHave('piagamCertificate', function($sub) {
+                $sub->whereNotNull('file_path');
+            });
+        }
+
+        $targets = $query->with('piagamCertificate')->get();
+        $count = 0;
+
+        foreach ($targets as $registration) {
+            $registration->update(['status' => 'failed']);
+
+            if ($registration->piagamCertificate) {
+                if ($registration->piagamCertificate->file_path) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($registration->piagamCertificate->file_path);
+                }
+                $registration->piagamCertificate->delete();
+            }
+            $count++;
+        }
+
+        return back()->with('success', "Berhasil menandai $count peserta bernilai kosong sebagai TIDAK LOLOS.");
+    }
+
+    public function restoreAllFailed(Request $request, $programId) {
+        $program = Program::findOrFail($programId);
+        $count = $program->registrations()
+            ->where('status', 'failed')
             ->update(['status' => 'passed']);
 
         return back()->with('success', "Berhasil memulihkan status $count peserta menjadi BERHAK/LOLOS.");
