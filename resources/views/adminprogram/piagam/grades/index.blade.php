@@ -7,9 +7,9 @@
             <h1 class="text-2xl font-bold text-slate-800">Pengisian Nilai Sertifikat</h1>
             <p class="text-slate-600 mt-1">Isi variabel kustom sertifikat untuk setiap peserta program <strong>{{ $program->name }}</strong>.</p>
         </div>
-        <div class="flex gap-3 items-center">
+        <div class="flex flex-wrap gap-2 sm:gap-3 items-center">
             <form action="{{ route('adminprogram.piagam.grades.index', $program->id) }}" method="GET" class="flex gap-2">
-                <select name="sort" onchange="this.form.submit()" class="text-sm border-slate-200 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 py-2">
+                <select name="sort" onchange="this.form.submit()" class="text-xs sm:text-sm border-slate-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 py-2">
                     <option value="name_asc" {{ request('sort') === 'name_asc' ? 'selected' : '' }}>Nama (A-Z)</option>
                     <option value="name_desc" {{ request('sort') === 'name_desc' ? 'selected' : '' }}>Nama (Z-A)</option>
                     <option value="newest" {{ request('sort') === 'newest' ? 'selected' : '' }}>Terbaru</option>
@@ -19,24 +19,24 @@
                 @csrf
                 <input type="file" name="file" id="fileInput" accept=".csv,.txt" onchange="document.getElementById('uploadForm').submit()">
             </form>
-            <button type="button" onclick="document.getElementById('fileInput').click()" class="px-5 py-2.5 bg-amber-600 text-white font-medium rounded-xl hover:bg-amber-700 shadow-sm flex items-center gap-2 transition-colors" title="Upload Template CSV">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            <button type="button" onclick="document.getElementById('fileInput').click()" class="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-amber-600 text-white text-xs sm:text-sm font-medium rounded-xl hover:bg-amber-700 shadow-sm flex items-center gap-1.5 transition-colors" title="Upload Template CSV">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                 Upload CSV
             </button>
-            <a href="{{ route('adminprogram.piagam.grades.download_template', $program->id) }}" class="px-5 py-2.5 bg-sky-600 text-white font-medium rounded-xl hover:bg-sky-700 shadow-sm flex items-center gap-2 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
-                Download Template CSV
+            <a href="{{ route('adminprogram.piagam.grades.download_template', $program->id) }}" class="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-sky-600 text-white text-xs sm:text-sm font-medium rounded-xl hover:bg-sky-700 shadow-sm flex items-center gap-1.5 transition-colors">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
+                Download CSV
             </a>
-            <button type="button" onclick="document.getElementById('modalPublicSettings').classList.remove('hidden')" class="px-5 py-2.5 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 shadow-sm flex items-center gap-2 transition-colors" title="Pengaturan Judul Formulir & Tampilan Publik">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <button type="button" onclick="document.getElementById('modalPublicSettings').classList.remove('hidden')" class="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-purple-600 text-white text-xs sm:text-sm font-medium rounded-xl hover:bg-purple-700 shadow-sm flex items-center gap-1.5 transition-colors" title="Pengaturan Judul Formulir & Tampilan Publik">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 Atur Tampilan Publik
             </button>
-            <button type="button" onclick="document.getElementById('gradesForm').submit()" class="px-5 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 shadow-sm flex items-center gap-2 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                Simpan Halaman Ini
+            <button type="button" onclick="document.getElementById('gradesForm').submit()" class="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-emerald-600 text-white text-xs sm:text-sm font-medium rounded-xl hover:bg-emerald-700 shadow-sm flex items-center gap-1.5 transition-colors">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Simpan
             </button>
-            <a href="{{ route('adminprogram.piagam.generator.index', $program->id) }}" class="px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 shadow-sm flex items-center gap-2 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            <a href="{{ route('adminprogram.piagam.generator.index', $program->id) }}" class="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-indigo-600 text-white text-xs sm:text-sm font-medium rounded-xl hover:bg-indigo-700 shadow-sm flex items-center gap-1.5 transition-colors">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 Generator Piagam
             </a>
         </div>

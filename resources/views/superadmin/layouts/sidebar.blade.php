@@ -1,6 +1,31 @@
+<!-- Mobile Backdrop Overlay -->
+<div x-show="mobileMenuOpen" 
+     @click="mobileMenuOpen = false" 
+     x-transition:enter="transition-opacity ease-linear duration-200"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition-opacity ease-linear duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden"
+     style="display: none;"></div>
+
 <aside :class="{'translate-x-0': mobileMenuOpen, '-translate-x-full': !mobileMenuOpen}"
-       class="fixed inset-y-0 left-0 z-40 w-64 pt-24 pb-6 px-4 transition-transform transform bg-white border-r border-slate-100 lg:translate-x-0 lg:static lg:inset-0 min-h-[calc(100vh-4rem)] flex flex-col justify-between group-data-[sidebar=collapsed]:w-20"
+       class="fixed inset-y-0 left-0 z-50 w-72 pt-4 pb-6 px-4 transition-transform duration-300 ease-in-out bg-white border-r border-slate-100 lg:translate-x-0 lg:static lg:inset-0 lg:pt-24 min-h-[calc(100vh-4rem)] flex flex-col justify-between shadow-2xl lg:shadow-none group-data-[sidebar=collapsed]:w-20"
        x-cloak>
+
+    <!-- Mobile Drawer Header with Close Button -->
+    <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100 lg:hidden">
+        <div class="flex items-center space-x-2">
+            <img src="{{ asset('images/logo.webp') }}" alt="Logo PROGRAM" class="h-10 w-auto object-contain">
+            <span class="text-xs font-bold text-slate-800 uppercase tracking-wider">Super Admin</span>
+        </div>
+        <button type="button" @click="mobileMenuOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors" aria-label="Tutup Menu">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
 
     <div class="space-y-7 flex-1 overflow-y-auto pr-1">
 

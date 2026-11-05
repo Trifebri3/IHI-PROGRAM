@@ -2,8 +2,16 @@
     <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
 
-            <!-- Kiri: Area Logo Utama -->
+            <!-- Kiri: Area Logo Utama & Hamburger Menu HP -->
             <div class="flex items-center">
+                <button type="button" 
+                        @click="mobileSidebarOpen = !mobileSidebarOpen" 
+                        class="lg:hidden p-2 -ml-2 mr-2 text-slate-600 hover:text-emerald-700 hover:bg-slate-100 rounded-xl transition-colors focus:outline-none"
+                        aria-label="Buka Menu Navigasi">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
                 <a href="{{ route('dashboard') }}" class="flex items-center focus:outline-none">
                     <img src="{{ asset('images/logo.webp') }}" alt="Logo PROGRAM" class="h-14 w-auto object-contain md:h-16">
                 </a>
